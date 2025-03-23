@@ -1,0 +1,92 @@
+{
+  "blocks": {
+    "languageVersion": 0,
+    "blocks": [
+      {
+        "type": "make_connection",
+        "id": "fHso^%E)AV*K5/4wa;ci",
+        "x": 90,
+        "y": 70,
+        "fields": {
+          "IP_ADDRESS": "192.168.2.119"
+        },
+        "next": {
+          "block": {
+            "type": "controls_repeat_ext",
+            "id": ")L^![4YVt]ZR!qOt4H5z",
+            "inputs": {
+              "TIMES": {
+                "block": {
+                  "type": "math_number",
+                  "id": "nr6ikHlzX5::@z,@#1]#",
+                  "fields": {
+                    "NUM": 10
+                  }
+                }
+              },
+              "DO": {
+                "block": {
+                  "type": "local_action",
+                  "id": "LF,Izvk4]%YH:-#||Fdm",
+                  "fields": {
+                    "COMMAND": "kup"
+                  },
+                  "next": {
+                    "block": {
+                      "type": "variables_set",
+                      "id": "cM{F1jaegAZu[l$p3~}=",
+                      "fields": {
+                        "VAR": {
+                          "id": "jDHxVvAKDV$o{h_qiWs2"
+                        }
+                      },
+                      "inputs": {
+                        "VALUE": {
+                          "block": {
+                            "type": "get_analog_input",
+                            "id": "x0D:]OuBG-}ZP;LyGX3T",
+                            "fields": {
+                              "PIN": "35"
+                            }
+                          }
+                        }
+                      },
+                      "next": {
+                        "block": {
+                          "type": "console_log_variable",
+                          "id": "H_#:O49?Dt,ZsoDX)S~?",
+                          "fields": {
+                            "VAR_NAME": "传感器"
+                          },
+                          "inputs": {
+                            "VALUE": {
+                              "block": {
+                                "type": "variables_get",
+                                "id": "659Eg^5scHp8D7~5Ha?$",
+                                "fields": {
+                                  "VAR": {
+                                    "id": "jDHxVvAKDV$o{h_qiWs2"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "variables": [
+    {
+      "name": "x",
+      "id": "jDHxVvAKDV$o{h_qiWs2"
+    }
+  ]
+}

@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>机器人编程</title>
+    <!-- 1. 首先加载 Blockly 核心文件 -->
+    <script src="./node_modules/blockly/blockly_compressed.js"></script>
+    <script src="./node_modules/blockly/blocks_compressed.js"></script>
+    <script src="./node_modules/blockly/javascript_compressed.js"></script>
+    <!-- 2. 加载语言文件 -->
+    <script src="./node_modules/blockly/msg/zh-hans.js"></script>
+    <!-- 4. 然后加载自定义积木块文件 -->
+    <script src="./blocks/communication.js"></script>
+    <script src="./blocks/control.js"></script>
+    <script src="./blocks/sensor.js"></script>
+    <script src="./blocks/motion.js"></script>
+
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        background-color: #fff;
+        font-family: sans-serif;
+      }
+
+      .button-group {
+        margin-bottom: 20px;
+      }
+
+      .button-group button {
+        padding: 8px 15px;
+        margin-right: 10px;
+        border: none;
+        border-radius: 4px;
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      .button-group button:hover {
+        background-color: #0056b3;
+      }
+
+      .workspace-container {
+        display: flex;
+        gap: 20px;
+      }
+
+      #blocklyDiv {
+        width: 70%;
+        height: 800px;
+        border: 1px solid #ccc;
+      }
+
+      .windows-container {
+        width: 30%;
+        height: 800px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      #consoleWindow {
+        flex: 1;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: #1e1e1e;
+        padding: 10px;
+        font-family: 'Consolas', monospace;
+        overflow-y: auto;
+      }
+
+      /* 修复积木块文字偏移问题 */
+      .blocklyText {
+        fill: #fff;
+        font-family: sans-serif;
+        font-size: 11pt;
+        font-weight: normal;
+      }
+
+      .blocklyNonEditableText>text, .blocklyEditableText>text {
+        fill: #000;
+      }
+
+      .blocklyDropdownText {
+        fill: #000 !important;
+      }
+
+      #loadInput {
+        display: none;
+      }
+
+      .console-item {
+        padding: 3px 5px;
+        margin-bottom: 2px;
+        font-size: 13px;
+        white-space: pre-wrap;
+        word-break: break-all;
+        color: #ffffff;
+      }
+
+      /* 串口通信相关样式 */
+      #serialContainer {
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 10px;
+      }
+
+      .serial-button {
+        padding: 6px 12px;
+        margin: 5px;
+        border: none;
+        border-radius: 4px;
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+      }
+
+      .serial-output {
+        height: 200px;
+        border: 1px solid #ccc;
+        margin: 10px 0;
+        padding: 10px;
+        overflow-y: auto;
+        background-color: #1e1e1e;
+        color: #fff;
+        font-family: 'Consolas', monospace;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        word-break: break-all;
+        line-height: 1;
+        font-size: 13px;
+      }
+
+      .serial-output br {
+        line-height: 1;
+        margin: 0;
+        padding: 0;
+      }
+
+      .serial-input-container {
+        display: flex;
+        gap: 5px;
+      }
+
+      .serial-input-container input {
+        flex: 1;
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+
+      .serial-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .serial-button:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+      }
+
+      .wifi-dialog {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
+      }
+
+      .wifi-dialog input {
+        display: block;
+        width: 100%;
+        margin: 10px 0;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+
+      .wifi-dialog .button-container {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 15px;
+      }
+
+      .wifi-dialog button {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .wifi-dialog button.confirm {
+        background-color: #007bff;
+        color: white;
+      }
+
+      .wifi-dialog button.cancel {
+        background-color: #6c757d;
+        color: white;
+      }
+
+      .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 999;
+      }
+
+      .language-switch {
+        display: inline-flex;
+        align-items: center;
+        margin-left: 10px;
+        border: 1px solid #007bff;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+
+      .language-switch button {
+        padding: 6px 12px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-size: 14px;
+        color: #007bff;
+        transition: all 0.3s ease;
+      }
+
+      .language-switch button.active {
+        background-color: #007bff;
+        color: white;
+      }
+
+      .language-switch button:hover:not(.active) {
+        background-color: #e6f0ff;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="button-group">
+      <button onclick="showCode()">显示代码</button>
+      <button onclick="runCode()">运行代码</button>
+      <button onclick="saveWorkspace()">保存程序</button>
+      <button onclick="document.getElementById('loadInput').click()">载入程序</button>
+      <input type="file" id="loadInput" accept=".json" onchange="loadWorkspace(this.files[0])">
+      <span id="ipDisplay" style="margin-left: 10px; color: #007bff;"></span>
+    </div>
+
+    <div class="workspace-container">
+      <div id="blocklyDiv"></div>
+      <div class="windows-container">
+        <div id="consoleWindow">
+          <div style="margin-bottom: 10px;">
+            <span style="font-weight: bold; color: #fff;">Console Log</span>
+            <button onclick="clearConsole()" 
+                    style="float: right; padding: 4px 8px; cursor: pointer;">
+              清除日志
+            </button>
+          </div>
+          <div id="consoleLog"></div>
+        </div>
+        <!-- 添加串口通信相关的HTML结构 -->
+        <div id="serialContainer" style="margin-top: 20px;">
+          <div class="serial-buttons">
+            <button onclick="openSerialPort()" class="serial-button">使用串口有线连接</button>
+            <button onclick="quickConnect()" class="serial-button" id="quickConnectBtn" disabled>快速联网</button>
+            <button onclick="closeSerialPort()" class="serial-button" id="closeSerialBtn" disabled>关闭串口连接</button>
+          </div>
+          <div id="serialInterface" style="display: none;">
+            <div class="serial-output" id="serialOutput"></div>
+            <div class="serial-input-container">
+              <input type="text" id="serialInput" placeholder="输入要发送的内容">
+              <button onclick="sendSerialData()" class="serial-button">发送</button>
+              <button onclick="clearSerialOutput()" class="serial-button">清空显示</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // 自定义主题
+      const customTheme = Blockly.Theme.defineTheme('myCustomTheme', {
+        'base': Blockly.Themes.Classic, // 继承经典主题的基础配置
+        'categoryStyles': {
+          'communication_category': {
+            'colour': '#4a148c',
+         },
+         'control_category': {
+            'colour': '#4a148c',
+         },
+         'motion_category': {
+            'colour': '#4a148c',
+         },
+         'sensor_category': {
+            'colour': '#4a148c',
+         }, 
+         'console_category': {
+            'colour': '#01579b',
+         }
+        }
+      });
+
+      var toolbox = {
+        kind: 'categoryToolbox',
+        contents: [
+          {
+            kind: 'category',
+            name: '逻辑',
+            categorystyle: 'logic_category',
+            contents: [
+              { kind: 'block', type: 'controls_if' },
+              { kind: 'block', type: 'logic_compare' },
+              { kind: 'block', type: 'logic_operation' },
+              { kind: 'block', type: 'logic_negate' },
+              { kind: 'block', type: 'logic_boolean' },
+              { kind: 'block', type: 'logic_null' },
+              { kind: 'block', type: 'logic_ternary' }
+            ]
+          },
+          {
+            kind: 'category',
+            name: '循环',
+            categorystyle: 'loop_category',
+            contents: [
+              { kind: 'block', type: 'controls_repeat_ext' },
+              { kind: 'block', type: 'controls_whileUntil' },
+              { kind: 'block', type: 'controls_for' },
+              { kind: 'block', type: 'controls_forEach' },
+              { kind: 'block', type: 'controls_flow_statements' }
+            ]
+          },
+          {
+            kind: 'category',
+            name: '数学',
+            categorystyle: 'math_category',
+            contents: [
+              { kind: 'block', type: 'math_number' },
+              { kind: 'block', type: 'math_arithmetic' },
+              { kind: 'block', type: 'math_single' },
+              { kind: 'block', type: 'math_trig' },
+              { kind: 'block', type: 'math_constant' },
+              { kind: 'block', type: 'math_number_property' },
+              { kind: 'block', type: 'math_round' },
+              { kind: 'block', type: 'math_modulo' }
+            ]
+          },
+          {
+            kind: 'category',
+            name: 'Text',
+            categorystyle: 'text_category',
+            contents: [
+              { kind: 'block', type: 'text' },
+              { kind: 'block', type: 'text_join' },
+              { kind: 'block', type: 'text_append' },
+              { kind: 'block', type: 'text_length' },
+              { kind: 'block', type: 'text_isEmpty' },
+              { kind: 'block', type: 'text_indexOf' },
+              { kind: 'block', type: 'text_charAt' },
+              { kind: 'block', type: 'text_getSubstring' },
+              { kind: 'block', type: 'text_changeCase' },
+              { kind: 'block', type: 'text_trim' },
+              { kind: 'block', type: 'text_print' }
+            ]
+          },
+          {
+            kind: 'category',
+            name: '变量',
+            categorystyle: 'variable_category',
+            custom: 'VARIABLE'
+          },
+          {
+            kind: 'category',
+            name: '函数',
+            categorystyle: 'procedure_category',
+            custom: 'PROCEDURE'
+          },
+          {
+            kind: 'category',
+            name: '通信',
+            categorystyle: 'communication_category',
+            contents: [
+              { kind: 'block', type: 'make_connection' },
+              { kind: 'block', type: 'get_digital_input' },
+              { kind: 'block', type: 'get_analog_input' },
+              { kind: 'block', type: 'get_sensor_input' },
+              { kind: 'block', type: 'set_digital_output' },
+              { kind: 'block', type: 'set_analog_output' },
+              { kind: 'block', type: 'send_custom_command' }
+            ]
+          },
+          {
+            kind: 'category',
+            name: '动作',
+            categorystyle: 'motion_category',
+            contents: [
+              { kind: 'block', type: 'direction_action' },
+              { kind: 'block', type: 'local_action' },
+              { kind: 'block', type: 'high_difficulty_action' },
+              { kind: 'block', type: 'set_motor_angle' },
+              { kind: 'block', type: 'get_servo_angle' },
+              { kind: 'block', type: 'get_all_servo_angles' }
+            ]
+          },
+          {
+            kind: 'category',
+            name: '控制',
+            categorystyle: 'control_category',
+            contents: [
+              { kind: 'block', type: 'delay_ms' }
+            ]
+          },
+          {
+            kind: 'category',
+            name: '传感器',
+            categorystyle: 'sensor_category',
+            contents: [
+              { kind: 'block', type: 'gyro_control' },
+              { kind: 'block', type: 'get_sensor_input' }
+            ]
+          },
+          {
+            kind: 'category',
+            name: '控制台',
+            categorystyle: 'console_category',
+            contents: [
+              { kind: 'block', type: 'console_log_variable' }
+            ]
+          }
+        ]
+      };
+
+      var workspace = Blockly.inject('blocklyDiv', {
+        media: './node_modules/blockly/media/',
+        toolbox: toolbox,
+        theme: customTheme,
+        grid: {
+          spacing: 20,
+          length: 3,
+          colour: '#ccc',
+          snap: true
+        },
+        zoom: {
+          controls: true,
+          wheel: true,
+          startScale: 1.0,
+          maxScale: 3,
+          minScale: 0.3,
+          scaleSpeed: 1.2
+        },
+        trashcan: true
+      });
+
+      // 添加开始积木块
+      var startBlocks = {
+
+      };
+
+
+      function showCode() {
+        Blockly.JavaScript.INFINITE_LOOP_TRAP = null;
+        var code = Blockly.JavaScript.workspaceToCode(workspace);
+        
+        // 创建蒙版背景
+        var overlay = document.createElement('div');
+        overlay.style.position = 'fixed';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100%';
+        overlay.style.height = '100%';
+        overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+        overlay.style.zIndex = '999';
+        overlay.style.display = 'flex';
+        overlay.style.justifyContent = 'center';
+        overlay.style.alignItems = 'center';
+        
+        // 点击蒙版时关闭对话框
+        overlay.addEventListener('click', function(event) {
+          if (event.target === overlay) {
+            document.body.removeChild(overlay);
+          }
+        });
+        
+        // 创建一个包含代码的对话框
+        var codeDialog = document.createElement('div');
+        codeDialog.className = 'code-dialog';
+        codeDialog.style.position = 'relative';
+        codeDialog.style.backgroundColor = '#282c34';
+        codeDialog.style.color = '#abb2bf';
+        codeDialog.style.padding = '20px';
+        codeDialog.style.borderRadius = '8px';
+        codeDialog.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.5)';
+        codeDialog.style.zIndex = '1000';
+        codeDialog.style.maxWidth = '90%';
+        codeDialog.style.maxHeight = '80%';
+        codeDialog.style.overflow = 'auto';
+        codeDialog.style.fontFamily = '"Consolas", "Monaco", monospace';
+        
+        // 标题
+        var titleBar = document.createElement('div');
+        titleBar.style.display = 'flex';
+        titleBar.style.justifyContent = 'space-between';
+        titleBar.style.alignItems = 'center';
+        titleBar.style.marginBottom = '15px';
+        
+        var title = document.createElement('h3');
+        title.textContent = '生成的JavaScript代码';
+        title.style.margin = '0';
+        title.style.color = '#e6e6e6';
+        
+        var closeButton = document.createElement('button');
+        closeButton.textContent = '×';
+        closeButton.style.background = 'none';
+        closeButton.style.border = 'none';
+        closeButton.style.color = '#e6e6e6';
+        closeButton.style.fontSize = '24px';
+        closeButton.style.cursor = 'pointer';
+        closeButton.onclick = function() {
+          document.body.removeChild(overlay);
+        };
+        
+        titleBar.appendChild(title);
+        titleBar.appendChild(closeButton);
+        codeDialog.appendChild(titleBar);
+        
+        // 格式化代码
+        // 1. 分割每行
+        var codeLines = code.split('\n');
+        
+        // 2. 创建代码显示区域
+        var codeContainer = document.createElement('pre');
+        codeContainer.style.margin = '0';
+        codeContainer.style.overflow = 'auto';
+        codeContainer.style.backgroundColor = '#282c34';
+        codeContainer.style.padding = '10px';
+        codeContainer.style.borderRadius = '4px';
+        codeContainer.style.lineHeight = '1.5';
+        codeContainer.style.maxHeight = '60vh';
+        codeContainer.style.fontSize = '14px';
+        codeContainer.style.color = '#e6e6e6'; // 设置代码文本颜色
+        
+        // 添加自定义滚动条样式
+        codeContainer.style.scrollbarWidth = 'thin';
+        codeContainer.style.scrollbarColor = '#4d4d4d #282c34';
+        
+        // 添加整个代码块的文本，而不是逐行添加
+        codeContainer.textContent = code;
+        
+        codeDialog.appendChild(codeContainer);
+        
+        // 添加复制按钮
+        var copyButton = document.createElement('button');
+        copyButton.textContent = '复制代码';
+        copyButton.style.marginTop = '15px';
+        copyButton.style.padding = '6px 12px';
+        copyButton.style.backgroundColor = '#4d78cc';
+        copyButton.style.color = 'white';
+        copyButton.style.border = 'none';
+        copyButton.style.borderRadius = '4px';
+        copyButton.style.cursor = 'pointer';
+        copyButton.onclick = function() {
+          navigator.clipboard.writeText(code).then(function() {
+            copyButton.textContent = '复制成功！';
+            setTimeout(function() {
+              copyButton.textContent = '复制代码';
+            }, 2000);
+          });
+        };
+        
+        codeDialog.appendChild(copyButton);
+        overlay.appendChild(codeDialog);
+        document.body.appendChild(overlay);
+        
+        // 添加ESC键监听
+        function handleEscKey(event) {
+          if (event.key === 'Escape') {
+            document.body.removeChild(overlay);
+            document.removeEventListener('keydown', handleEscKey);
+          }
+        }
+        document.addEventListener('keydown', handleEscKey);
+      }
+      
+      function runCode() {
+        window.LoopTrap = 1000;
+        Blockly.JavaScript.INFINITE_LOOP_TRAP =
+          'if (--window.LoopTrap < 0) throw "无限循环";\n';
+        var code = Blockly.JavaScript.workspaceToCode(workspace);
+        Blockly.JavaScript.INFINITE_LOOP_TRAP = null;
+        
+        // 添加辅助函数确保异步操作按顺序执行
+        const asyncHelper = `
+          // 辅助函数，确保异步打印能够立即执行
+          function asyncLog(message) {
+            return new Promise((resolve) => {
+              console.log(message);
+              // 强制浏览器更新DOM
+              setTimeout(resolve, 0);
+            });
+          }
+        `;
+        
+        // 将普通的console.log替换为使用asyncLog的形式
+        code = code.replace(/console\.log\((.*?)\);/g, 'await asyncLog($1);');
+        
+        // 包装整个代码到一个异步函数中
+        code = asyncHelper + "\n(async function() {\n" + code + "\n})().catch(e => alert(e));";
+        
+        try {
+          eval(code);
+        } catch (e) {
+          alert(e);
+        }
+      }
+
+      function saveWorkspace() {
+        var json = Blockly.serialization.workspaces.save(workspace);
+        var blob = new Blob([JSON.stringify(json, null, 2)], {type: 'application/json'});
+        var a = document.createElement('a');
+        a.download = 'program.json';
+        a.href = URL.createObjectURL(blob);
+        a.click();
+      }
+
+      function loadWorkspace(file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            var json = JSON.parse(e.target.result);
+            Blockly.serialization.workspaces.load(json, workspace);
+          } catch (err) {
+            alert('无法载入文件: ' + err.message);
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      document.addEventListener('keydown', function(event) {
+        if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+          event.preventDefault();
+          saveWorkspace();
+        }
+        if ((event.ctrlKey || event.metaKey) && event.key === 'o') {
+          event.preventDefault();
+          document.getElementById('loadInput').click();
+        }
+      });
+
+      function addConsoleMessage(args) {
+        const logDiv = document.getElementById('consoleLog');
+        const time = new Date().toLocaleTimeString();
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'console-item';
+        
+        // 处理不同类型的参数
+        const messages = Array.from(args).map(arg => {
+          if (typeof arg === 'object') {
+            try {
+              return JSON.stringify(arg, null, 2);
+            } catch (e) {
+              return String(arg);
+            }
+          }
+          return String(arg);
+        });
+        
+        messageDiv.textContent = `[${time}] ${messages.join(' ')}`;
+        
+        // 使用原生DOM方法确保立即渲染，改为添加到末尾
+        logDiv.appendChild(messageDiv);
+        
+        // 保持最多显示100条记录
+        while (logDiv.children.length > 100) {
+          logDiv.removeChild(logDiv.firstChild);
+        }
+
+        // 立即设置滚动位置到底部，确保最新消息可见
+        const consoleWindow = document.getElementById('consoleWindow');
+        consoleWindow.scrollTop = consoleWindow.scrollHeight;
+        
+        // 强制DOM重绘，确保视图更新
+        void consoleWindow.offsetHeight;
+      }
+
+      function clearConsole() {
+        document.getElementById('consoleLog').innerHTML = '';
+      }
+
+      // 只重写 console.log
+      const originalLog = console.log;
+      console.log = function() {
+        addConsoleMessage(arguments);
+        originalLog.apply(console, arguments);
+      };
+
+      // 添加串口通信相关的JavaScript代码
+      let port = null;
+      let reader = null;
+      let writer = null;
+
+      async function openSerialPort() {
+        try {
+          port = await navigator.serial.requestPort();
+          await port.open({ baudRate: 115200 });
+          
+          document.getElementById('serialInterface').style.display = 'block';
+          document.getElementById('quickConnectBtn').disabled = false;
+          document.getElementById('closeSerialBtn').disabled = false;
+          
+          // 设置读取器
+          reader = port.readable.getReader();
+          readSerialData();
+          
+          // 设置写入器
+          writer = port.writable.getWriter();
+          
+        } catch (error) {
+          console.error('串口连接错误:', error);
+        }
+      }
+
+      async function closeSerialPort() {
+        try {
+          if (reader) {
+            await reader.cancel();
+            reader = null;
+          }
+          if (writer) {
+            await writer.close();
+            writer = null;
+          }
+          if (port) {
+            await port.close();
+            port = null;
+          }
+
+          document.getElementById('serialInterface').style.display = 'none';
+          document.getElementById('quickConnectBtn').disabled = true;
+          document.getElementById('closeSerialBtn').disabled = true;
+          document.getElementById('ipDisplay').textContent = '';
+        } catch (error) {
+          console.error('关闭串口错误:', error);
+        }
+      }
+
+      async function quickConnect() {
+        // 创建遮罩层
+        const overlay = document.createElement('div');
+        overlay.className = 'overlay';
+        document.body.appendChild(overlay);
+
+        // 创建对话框
+        const dialog = document.createElement('div');
+        dialog.className = 'wifi-dialog';
+        dialog.innerHTML = `
+          <h3>WiFi配置</h3>
+          <input type="text" id="ssidInput" placeholder="请输入WiFi名称(SSID)">
+          <input type="password" id="passwordInput" placeholder="请输入WiFi密码">
+          <div class="button-container">
+            <button class="cancel" onclick="closeWifiDialog()">取消</button>
+            <button class="confirm" onclick="confirmWifiSettings()">确定</button>
+          </div>
+        `;
+        document.body.appendChild(dialog);
+      }
+
+      function closeWifiDialog() {
+        const dialog = document.querySelector('.wifi-dialog');
+        const overlay = document.querySelector('.overlay');
+        if (dialog) dialog.remove();
+        if (overlay) overlay.remove();
+      }
+
+      async function confirmWifiSettings() {
+        const ssid = document.getElementById('ssidInput').value.trim();
+        const password = document.getElementById('passwordInput').value.trim();
+        
+        if (!ssid) {
+          alert('请输入WiFi名称');
+          return;
+        }
+
+        const command = `w%${ssid}%${password}\n`;
+        
+        try {
+          await writer.write(new TextEncoder().encode(command));
+          closeWifiDialog();
+        } catch (error) {
+          console.error('发送WiFi命令错误:', error);
+          alert('发送WiFi命令失败');
+        }
+      }
+
+      let ipCheckInterval = null;
+      let serialBuffer = '';
+
+      async function readSerialData() {
+        try {
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) {
+              reader.releaseLock();
+              break;
+            }
+            const text = new TextDecoder().decode(value);
+            serialBuffer += text;
+            
+            // 检查是否包含IP地址信息
+            const ipMatch = serialBuffer.match(/IP Address: ([0-9.]+)/);
+            if (ipMatch) {
+              const ip = ipMatch[1];
+              document.getElementById('ipDisplay').textContent = `串口配置IP：${ip}`;
+              serialBuffer = '';  // 清空缓冲区
+            }
+            
+            // 更新输出显示，确保每条消息后面都有换行符
+            const outputDiv = document.getElementById('serialOutput');
+            outputDiv.innerHTML += text.replace(/\n/g, '<br>');  // 将\n替换为<br>
+            outputDiv.scrollTop = outputDiv.scrollHeight;
+          }
+        } catch (error) {
+          console.error('读取串口数据错误:', error);
+        }
+      }
+
+      async function sendSerialData() {
+        if (!writer) return;
+        
+        const input = document.getElementById('serialInput');
+        const data = input.value + '\n';
+        
+        try {
+          await writer.write(new TextEncoder().encode(data));
+          input.value = '';
+        } catch (error) {
+          console.error('发送数据错误:', error);
+        }
+      }
+
+      function clearSerialOutput() {
+        const outputDiv = document.getElementById('serialOutput');
+        outputDiv.innerHTML = '';
+      }
+
+      // 添加回车键发送功能
+      document.getElementById('serialInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          sendSerialData();
+        }
+      });
+
+    </script>
+  </body>
+</html>

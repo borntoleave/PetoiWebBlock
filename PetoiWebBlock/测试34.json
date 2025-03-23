@@ -1,0 +1,69 @@
+{
+  "blocks": {
+    "languageVersion": 0,
+    "blocks": [
+      {
+        "type": "make_connection",
+        "id": "fHso^%E)AV*K5/4wa;ci",
+        "x": 90,
+        "y": 70,
+        "fields": {
+          "IP_ADDRESS": "192.168.137.243"
+        },
+        "next": {
+          "block": {
+            "type": "controls_repeat_ext",
+            "id": ")L^![4YVt]ZR!qOt4H5z",
+            "inputs": {
+              "TIMES": {
+                "block": {
+                  "type": "math_number",
+                  "id": "nr6ikHlzX5::@z,@#1]#",
+                  "fields": {
+                    "NUM": 10
+                  }
+                }
+              },
+              "DO": {
+                "block": {
+                  "type": "local_action",
+                  "id": "LF,Izvk4]%YH:-#||Fdm",
+                  "fields": {
+                    "COMMAND": "kup"
+                  },
+                  "next": {
+                    "block": {
+                      "type": "console_log_variable",
+                      "id": "H_#:O49?Dt,ZsoDX)S~?",
+                      "extraState": "<mutation xmlns=\"http://www.w3.org/1999/xhtml\" custom_name=\"true\"></mutation>",
+                      "fields": {
+                        "PRINT_TYPE": "WITH_NAME"
+                      },
+                      "inputs": {
+                        "VALUE": {
+                          "block": {
+                            "type": "get_analog_input",
+                            "id": "x0D:]OuBG-}ZP;LyGX3T",
+                            "fields": {
+                              "PIN": "35"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "variables": [
+    {
+      "name": "x",
+      "id": "jDHxVvAKDV$o{h_qiWs2"
+    }
+  ]
+}
