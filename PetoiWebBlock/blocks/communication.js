@@ -97,11 +97,24 @@ Blockly.defineBlocksWithJsonArray([
   }
 ]);
 
-// 代码生成:数字输入积木
+// 代码生成:数字输入积木 untested
 javascript.javascriptGenerator.forBlock['get_digital_input'] = function (block)
 {
   var pin = block.getFieldValue('PIN');
-  var code = `httpRequest(deviceIP, "getDigital${pin}")`;
+  var code = `(function() { 
+    const result = httpRequest(deviceIP, "Rd"+'${String.fromCharCode(pin)}'+"\\n", true); 
+    // 尝试解析结果中的数字
+    if (result) {
+      const lines = result.split('\\n');
+      for (const line of lines) {
+        const num = parseInt(line.trim());
+        if (!isNaN(num)) {
+          return num;
+        }
+      }
+    }
+    return 0; // 如果无法解析，返回默认值
+  })()`;
   return [code, Blockly.JavaScript.ORDER_FUNCTION_CALL];
 };
 
