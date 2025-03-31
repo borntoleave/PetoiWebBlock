@@ -8,7 +8,7 @@
         "x": 90,
         "y": 70,
         "fields": {
-          "IP_ADDRESS": "192.168.2.119"
+          "IP_ADDRESS": "192.168.50.24"
         },
         "next": {
           "block": {
@@ -33,12 +33,10 @@
                   },
                   "next": {
                     "block": {
-                      "type": "variables_set",
-                      "id": "cM{F1jaegAZu[l$p3~}=",
+                      "type": "console_log_variable",
+                      "id": "H_#:O49?Dt,ZsoDX)S~?",
                       "fields": {
-                        "VAR": {
-                          "id": "jDHxVvAKDV$o{h_qiWs2"
-                        }
+                        "VAR_NAME": "传感器"
                       },
                       "inputs": {
                         "VALUE": {
@@ -46,30 +44,17 @@
                             "type": "get_analog_input",
                             "id": "x0D:]OuBG-}ZP;LyGX3T",
                             "fields": {
-                              "PIN": "35"
+                              "PIN": "38"
                             }
                           }
                         }
                       },
                       "next": {
                         "block": {
-                          "type": "console_log_variable",
-                          "id": "H_#:O49?Dt,ZsoDX)S~?",
+                          "type": "local_action",
+                          "id": "hzIZ(IkFakd};iq.SyYh",
                           "fields": {
-                            "VAR_NAME": "传感器"
-                          },
-                          "inputs": {
-                            "VALUE": {
-                              "block": {
-                                "type": "variables_get",
-                                "id": "659Eg^5scHp8D7~5Ha?$",
-                                "fields": {
-                                  "VAR": {
-                                    "id": "jDHxVvAKDV$o{h_qiWs2"
-                                  }
-                                }
-                              }
-                            }
+                            "COMMAND": "ksit"
                           }
                         }
                       }

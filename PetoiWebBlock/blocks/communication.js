@@ -78,14 +78,21 @@ Blockly.defineBlocksWithJsonArray([
         type: "field_dropdown",
         name: "PIN",
         options: [
-          ["D1", "D1"],
-          ["D2", "D2"],
-          ["D3", "D3"],
-          ["D4", "D4"],
-          ["D5", "D5"],
-          ["D6", "D6"],
-          ["D7", "D7"],
-          ["D8", "D8"]
+          ["34", "34"],
+          ["35", "35"],
+          ["36", "36"],
+          ["39", "39"],
+          ["BackTouch(38)", "38"],
+          ["Rx2(9)", "9"],
+          ["Tx2(10)", "10"],
+          // ["D1", "D1"],
+          // ["D2", "D2"],
+          // ["D3", "D3"],
+          // ["D4", "D4"],
+          // ["D5", "D5"],
+          // ["D6", "D6"],
+          // ["D7", "D7"],
+          // ["D8", "D8"]
         ]
       }
     ],
@@ -101,7 +108,20 @@ Blockly.defineBlocksWithJsonArray([
 javascript.javascriptGenerator.forBlock['get_digital_input'] = function (block)
 {
   var pin = block.getFieldValue('PIN');
-  var code = `httpRequest(deviceIP, "getDigital${pin}")`;
+  var code = `(function() { 
+    const result = httpRequest(deviceIP, "Rd"+'\\${String.fromCharCode(pin)}'+"\\n", true); 
+    // 尝试解析结果中的数字
+    if (result) {
+      const lines = result.split('\\n');
+      for (const line of lines) {
+        const num = parseInt(line.trim());
+        if (!isNaN(num)) {
+          return num;
+        }
+      }
+    }
+    return 0; // 如果无法解析，返回默认值
+  })()`;
   return [code, Blockly.JavaScript.ORDER_FUNCTION_CALL];
 };
 
@@ -117,7 +137,11 @@ Blockly.defineBlocksWithJsonArray([
         options: [
           ["34", "34"],
           ["35", "35"],
-          ["38", "38"],
+          ["36", "36"],
+          ["39", "39"],
+          ["BackTouch(38)", "38"],
+          ["Rx2(9)", "9"],
+          ["Tx2(10)", "10"],
           //          ["A1", "A1"],
           //          ["A2", "A2"],
           //          ["A3", "A3"],
@@ -142,7 +166,7 @@ javascript.javascriptGenerator.forBlock['get_analog_input'] = function (block)
 {
   var pin = block.getFieldValue('PIN');
   var code = `(function() { 
-    const result = httpRequest(deviceIP, "Ra"+'${String.fromCharCode(pin)}'+"\\n", true); 
+    const result = httpRequest(deviceIP, "Ra"+'\\${String.fromCharCode(pin)}'+"\\n", true); 
     // 尝试解析结果中的数字
     if (result) {
       const lines = result.split('\\n');
