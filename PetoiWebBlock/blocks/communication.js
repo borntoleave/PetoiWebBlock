@@ -104,7 +104,7 @@ Blockly.defineBlocksWithJsonArray([
   }
 ]);
 
-// 代码生成:数字输入积木
+// 代码生成:数字输入积木 untested
 javascript.javascriptGenerator.forBlock['get_digital_input'] = function (block)
 {
   var pin = block.getFieldValue('PIN');
