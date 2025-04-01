@@ -33,19 +33,32 @@ const TRANSLATIONS = {
     "categoryControl": "控制",
     "categoryConsole": "控制台",
 
-    // 积木文本
+    // 积木文本 - 通信
     "connectWithIP": "连接IP地址 %1",
     "getDigitalInput": "获取数字输入 %1",
     "getAnalogInput": "获取模拟输入 %1",
-    "getSensor": "获取传感器 %1",
+    "getSensorInput": "获取传感器 %1",
+    "setDigitalOutput": "设置数字输出 引脚 %1 状态 %2",
+    "setAnalogOutput": "设置模拟输出 引脚 %1 数值 %2",
+    "sendCustomCommand": "发送自定义命令 %1",
+
+    // 积木文本 - 动作
     "setMotorAngle": "设置马达 %1 角度为 %2",
     "getServoAngle": "获取舵机 %1 的角度",
     "getAllServoAngles": "获取所有舵机角度",
     "directionAction": "运动方向 %1",
     "localAction": "原地动作 %1",
     "highDifficultyAction": "高难度特技动作(小心使用) %1",
+
+    // 积木文本 - 控制
+    "delayMs": "延时 %1 毫秒",
+
+    // 积木文本 - 传感器
     "gyroControl": "陀螺仪 %1",
-    
+
+    // 积木文本 - 控制台
+    "consoleLogVariable": "在控制台输出变量 %1",
+
     // 动作选项
     "forward": "前进",
     "backward": "后退",
@@ -64,15 +77,18 @@ const TRANSLATIONS = {
     "roll": "翻身",
     "jump": "跳跃",
     "rotate": "旋转",
-    
+
     // 传感器选项
     "ultrasonic": "超声波",
     "touch": "触摸",
     "distance": "距离",
+    "light": "光线",
+    "temperature": "温度",
+    "humidity": "湿度",
     "gyroEnable": "启用",
     "gyroDisable": "禁用"
   },
-  
+
   en: {
     // Buttons and titles
     "showCode": "Show Code",
@@ -107,19 +123,32 @@ const TRANSLATIONS = {
     "categoryControl": "Control",
     "categoryConsole": "Console",
 
-    // Block text
+    // Block text - Communication
     "connectWithIP": "Connect with IP %1",
     "getDigitalInput": "Get Digital Input %1",
     "getAnalogInput": "Get Analog Input %1",
-    "getSensor": "Get Sensor %1",
+    "getSensorInput": "Get Sensor %1",
+    "setDigitalOutput": "Set Digital Output Pin %1 State %2",
+    "setAnalogOutput": "Set Analog Output Pin %1 Value %2",
+    "sendCustomCommand": "Send Custom Command %1",
+
+    // Block text - Motion
     "setMotorAngle": "Set Motor %1 Angle to %2",
     "getServoAngle": "Get Servo %1 Angle",
     "getAllServoAngles": "Get All Servo Angles",
     "directionAction": "Move Direction %1",
     "localAction": "Static Action %1",
     "highDifficultyAction": "High Difficulty Action (Use with Caution) %1",
+
+    // Block text - Control
+    "delayMs": "Delay %1 milliseconds",
+
+    // Block text - Sensors
     "gyroControl": "Gyroscope %1",
-    
+
+    // Block text - Console
+    "consoleLogVariable": "Log variable to console %1",
+
     // Action options
     "forward": "Forward",
     "backward": "Backward",
@@ -138,42 +167,53 @@ const TRANSLATIONS = {
     "roll": "Roll",
     "jump": "Jump",
     "rotate": "Rotate",
-    
+
     // Sensor options
     "ultrasonic": "Ultrasonic",
     "touch": "Touch",
     "distance": "Distance",
+    "light": "Light",
+    "temperature": "Temperature",
+    "humidity": "Humidity",
     "gyroEnable": "Enable",
     "gyroDisable": "Disable"
   }
 };
 
-let currentLang = 'zh'; // 默认语言
+let currentLang = 'en'; // 默认语言
 
-function setLanguage(lang) {
+function setLanguage(lang)
+{
   currentLang = lang;
   updateBlocklyTranslations();
   updateUITranslations();
 }
 
-function getText(key) {
+function getText(key)
+{
   return TRANSLATIONS[currentLang][key] || key;
 }
 
-function updateBlocklyTranslations() {
+function updateBlocklyTranslations()
+{
   // 更新所有积木的文本
-  workspace.getAllBlocks().forEach(block => {
+  workspace.getAllBlocks().forEach(block =>
+  {
     block.render();
   });
 }
 
-function updateUITranslations() {
+function updateUITranslations()
+{
   // 更新UI元素的文本
-  document.querySelectorAll('[data-i18n]').forEach(element => {
+  document.querySelectorAll('[data-i18n]').forEach(element =>
+  {
     const key = element.getAttribute('data-i18n');
-    if (element.tagName === 'INPUT' && element.type === 'placeholder') {
+    if (element.tagName === 'INPUT' && element.type === 'placeholder')
+    {
       element.placeholder = getText(key);
-    } else {
+    } else
+    {
       element.textContent = getText(key);
     }
   });
