@@ -265,6 +265,80 @@
       background: rgba(0, 0, 0, 0.5);
       z-index: 999;
     }
+
+    .blocklyZoom>image,
+    .blocklyZoom>svg>image {
+      opacity: 0.4;
+    }
+
+    .blocklyZoom>image:hover,
+    .blocklyZoom>svg>image:hover {
+      opacity: 0.6;
+    }
+
+    .blocklyZoom>image:active,
+    .blocklyZoom>svg>image:active {
+      opacity: 0.8;
+    }
+
+    /* 撤销重做按钮样式 */
+    .undoRedoControls {
+      position: fixed;
+      z-index: 1000;
+      overflow: visible;
+      display: flex;
+      flex-direction: column;
+      border-radius: 4px;
+    }
+
+    .undoRedoButton {
+      background-color: #fff;
+      border: 1px solid #ddd;
+      width: 31px;
+      height: 31px;
+      cursor: pointer;
+      border-radius: 4px;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .undoRedoButton img,
+    .undoRedoButton svg {
+      width: 18px;
+      height: 18px;
+      opacity: 0.4;
+    }
+
+    .undoRedoButton:hover {
+      background-color: #f1f1f1;
+    }
+
+    .undoRedoButton:hover img,
+    .undoRedoButton:hover svg {
+      opacity: 0.6;
+    }
+
+    .undoRedoButton:active {
+      background-color: #e0e0e0;
+    }
+
+    .undoRedoButton:active img,
+    .undoRedoButton:active svg {
+      opacity: 0.8;
+    }
+
+    .undoRedoButton[disabled] {
+      cursor: default;
+      background-color: #f8f8f8;
+    }
+
+    .undoRedoButton[disabled] img,
+    .undoRedoButton[disabled] svg {
+      opacity: 0.2;
+    }
   </style>
 </head>
 
@@ -1151,6 +1225,9 @@
         // 再次更新自定义积木
         updateCustomBlockDefinitions();
 
+        // 更新撤销和重做按钮状态
+        updateUndoRedoState();
+
         // 更新UI文本
         if (lang === 'zh')
         {
@@ -1261,7 +1338,13 @@
         {
           addDefaultConnectionBlock();
         }
+
+        // 更新撤销和重做按钮状态
+        updateUndoRedoState();
       });
+
+      // 添加撤销和重做按钮
+      addUndoRedoButtons();
     });
 
     // 窗口大小变化时调整Blockly工作区
@@ -1273,8 +1356,30 @@
         if (workspace)
         {
           Blockly.svgResize(workspace);
+
+          // 在调整工作区大小后重新定位撤销重做按钮
+          repositionUndoRedoButtons();
         }
       }, 0);
+    }
+
+    // 定位撤销重做按钮的函数
+    function repositionUndoRedoButtons()
+    {
+      const undoRedoControls = document.querySelector('.undoRedoControls');
+      if (!undoRedoControls) return;
+
+      // 获取放大缩小按钮容器
+      const zoomControls = document.querySelector('.blocklyZoom');
+
+      if (zoomControls)
+      {
+        const zoomRect = zoomControls.getBoundingClientRect();
+
+        // 将撤销重做按钮与缩放控件在同一条竖线上
+        undoRedoControls.style.right = (window.innerWidth - zoomRect.right) + 'px'; // 与放大缩小按钮右对齐
+        undoRedoControls.style.top = (zoomRect.top - 70) + 'px'; // 放在放大缩小按钮上方
+      }
     }
 
     // 添加默认的connect with IP积木块
@@ -1689,6 +1794,30 @@
         event.preventDefault();
         document.getElementById('loadInput').click();
       }
+      // 添加撤销快捷键(Ctrl+Z)
+      if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key.toLowerCase() === 'z')
+      {
+        event.preventDefault();
+        // 使用undoStack_属性检查是否可以撤销
+        if (workspace.undoStack_ && workspace.undoStack_.length > 0)
+        {
+          workspace.undo(false);
+          updateUndoRedoState();
+        }
+      }
+      // 添加重做快捷键(Ctrl+Y 或 Ctrl+Shift+Z)
+      if ((event.ctrlKey || event.metaKey) &&
+        ((event.key.toLowerCase() === 'y') ||
+          (event.shiftKey && event.key.toLowerCase() === 'z')))
+      {
+        event.preventDefault();
+        // 使用redoStack_属性检查是否可以重做
+        if (workspace.redoStack_ && workspace.redoStack_.length > 0)
+        {
+          workspace.undo(true);
+          updateUndoRedoState();
+        }
+      }
     });
 
     function addConsoleMessage(args)
@@ -1933,6 +2062,102 @@
         sendSerialData();
       }
     });
+
+    // 添加撤销和重做按钮
+    function addUndoRedoButtons()
+    {
+      // 检查是否已存在按钮，如果存在则移除
+      const existingControls = document.querySelector('.undoRedoControls');
+      if (existingControls)
+      {
+        existingControls.remove();
+      }
+
+      // 创建包含按钮的div
+      const undoRedoControls = document.createElement('div');
+      undoRedoControls.className = 'undoRedoControls';
+
+      // 创建撤销按钮
+      const undoButton = document.createElement('button');
+      undoButton.className = 'undoRedoButton';
+      undoButton.id = 'undoButton';
+      undoButton.title = currentLang === 'zh' ? '撤销' : 'Undo';
+      undoButton.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 14L4 9l5-5"/>
+          <path d="M4 9h13c2.5 0 4 2 4 4s-1.5 4-4 4H8"/>
+        </svg>
+      `;
+      undoButton.onclick = function ()
+      {
+        if (workspace.undoStack_ && workspace.undoStack_.length > 0)
+        {
+          workspace.undo(false);
+          updateUndoRedoState();
+        }
+      };
+
+      // 创建重做按钮
+      const redoButton = document.createElement('button');
+      redoButton.className = 'undoRedoButton';
+      redoButton.id = 'redoButton';
+      redoButton.title = currentLang === 'zh' ? '重做' : 'Redo';
+      redoButton.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 14l5-5-5-5"/>
+          <path d="M20 9H7c-2.5 0-4 2-4 4s1.5 4 4 4h9"/>
+        </svg>
+      `;
+      redoButton.onclick = function ()
+      {
+        if (workspace.redoStack_ && workspace.redoStack_.length > 0)
+        {
+          workspace.undo(true);
+          updateUndoRedoState();
+        }
+      };
+
+      // 将按钮添加到控件容器
+      undoRedoControls.appendChild(undoButton);
+      undoRedoControls.appendChild(redoButton);
+
+      // 将控件容器添加到body
+      document.body.appendChild(undoRedoControls);
+
+      // 确保按钮是可见的
+      undoRedoControls.style.display = 'flex';
+
+      // 尝试初次定位按钮
+      repositionUndoRedoButtons();
+
+      // 再尝试几次定位，确保即使DOM渲染有延迟也能正确显示
+      setTimeout(repositionUndoRedoButtons, 500);
+      setTimeout(repositionUndoRedoButtons, 1000);
+
+      // 初始化按钮状态
+      updateUndoRedoState();
+    }
+
+    // 更新撤销和重做按钮状态
+    function updateUndoRedoState()
+    {
+      const undoButton = document.getElementById('undoButton');
+      const redoButton = document.getElementById('redoButton');
+
+      if (undoButton && redoButton)
+      {
+        // 修复hasUndo和hasRedo方法调用，改用undoStack_和redoStack_属性判断
+        const canUndo = workspace.undoStack_ && workspace.undoStack_.length > 0;
+        const canRedo = workspace.redoStack_ && workspace.redoStack_.length > 0;
+
+        undoButton.disabled = !canUndo;
+        redoButton.disabled = !canRedo;
+
+        // 更新按钮标题语言
+        undoButton.title = currentLang === 'zh' ? '撤销' : 'Undo';
+        redoButton.title = currentLang === 'zh' ? '重做' : 'Redo';
+      }
+    }
   </script>
 </body>
 
