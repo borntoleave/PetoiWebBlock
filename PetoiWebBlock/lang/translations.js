@@ -29,6 +29,11 @@ const TRANSLATIONS = {
     "wifiCommandFailed": "发送WiFi命令失败",
     "connectedToDevice": "连接到设备: ",
 
+    // 命令消息
+    "sendingCommand": "发送命令: ",
+    "commandFailed": "命令执行失败:",
+    "httpError": "HTTP错误: ",
+
     // 积木分类
     "categoryLogic": "逻辑",
     "categoryLoops": "循环",
@@ -126,6 +131,11 @@ const TRANSLATIONS = {
     "wifiCommandError": "Error sending WiFi command:",
     "wifiCommandFailed": "Failed to send WiFi command",
     "connectedToDevice": "Connected to device: ",
+
+    // Command messages
+    "sendingCommand": "Sending command: ",
+    "commandFailed": "Command execution failed:",
+    "httpError": "HTTP error: ",
 
     // Block categories
     "categoryLogic": "Logic",

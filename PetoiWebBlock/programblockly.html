@@ -8,9 +8,8 @@
   <script src="./node_modules/blockly/blockly_compressed.js"></script>
   <script src="./node_modules/blockly/blocks_compressed.js"></script>
   <script src="./node_modules/blockly/javascript_compressed.js"></script>
-  <!-- 2. 加载语言文件 -->
-  <script src="./node_modules/blockly/msg/zh-hans.js"></script>
-  <!-- 移除英文语言文件，使用动态加载 -->
+  <!-- 2. 语言文件改为动态加载 -->
+  <!-- <script src="./node_modules/blockly/msg/zh-hans.js"></script> -->
   <!-- <script src="./node_modules/blockly/msg/en.js"></script> -->
   <!-- 3. 加载自定义翻译 -->
   <script src="./lang/translations.js"></script>
@@ -1232,9 +1231,8 @@
       // 保存当前工作区状态
       const workspaceState = saveCurrentWorkspace();
 
-      // 创建新的脚本元素
-      const script = document.createElement('script');
-      script.onload = function ()
+      // 加载相应语言文件
+      loadLanguageFile(lang, function ()
       {
         // 设置当前语言
         currentLang = lang;
@@ -1364,38 +1362,73 @@
           if (consoleTitle) consoleTitle.textContent = '控制台日志';
         } else
         {
-          // 主界面文本
-          document.querySelector('.title').textContent = 'Petoi Web Coding Blocks';
-          document.querySelector('button[onclick="showCode()"]').textContent = 'Show Code';
-          document.querySelector('button[onclick="runCode()"]').textContent = 'Run Code';
-          document.querySelector('button[onclick="saveWorkspace()"]').textContent = 'Save Program';
-          document.querySelector('button[onclick="document.getElementById(\'loadInput\').click()"]').textContent = 'Load Program';
-          document.querySelector('button[onclick="clearWorkspace()"]').textContent = 'Clear All';
-          document.querySelector('button[onclick="clearConsole()"]').textContent = 'Clear Log';
-
-          // 更新当前文件名显示
-          if (currentFile)
-          {
-            document.getElementById('currentFileName').textContent = `Current file: ${currentFile.name}`;
-          }
-
-          // 串口连接界面文本
-          document.querySelector('button[onclick="openSerialPort()"]').textContent = 'Connect Serial Port';
-          document.querySelector('button[onclick="quickConnect()"]').textContent = 'Quick Connect';
-          document.querySelector('button[onclick="closeSerialPort()"]').textContent = 'Close Connection';
-          document.querySelector('#serialInput').placeholder = 'Enter content to send';
-          document.querySelector('button[onclick="sendSerialData()"]').textContent = 'Send';
-          document.querySelector('button[onclick="clearSerialOutput()"]').textContent = 'Clear Display';
-
-          // 控制台标题
-          const consoleTitle = document.querySelector('#consoleWindow span');
-          if (consoleTitle) consoleTitle.textContent = 'Console Log';
+          // 使用updateUIText函数更新英文UI
+          updateUIText();
         }
 
         isChangingLanguage = false;
+      });
+    }
+
+    // 初始化时设置默认语言为英文
+    window.addEventListener('DOMContentLoaded', function ()
+    {
+      // 确保先动态加载英文语言文件，再进行其他初始化
+      loadLanguageFile('en', function ()
+      {
+        // 设置当前语言为英文
+        currentLang = 'en';
+
+        // 初始化自定义积木
+        updateCustomBlockDefinitions();
+
+        // 更新UI文本
+        updateUIText();
+
+        // 添加窗口大小变化事件监听器
+        window.addEventListener('resize', resizeBlocklyWorkspace);
+
+        // 初始调整工作区大小
+        resizeBlocklyWorkspace();
+
+        // 添加默认的connect with IP积木块
+        addDefaultConnectionBlock();
+
+        // 监听工作区变化事件
+        workspace.addChangeListener(function (event)
+        {
+          // 当工作区被清空时，添加默认积木块
+          if (event.type === Blockly.Events.FINISHED_LOADING ||
+            (event.type === Blockly.Events.DELETE && workspace.getAllBlocks().length === 0))
+          {
+            addDefaultConnectionBlock();
+          }
+
+          // 更新撤销和重做按钮状态
+          updateUndoRedoState();
+        });
+
+        // 添加撤销和重做按钮
+        addUndoRedoButtons();
+
+        // 更新按钮状态
+        document.getElementById('zhBtn').classList.toggle('active', false);
+        document.getElementById('enBtn').classList.toggle('active', true);
+      });
+    });
+
+    // 添加动态加载语言文件的辅助函数
+    function loadLanguageFile(lang, callback)
+    {
+      const script = document.createElement('script');
+      script.onload = function ()
+      {
+        if (typeof callback === 'function')
+        {
+          callback();
+        }
       };
 
-      // 加载相应语言文件
       if (lang === 'zh')
       {
         script.src = './node_modules/blockly/msg/zh-hans.js';
@@ -1404,53 +1437,35 @@
         script.src = './node_modules/blockly/msg/en.js';
       }
 
-      // 移除可能存在的旧语言脚本
-      const prevScript = document.querySelector('script[data-language-script]');
-      if (prevScript)
-      {
-        prevScript.remove();
-      }
-
       // 标记并添加新脚本
       script.setAttribute('data-language-script', 'true');
       document.head.appendChild(script);
     }
 
-    // 初始化时设置默认语言为英文
-    window.addEventListener('DOMContentLoaded', function ()
+    // 更新UI文本的辅助函数
+    function updateUIText()
     {
-      // 初始化默认语言为英文
-      setLanguage('en');
+      // 主界面文本
+      document.querySelector('.title').textContent = 'Petoi Web Coding Blocks';
+      document.querySelector('button[onclick="showCode()"]').textContent = 'Show Code';
+      document.querySelector('button[onclick="runCode()"]').textContent = 'Run Code';
+      document.querySelector('button[onclick="saveWorkspace()"]').textContent = 'Save Program';
+      document.querySelector('button[onclick="document.getElementById(\'loadInput\').click()"]').textContent = 'Load Program';
+      document.querySelector('button[onclick="clearWorkspace()"]').textContent = 'Clear All';
+      document.querySelector('button[onclick="clearConsole()"]').textContent = 'Clear Log';
 
-      // 初始化自定义积木
-      updateCustomBlockDefinitions();
+      // 串口连接界面文本
+      document.querySelector('button[onclick="openSerialPort()"]').textContent = 'Connect Serial Port';
+      document.querySelector('button[onclick="quickConnect()"]').textContent = 'Quick Connect';
+      document.querySelector('button[onclick="closeSerialPort()"]').textContent = 'Close Connection';
+      document.querySelector('#serialInput').placeholder = 'Enter content to send';
+      document.querySelector('button[onclick="sendSerialData()"]').textContent = 'Send';
+      document.querySelector('button[onclick="clearSerialOutput()"]').textContent = 'Clear Display';
 
-      // 添加窗口大小变化事件监听器
-      window.addEventListener('resize', resizeBlocklyWorkspace);
-
-      // 初始调整工作区大小
-      resizeBlocklyWorkspace();
-
-      // 添加默认的connect with IP积木块
-      addDefaultConnectionBlock();
-
-      // 监听工作区变化事件
-      workspace.addChangeListener(function (event)
-      {
-        // 当工作区被清空时，添加默认积木块
-        if (event.type === Blockly.Events.FINISHED_LOADING ||
-          (event.type === Blockly.Events.DELETE && workspace.getAllBlocks().length === 0))
-        {
-          addDefaultConnectionBlock();
-        }
-
-        // 更新撤销和重做按钮状态
-        updateUndoRedoState();
-      });
-
-      // 添加撤销和重做按钮
-      addUndoRedoButtons();
-    });
+      // 控制台标题
+      const consoleTitle = document.querySelector('#consoleWindow span');
+      if (consoleTitle) consoleTitle.textContent = 'Console Log';
+    }
 
     // 窗口大小变化时调整Blockly工作区
     function resizeBlocklyWorkspace()
@@ -1668,7 +1683,7 @@
 
         // HTTP请求函数 - 发送命令到设备 (同步版本)
         function httpRequest(ip, command, returnResult = false) {
-          console.log("发送命令: " + command);
+          console.log(getText("sendingCommand") + command);
           const url = \`http://\${ip}/?cmd=\${encodeURIComponent(command)}\`;
           
           try {
@@ -1700,10 +1715,10 @@
               }
               return true;
             } else {
-              throw new Error(\`HTTP错误: \${xhr.status}\`);
+              throw new Error(\`${getText("httpError")}\${xhr.status}\`);
             }
           } catch (error) {
-            console.error("命令执行失败:", error.message);
+            console.error(getText("commandFailed"), error.message);
             if (returnResult) {
               return "";
             }
