@@ -89,17 +89,21 @@
     .workspace-container {
       display: flex;
       gap: 20px;
+      height: calc(100vh - 150px);
+      /* 使用视口高度计算容器高度 */
     }
 
     #blocklyDiv {
       width: 70%;
-      height: 800px;
+      height: 100%;
+      /* 使用100%高度填充父容器 */
       border: 1px solid #ccc;
     }
 
     .windows-container {
       width: 30%;
-      height: 800px;
+      height: 100%;
+      /* 使用100%高度填充父容器 */
       display: flex;
       flex-direction: column;
     }
@@ -1223,7 +1227,26 @@
 
       // 初始化自定义积木
       updateCustomBlockDefinitions();
+
+      // 添加窗口大小变化事件监听器
+      window.addEventListener('resize', resizeBlocklyWorkspace);
+
+      // 初始调整工作区大小
+      resizeBlocklyWorkspace();
     });
+
+    // 窗口大小变化时调整Blockly工作区
+    function resizeBlocklyWorkspace()
+    {
+      // 在下一个事件循环中执行，确保DOM已更新
+      setTimeout(function ()
+      {
+        if (workspace)
+        {
+          Blockly.svgResize(workspace);
+        }
+      }, 0);
+    }
 
     function showCode()
     {
