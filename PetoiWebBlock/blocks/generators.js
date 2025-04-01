@@ -35,7 +35,7 @@ Blockly.JavaScript.forBlock['set_motor_angle'] = function (block)
 Blockly.JavaScript.forBlock['get_servo_angle'] = function (block)
 {
   const servoId = block.getFieldValue('SERVO');
-  return [`(function() { var _temp = httpRequest(deviceIP, "m ${servoId} ?", true); return parseInt(_temp) || 0; })()`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
+  return [`parseInt(httpRequest(deviceIP, "m ${servoId} ?", true)) || 0`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
 };
 
 // 代码生成:获取所有舵机角度的代码生成器
@@ -78,21 +78,21 @@ Blockly.JavaScript.forBlock['make_connection'] = function (block)
 Blockly.JavaScript.forBlock['get_digital_input'] = function (block)
 {
   const pin = block.getFieldValue('PIN');
-  return [`(function() { var _temp = httpRequest(deviceIP, "Rd" + String.fromCharCode(${pin}) + "\\n", true); return parseInt(_temp) || 0; })()`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
+  return [`parseInt(httpRequest(deviceIP, "Rd" + String.fromCharCode(${pin}) + "\\n", true)) || 0`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
 };
 
 // 代码生成:获取模拟输入代码生成器
 Blockly.JavaScript.forBlock['get_analog_input'] = function (block)
 {
   const pin = block.getFieldValue('PIN');
-  return [`(function() { var _temp = httpRequest(deviceIP, "Ra" + String.fromCharCode(${pin}) + "\\n", true); return parseInt(_temp) || 0; })()`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
+  return [`parseInt(httpRequest(deviceIP, "Ra" + String.fromCharCode(${pin}) + "\\n", true)) || 0`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
 };
 
 // 代码生成:获取传感器输入代码生成器
 Blockly.JavaScript.forBlock['get_sensor_input'] = function (block)
 {
   const sensor = block.getFieldValue('SENSOR');
-  return [`(function() { var _temp = httpRequest(deviceIP, "i ${sensor}", true); return parseInt(_temp) || 0; })()`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
+  return [`parseInt(httpRequest(deviceIP, "i ${sensor}", true)) || 0`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
 };
 
 // 代码生成:设置数字输出代码生成器
