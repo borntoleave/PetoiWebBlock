@@ -5,21 +5,21 @@
 // 代码生成:发送方向动作命令
 Blockly.JavaScript.forBlock['direction_action'] = function (block)
 {
-  const code = block.getFieldValue('ACTION');
+  const code = block.getFieldValue('COMMAND');
   return `httpRequest(deviceIP, "${code}");\n`;
 };
 
 // 代码生成:发送原地动作命令
 Blockly.JavaScript.forBlock['local_action'] = function (block)
 {
-  const code = block.getFieldValue('ACTION');
+  const code = block.getFieldValue('COMMAND');
   return `httpRequest(deviceIP, "${code}");\n`;
 };
 
 // 代码生成:发送高难度特技动作命令
 Blockly.JavaScript.forBlock['high_difficulty_action'] = function (block)
 {
-  const code = block.getFieldValue('ACTION');
+  const code = block.getFieldValue('COMMAND');
   return `httpRequest(deviceIP, "${code}");\n`;
 };
 
@@ -31,21 +31,21 @@ Blockly.JavaScript.forBlock['set_motor_angle'] = function (block)
   return `httpRequest(deviceIP, "m ${motorId} " + Math.min(125, Math.max(-125, ${angle})));\n`;
 };
 
-// 代码生成:获取舵机角度的代码生成器
-Blockly.JavaScript.forBlock['get_servo_angle'] = function (block)
+// 代码生成:获取关节角度的代码生成器
+Blockly.JavaScript.forBlock['get_joint_angle'] = function (block)
 {
-  const servoId = block.getFieldValue('SERVO');
-  return [`parseInt(httpRequest(deviceIP, "m ${servoId} ?", true)) || 0`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
+  const jointId = block.getFieldValue('JOINT');
+  return [`parseInt(httpRequest(deviceIP, "m ${jointId} ?", true)) || 0`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
 };
 
-// 代码生成:获取所有舵机角度的代码生成器
-Blockly.JavaScript.forBlock['get_all_servo_angles'] = function (block)
+// 代码生成:获取所有关节角度的代码生成器
+Blockly.JavaScript.forBlock['get_all_joint_angles'] = function (block)
 {
   const code = `
     (function() {
       let angles = {};
       for(let i = 0; i <= 11; i++) {
-        angles["servo" + i] = parseInt(httpRequest(deviceIP, "m " + i + " ?", true)) || 0;
+        angles["joint" + i] = parseInt(httpRequest(deviceIP, "m " + i + " ?", true)) || 0;
       }
       return JSON.stringify(angles);
     })()
@@ -71,7 +71,7 @@ Blockly.JavaScript.forBlock['gyro_control'] = function (block)
 Blockly.JavaScript.forBlock['make_connection'] = function (block)
 {
   const ip = block.getFieldValue('IP_ADDRESS');
-  return `deviceIP = "${ip}";\nconsole.log("连接到设备: " + deviceIP);\n`;
+  return `deviceIP = "${ip}";\nconsole.log(getText("connectedToDevice") + deviceIP);\n`;
 };
 
 // 代码生成:获取数字输入代码生成器

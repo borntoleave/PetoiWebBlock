@@ -514,8 +514,8 @@
             { kind: 'block', type: 'local_action' },
             { kind: 'block', type: 'high_difficulty_action' },
             { kind: 'block', type: 'set_motor_angle' },
-            { kind: 'block', type: 'get_servo_angle' },
-            { kind: 'block', type: 'get_all_servo_angles' }
+            { kind: 'block', type: 'get_joint_angle' },
+            { kind: 'block', type: 'get_all_joint_angles' }
           ]
         },
         {
@@ -591,6 +591,156 @@
     // 更新自定义积木的定义
     function updateCustomBlockDefinitions()
     {
+      // 更新所有工作区中的积木
+      if (workspace)
+      {
+        // 使用根块优先的方式处理
+        // 1. 首先找出所有没有父块的根积木
+        const rootBlocks = workspace.getTopBlocks(true);
+
+        // 2. 递归处理每个根积木及其子积木
+        rootBlocks.forEach(rootBlock =>
+        {
+          updateBlockAndChildren(rootBlock);
+        });
+      }
+
+      // 定义递归更新块和其子块的函数
+      function updateBlockAndChildren(block)
+      {
+        if (block.type === 'make_connection' ||
+          block.type === 'get_digital_input' ||
+          block.type === 'get_analog_input' ||
+          block.type === 'get_sensor_input' ||
+          block.type === 'set_digital_output' ||
+          block.type === 'set_analog_output' ||
+          block.type === 'send_custom_command' ||
+          block.type === 'delay_ms' ||
+          block.type === 'local_action' ||
+          block.type === 'direction_action' ||
+          block.type === 'high_difficulty_action' ||
+          block.type === 'set_motor_angle' ||
+          block.type === 'get_joint_angle' ||
+          block.type === 'get_all_joint_angles' ||
+          block.type === 'gyro_control' ||
+          block.type === 'console_log_variable')
+        {
+          // 保存原有字段值
+          const fieldValues = {};
+          for (let i = 0; i < block.inputList.length; i++)
+          {
+            const input = block.inputList[i];
+            for (let j = 0; j < input.fieldRow.length; j++)
+            {
+              const field = input.fieldRow[j];
+              if (field.name)
+              {
+                fieldValues[field.name] = field.getValue();
+              }
+            }
+          }
+
+          // 保存位置信息
+          const position = block.getRelativeToSurfaceXY();
+
+          // 保存连接信息 - 包括所有输入连接
+          const savedConnections = [];
+
+          // 保存下一个块的连接
+          if (block.nextConnection && block.nextConnection.isConnected())
+          {
+            savedConnections.push({
+              type: 'next',
+              connection: block.nextConnection.targetConnection
+            });
+          }
+
+          // 保存所有输入连接
+          for (let i = 0; i < block.inputList.length; i++)
+          {
+            const input = block.inputList[i];
+            if (input.connection && input.connection.isConnected())
+            {
+              savedConnections.push({
+                type: 'input',
+                name: input.name,
+                connection: input.connection.targetConnection
+              });
+            }
+          }
+
+          // 清空输入列表，避免积木元素堆叠
+          block.inputList = [];
+
+          // 重新初始化积木
+          const initFunc = Blockly.Blocks[block.type].init;
+          if (initFunc)
+          {
+            initFunc.call(block);
+
+            // 恢复字段值
+            for (const name in fieldValues)
+            {
+              const field = block.getField(name);
+              if (field)
+              {
+                field.setValue(fieldValues[name]);
+              }
+            }
+
+            // 恢复位置 - 只对根块有效
+            if (!block.getParent())
+            {
+              const newPosition = block.getRelativeToSurfaceXY();
+              block.moveBy(position.x - newPosition.x, position.y - newPosition.y);
+            }
+
+            // 重新渲染以确保视觉正确
+            block.initSvg();
+            block.render();
+          }
+
+          // 延迟恢复连接，确保所有块都已更新
+          setTimeout(() =>
+          {
+            // 恢复所有保存的连接
+            savedConnections.forEach(savedConn =>
+            {
+              if (savedConn.type === 'next')
+              {
+                if (block.nextConnection && savedConn.connection)
+                {
+                  block.nextConnection.connect(savedConn.connection);
+                }
+              } else if (savedConn.type === 'input')
+              {
+                const input = block.getInput(savedConn.name);
+                if (input && input.connection && savedConn.connection)
+                {
+                  input.connection.connect(savedConn.connection);
+                }
+              }
+            });
+          }, 0);
+        }
+
+        // 递归处理所有子块
+        if (block.nextConnection && block.nextConnection.targetBlock())
+        {
+          updateBlockAndChildren(block.nextConnection.targetBlock());
+        }
+
+        // 处理所有输入连接的子块
+        for (let i = 0; i < block.inputList.length; i++)
+        {
+          const input = block.inputList[i];
+          if (input.connection && input.connection.targetBlock())
+          {
+            updateBlockAndChildren(input.connection.targetBlock());
+          }
+        }
+      }
+
       // 通信积木
       if (Blockly.Blocks['make_connection'])
       {
@@ -811,7 +961,7 @@
             "args0": [
               {
                 "type": "field_dropdown",
-                "name": "ACTION",
+                "name": "COMMAND",
                 "options": [
                   [getText("forward"), "kwkF"],
                   [getText("backward"), "kbkF"],
@@ -844,7 +994,7 @@
             "args0": [
               {
                 "type": "field_dropdown",
-                "name": "ACTION",
+                "name": "COMMAND",
                 "options": [
                   [getText("stand"), "kup"],
                   [getText("sit"), "ksit"],
@@ -872,7 +1022,7 @@
             "args0": [
               {
                 "type": "field_dropdown",
-                "name": "ACTION",
+                "name": "COMMAND",
                 "options": [
                   [getText("jump"), "kjmp"],
                   [getText("backflip"), "kbkF"],
@@ -919,9 +1069,9 @@
               {
                 "type": "field_number",
                 "name": "ANGLE",
-                "value": 90,
-                "min": 0,
-                "max": 180
+                "value": 0,
+                "min": -125,
+                "max": 125
               }
             ],
             "previousStatement": null,
@@ -933,17 +1083,17 @@
       }
 
       // 获取舵机角度积木
-      if (Blockly.Blocks['get_servo_angle'])
+      if (Blockly.Blocks['get_joint_angle'])
       {
-        Blockly.Blocks['get_servo_angle'].init = function ()
+        Blockly.Blocks['get_joint_angle'].init = function ()
         {
           this.jsonInit({
-            "type": "get_servo_angle",
-            "message0": getText("getServoAngle"),
+            "type": "get_joint_angle",
+            "message0": getText("getJointAngle"),
             "args0": [
               {
                 "type": "field_dropdown",
-                "name": "SERVO",
+                "name": "JOINT",
                 "options": [
                   ["0", "0"],
                   ["1", "1"],
@@ -969,13 +1119,13 @@
       }
 
       // 获取所有舵机角度积木
-      if (Blockly.Blocks['get_all_servo_angles'])
+      if (Blockly.Blocks['get_all_joint_angles'])
       {
-        Blockly.Blocks['get_all_servo_angles'].init = function ()
+        Blockly.Blocks['get_all_joint_angles'].init = function ()
         {
           this.jsonInit({
-            "type": "get_all_servo_angles",
-            "message0": getText("getAllServoAngles"),
+            "type": "get_all_joint_angles",
+            "message0": getText("getAllJointAngles"),
             "output": true,
             "outputType": "Array",
             "colour": '#4361EE', // 动作积木：蓝色
@@ -1054,64 +1204,6 @@
             "tooltip": ""
           });
         };
-      }
-
-      // 更新所有工作区中的积木
-      if (workspace)
-      {
-        workspace.getAllBlocks().forEach(block =>
-        {
-          if (block.type === 'make_connection' ||
-            block.type === 'get_digital_input' ||
-            block.type === 'get_analog_input' ||
-            block.type === 'get_sensor_input' ||
-            block.type === 'set_digital_output' ||
-            block.type === 'set_analog_output' ||
-            block.type === 'send_custom_command' ||
-            block.type === 'direction_action' ||
-            block.type === 'local_action' ||
-            block.type === 'high_difficulty_action' ||
-            block.type === 'set_motor_angle' ||
-            block.type === 'get_servo_angle' ||
-            block.type === 'get_all_servo_angles' ||
-            block.type === 'delay_ms' ||
-            block.type === 'gyro_control' ||
-            block.type === 'console_log_variable')
-          {
-            // 重新初始化积木
-            const initFunc = Blockly.Blocks[block.type].init;
-            if (initFunc)
-            {
-              // 保存原有字段值
-              const fieldValues = {};
-              for (let i = 0; i < block.inputList.length; i++)
-              {
-                const input = block.inputList[i];
-                for (let j = 0; j < input.fieldRow.length; j++)
-                {
-                  const field = input.fieldRow[j];
-                  if (field.name)
-                  {
-                    fieldValues[field.name] = field.getValue();
-                  }
-                }
-              }
-
-              // 重新初始化
-              block.init();
-
-              // 恢复字段值
-              for (const name in fieldValues)
-              {
-                const field = block.getField(name);
-                if (field)
-                {
-                  field.setValue(fieldValues[name]);
-                }
-              }
-            }
-          }
-        });
       }
     }
 
@@ -1227,6 +1319,19 @@
 
         // 更新撤销和重做按钮状态
         updateUndoRedoState();
+
+        // 更新IP显示文本
+        const ipDisplay = document.getElementById('ipDisplay');
+        if (ipDisplay && ipDisplay.textContent.trim() !== '')
+        {
+          // 从当前文本中提取IP地址
+          const ipMatch = ipDisplay.textContent.match(/[0-9.]+$/);
+          if (ipMatch)
+          {
+            const ip = ipMatch[0];
+            ipDisplay.textContent = `${getText("serialConfiguredIP")}${ip}`;
+          }
+        }
 
         // 更新UI文本
         if (lang === 'zh')
@@ -1604,7 +1709,7 @@
             }
             return false;
           }
-        }
+          }
         `;
 
       // 将普通的console.log替换为使用asyncLog的形式
@@ -1950,7 +2055,7 @@
 
       } catch (error)
       {
-        console.error('串口连接错误:', error);
+        console.error(getText("serialConnectionError"), error);
       }
     }
 
@@ -1995,12 +2100,12 @@
       const dialog = document.createElement('div');
       dialog.className = 'wifi-dialog';
       dialog.innerHTML = `
-          <h3>WiFi配置</h3>
-          <input type="text" id="ssidInput" placeholder="请输入WiFi名称(SSID)">
-          <input type="password" id="passwordInput" placeholder="请输入WiFi密码">
+          <h3>${getText("wifiConfig")}</h3>
+          <input type="text" id="ssidInput" placeholder="${getText("ssidPlaceholder")}">
+          <input type="password" id="passwordInput" placeholder="${getText("passwordPlaceholder")}">
           <div class="button-container">
-            <button class="cancel" onclick="closeWifiDialog()">取消</button>
-            <button class="confirm" onclick="confirmWifiSettings()">确定</button>
+            <button class="cancel" onclick="closeWifiDialog()">${getText("cancel")}</button>
+            <button class="confirm" onclick="confirmWifiSettings()">${getText("confirm")}</button>
           </div>
         `;
       document.body.appendChild(dialog);
@@ -2021,7 +2126,7 @@
 
       if (!ssid)
       {
-        alert('请输入WiFi名称');
+        alert(getText("enterWifiName"));
         return;
       }
 
@@ -2033,8 +2138,8 @@
         closeWifiDialog();
       } catch (error)
       {
-        console.error('发送WiFi命令错误:', error);
-        alert('发送WiFi命令失败');
+        console.error(getText("wifiCommandError"), error);
+        alert(getText("wifiCommandFailed"));
       }
     }
 
@@ -2061,7 +2166,7 @@
           if (ipMatch)
           {
             const ip = ipMatch[1];
-            document.getElementById('ipDisplay').textContent = `串口配置IP：${ip}`;
+            document.getElementById('ipDisplay').textContent = `${getText("serialConfiguredIP")}${ip}`;
             serialBuffer = '';  // 清空缓冲区
           }
 
@@ -2072,7 +2177,7 @@
         }
       } catch (error)
       {
-        console.error('读取串口数据错误:', error);
+        console.error(getText("serialReadError"), error);
       }
     }
 
@@ -2089,7 +2194,7 @@
         input.value = '';
       } catch (error)
       {
-        console.error('发送数据错误:', error);
+        console.error(getText("serialSendError"), error);
       }
     }
 

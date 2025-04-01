@@ -136,15 +136,15 @@ javascript.javascriptGenerator.forBlock['set_motor_angle'] = function (block)
 };
 
 
-// 定义获取舵机角度积木块
+// 定义获取关节角度积木块
 Blockly.defineBlocksWithJsonArray([
   {
-    type: 'get_servo_angle',
-    message0: "获取舵机 %1 的角度",
+    type: 'get_joint_angle',
+    message0: "获取关节 %1 的角度",
     args0: [
       {
         type: "field_dropdown",
-        name: "SERVO",
+        name: "JOINT",
         options: [
           ["0", "0"],
           ["1", "1"],
@@ -163,39 +163,39 @@ Blockly.defineBlocksWithJsonArray([
     ],
     output: "Number",
     colour: 230,
-    tooltip: "获取指定舵机的当前角度值",
+    tooltip: "获取指定关节的当前角度值",
     helpUrl: ""
   }
 ]);
 
-// 代码生成:获取舵机角度的代码生成器
-javascript.javascriptGenerator.forBlock['get_servo_angle'] = function (block)
+// 代码生成:获取关节角度的代码生成器
+javascript.javascriptGenerator.forBlock['get_joint_angle'] = function (block)
 {
-  const servoId = block.getFieldValue('SERVO');
-  return [`parseInt(httpRequest(deviceIP, "m ${servoId} ?", true)) || 0`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
+  const jointId = block.getFieldValue('JOINT');
+  return [`parseInt(httpRequest(deviceIP, "m ${jointId} ?", true)) || 0`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
 };
 
 
-// 定义获取所有舵机角度积木块
+// 定义获取所有关节角度积木块
 Blockly.defineBlocksWithJsonArray([
   {
-    type: 'get_all_servo_angles',
-    message0: "获取所有舵机角度",
+    type: 'get_all_joint_angles',
+    message0: "获取所有关节角度",
     output: "String",  // 改为返回字符串类型（JSON字符串）
     colour: 230,
-    tooltip: "获取所有舵机(1-16号)的当前角度值，返回JSON格式",
+    tooltip: "获取所有关节(1-16号)的当前角度值，返回JSON格式",
     helpUrl: ""
   }
 ]);
 
-// 代码生成:获取所有舵机角度的代码生成器
-javascript.javascriptGenerator.forBlock['get_all_servo_angles'] = function (block)
+// 代码生成:获取所有关节角度的代码生成器
+javascript.javascriptGenerator.forBlock['get_all_joint_angles'] = function (block)
 {
   const code = `
     (function() {
       let angles = {};
       for(let i = 1; i <= 16; i++) {
-        angles["servo" + i] = parseInt(httpRequest(deviceIP, "m " + i + " ?", true)) || 0;
+        angles["joint" + i] = parseInt(httpRequest(deviceIP, "m " + i + " ?", true)) || 0;
       }
       return JSON.stringify(angles);
     })()
