@@ -19,6 +19,7 @@
   <script src="./blocks/control.js"></script>
   <script src="./blocks/sensor.js"></script>
   <script src="./blocks/motion.js"></script>
+  <script src="./blocks/generators.js"></script>
 
   <style>
     body {
@@ -281,7 +282,9 @@
       <button onclick="runCode()">Run Code</button>
       <button onclick="saveWorkspace()">Save Program</button>
       <button onclick="document.getElementById('loadInput').click()">Load Program</button>
+      <button onclick="clearWorkspace()">Clear All</button>
       <input type="file" id="loadInput" accept=".json" onchange="loadWorkspace(this.files[0])">
+      <span id="currentFileName" style="margin-left: 10px; color: #555; font-style: italic;"></span>
       <span id="ipDisplay" style="margin-left: 10px; color: #007bff;"></span>
     </div>
 
@@ -836,8 +839,7 @@
                   ["8", "8"],
                   ["9", "9"],
                   ["10", "10"],
-                  ["11", "11"],
-                  ["12", "12"]
+                  ["11", "11"]
                 ]
               },
               {
@@ -880,8 +882,7 @@
                   ["8", "8"],
                   ["9", "9"],
                   ["10", "10"],
-                  ["11", "11"],
-                  ["12", "12"]
+                  ["11", "11"]
                 ]
               }
             ],
@@ -1159,7 +1160,14 @@
           document.querySelector('button[onclick="runCode()"]').textContent = '运行代码';
           document.querySelector('button[onclick="saveWorkspace()"]').textContent = '保存程序';
           document.querySelector('button[onclick="document.getElementById(\'loadInput\').click()"]').textContent = '载入程序';
+          document.querySelector('button[onclick="clearWorkspace()"]').textContent = '清空全部';
           document.querySelector('button[onclick="clearConsole()"]').textContent = '清除日志';
+
+          // 更新当前文件名显示
+          if (currentFile)
+          {
+            document.getElementById('currentFileName').textContent = `当前文件: ${currentFile.name}`;
+          }
 
           // 串口连接界面文本
           document.querySelector('button[onclick="openSerialPort()"]').textContent = '使用串口有线连接';
@@ -1180,7 +1188,14 @@
           document.querySelector('button[onclick="runCode()"]').textContent = 'Run Code';
           document.querySelector('button[onclick="saveWorkspace()"]').textContent = 'Save Program';
           document.querySelector('button[onclick="document.getElementById(\'loadInput\').click()"]').textContent = 'Load Program';
+          document.querySelector('button[onclick="clearWorkspace()"]').textContent = 'Clear All';
           document.querySelector('button[onclick="clearConsole()"]').textContent = 'Clear Log';
+
+          // 更新当前文件名显示
+          if (currentFile)
+          {
+            document.getElementById('currentFileName').textContent = `Current file: ${currentFile.name}`;
+          }
 
           // 串口连接界面文本
           document.querySelector('button[onclick="openSerialPort()"]').textContent = 'Connect Serial Port';
@@ -1233,6 +1248,20 @@
 
       // 初始调整工作区大小
       resizeBlocklyWorkspace();
+
+      // 添加默认的connect with IP积木块
+      addDefaultConnectionBlock();
+
+      // 监听工作区变化事件
+      workspace.addChangeListener(function (event)
+      {
+        // 当工作区被清空时，添加默认积木块
+        if (event.type === Blockly.Events.FINISHED_LOADING ||
+          (event.type === Blockly.Events.DELETE && workspace.getAllBlocks().length === 0))
+        {
+          addDefaultConnectionBlock();
+        }
+      });
     });
 
     // 窗口大小变化时调整Blockly工作区
@@ -1246,6 +1275,33 @@
           Blockly.svgResize(workspace);
         }
       }, 0);
+    }
+
+    // 添加默认的connect with IP积木块
+    function addDefaultConnectionBlock()
+    {
+      // 只有当工作区为空时才添加默认积木
+      if (workspace.getAllBlocks().length === 0)
+      {
+        // 创建make_connection积木块
+        var connectionBlock = workspace.newBlock('make_connection');
+        // 设置默认IP地址
+        connectionBlock.setFieldValue('192.168.4.1', 'IP_ADDRESS');
+        // 初始化积木块(确保所有连接点正确设置)
+        connectionBlock.initSvg();
+        // 渲染积木块
+        connectionBlock.render();
+        // 将积木块移动到合适的位置
+        connectionBlock.moveBy(50, 50);
+      }
+    }
+
+    // 添加清空工作区的函数
+    function clearWorkspace()
+    {
+      workspace.clear();
+      // 清空后自动添加默认连接积木
+      addDefaultConnectionBlock();
     }
 
     function showCode()
@@ -1418,12 +1474,175 @@
 
     function saveWorkspace()
     {
+      // 显示保存对话框，提供保存和另存为选项
+      promptSaveOptions();
+    }
+
+    function promptSaveOptions()
+    {
+      // 创建蒙版背景
+      var overlay = document.createElement('div');
+      overlay.className = 'overlay';
+
+      // 创建对话框
+      var dialog = document.createElement('div');
+      dialog.className = 'wifi-dialog';
+      dialog.style.maxWidth = '400px';
+
+      // 根据当前语言选择文本
+      const title = currentLang === 'zh' ? '保存程序' : 'Save Program';
+      let message = '';
+
+      if (currentFile)
+      {
+        message = currentLang === 'zh' ?
+          `当前文件: "${currentFile.name}"` :
+          `Current file: "${currentFile.name}"`;
+      } else
+      {
+        message = currentLang === 'zh' ?
+          '尚未保存文件' :
+          'No file saved yet';
+      }
+
+      const saveText = currentLang === 'zh' ? '保存' : 'Save';
+      const saveAsText = currentLang === 'zh' ? '另存为' : 'Save As';
+      const cancelText = currentLang === 'zh' ? '取消' : 'Cancel';
+
+      const warningText = currentLang === 'zh' ?
+        '注意：如果下载文件夹中已有同名文件，浏览器会自动添加数字后缀。' :
+        'Note: If a file with the same name exists, the browser will add a number suffix.';
+
+      dialog.innerHTML = `
+        <h3>${title}</h3>
+        <p>${message}</p>
+        <p style="color: #999; font-size: 12px;">${warningText}</p>
+        <div style="text-align: center; margin: 20px 0;">
+          ${currentFile ?
+          `<button onclick="saveFile('${currentFile.name}'); closeSaveOptionsDialog();" class="confirm" style="margin-right: 10px;">
+              ${saveText}
+            </button>` : ''}
+          <button onclick="saveFileWithPrompt(); closeSaveOptionsDialog();" class="confirm" style="margin-right: 10px;">
+            ${saveAsText}
+          </button>
+          <button onclick="closeSaveOptionsDialog()" class="cancel">
+            ${cancelText}
+          </button>
+        </div>
+      `;
+
+      document.body.appendChild(overlay);
+      document.body.appendChild(dialog);
+    }
+
+    function closeSaveOptionsDialog()
+    {
+      const dialog = document.querySelector('.wifi-dialog');
+      const overlay = document.querySelector('.overlay');
+      if (dialog) dialog.remove();
+      if (overlay) overlay.remove();
+    }
+
+    function saveFile(filename)
+    {
       var json = Blockly.serialization.workspaces.save(workspace);
       var blob = new Blob([JSON.stringify(json, null, 2)], { type: 'application/json' });
+
       var a = document.createElement('a');
-      a.download = 'program.json';
+      a.download = filename;
       a.href = URL.createObjectURL(blob);
       a.click();
+
+      // 显示保存成功消息
+      showSaveSuccessDialog(filename);
+    }
+
+    function saveFileWithPrompt()
+    {
+      // 显示默认文件名
+      let defaultName = 'program.json';
+      if (currentFile)
+      {
+        defaultName = currentFile.name;
+      }
+
+      // 提示用户输入文件名
+      const fileName = prompt(
+        currentLang === 'zh' ? '请输入文件名:' : 'Enter file name:',
+        defaultName
+      );
+
+      if (fileName)
+      {
+        // 添加.json扩展名（如果用户没有输入）
+        let finalName = fileName;
+        if (!finalName.toLowerCase().endsWith('.json'))
+        {
+          finalName += '.json';
+        }
+
+        // 保存文件
+        saveFile(finalName);
+
+        // 更新当前文件名
+        currentFile = {
+          name: finalName,
+          lastModified: new Date().getTime()
+        };
+
+        // 更新显示的文件名
+        const fileNameText = currentLang === 'zh' ?
+          `当前文件: ${finalName}` :
+          `Current file: ${finalName}`;
+
+        document.getElementById('currentFileName').textContent = fileNameText;
+      }
+    }
+
+    function showSaveSuccessDialog(fileName)
+    {
+      // 创建蒙版背景
+      var overlay = document.createElement('div');
+      overlay.className = 'overlay';
+
+      // 创建对话框
+      var dialog = document.createElement('div');
+      dialog.className = 'wifi-dialog';
+      dialog.style.maxWidth = '450px';
+
+      // 根据当前语言选择文本
+      const title = currentLang === 'zh' ? '保存成功' : 'Save Successful';
+      const message = currentLang === 'zh' ?
+        `文件已保存到您的"下载"文件夹。` :
+        `File has been saved to your Downloads folder.`;
+
+      const fileNameNote = currentLang === 'zh' ?
+        `文件名: "${fileName}" (如下载文件夹中已有同名文件，浏览器可能自动添加数字后缀)` :
+        `Filename: "${fileName}" (If a file with the same name exists, the browser may add a number suffix)`;
+
+      const closeText = currentLang === 'zh' ? '关闭' : 'Close';
+
+      dialog.innerHTML = `
+        <h3 style="color: #4CAF50;">${title}</h3>
+        <p>${message}</p>
+        <p style="margin-top: 10px; font-size: 14px;">${fileNameNote}</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <button onclick="closeSuccessDialog()" class="confirm">
+            ${closeText}
+          </button>
+        </div>
+      `;
+
+      document.body.appendChild(overlay);
+      document.body.appendChild(dialog);
+    }
+
+    function closeSuccessDialog()
+    {
+      const dialog = document.querySelector('.wifi-dialog');
+      const overlay = document.querySelector('.overlay');
+      if (dialog) dialog.remove();
+      if (overlay) overlay.remove();
     }
 
     function loadWorkspace(file)
@@ -1435,6 +1654,21 @@
         {
           var json = JSON.parse(e.target.result);
           Blockly.serialization.workspaces.load(json, workspace);
+
+          // 保存当前文件信息
+          currentFile = file;
+
+          // 显示当前文件名
+          const fileNameText = currentLang === 'zh' ?
+            `当前文件: ${file.name}` :
+            `Current file: ${file.name}`;
+          document.getElementById('currentFileName').textContent = fileNameText;
+
+          // 成功消息
+          const successMsg = currentLang === 'zh' ?
+            `成功加载: ${file.name}` :
+            `Loaded: ${file.name}`;
+          console.log(successMsg);
         } catch (err)
         {
           alert('无法载入文件: ' + err.message);
@@ -1517,6 +1751,10 @@
     let port = null;
     let reader = null;
     let writer = null;
+
+    // 添加文件相关变量
+    let currentFile = null;
+    let currentFilePath = '';
 
     async function openSerialPort()
     {

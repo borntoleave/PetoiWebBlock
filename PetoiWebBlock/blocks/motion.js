@@ -105,21 +105,24 @@ Blockly.defineBlocksWithJsonArray([
     args0: [
       {
         type: "field_number",
-        name: "MOTOR_ID",
+        name: "MOTOR",
         value: 0,
         min: 0,
         max: 11,
         precision: 1
       },
       {
-        type: "input_value",
-        name: "ANGLE"
+        type: "field_number",
+        name: "ANGLE",
+        value: 90,
+        min: 0,
+        max: 180
       }
     ],
     previousStatement: null,
     nextStatement: null,
     colour: 230,
-    tooltip: "设置指定马达的角度（0-11号，-125 ~ 125度）",
+    tooltip: "设置指定马达的角度（0-11号，0-180度）",
     helpUrl: ""
   }
 ]);
@@ -127,8 +130,8 @@ Blockly.defineBlocksWithJsonArray([
 // 代码生成:设置马达角度代码生成器
 javascript.javascriptGenerator.forBlock['set_motor_angle'] = function (block)
 {
-  const motorId = block.getFieldValue('MOTOR_ID');
-  const angle = Blockly.JavaScript.valueToCode(block, 'ANGLE', Blockly.JavaScript.ORDER_ATOMIC);
+  const motorId = block.getFieldValue('MOTOR');
+  const angle = block.getFieldValue('ANGLE');
   return `httpRequest(deviceIP, "m ${motorId} " + Math.min(125, Math.max(-125, ${angle})));\n`;
 };
 
@@ -141,12 +144,20 @@ Blockly.defineBlocksWithJsonArray([
     args0: [
       {
         type: "field_dropdown",
-        name: "SERVO_ID",
+        name: "SERVO",
         options: [
-          ["1号", "1"], ["2号", "2"], ["3号", "3"], ["4号", "4"],
-          ["5号", "5"], ["6号", "6"], ["7号", "7"], ["8号", "8"],
-          ["9号", "9"], ["10号", "10"], ["11号", "11"], ["12号", "12"],
-          ["13号", "13"], ["14号", "14"], ["15号", "15"], ["16号", "16"]
+          ["0", "0"],
+          ["1", "1"],
+          ["2", "2"],
+          ["3", "3"],
+          ["4", "4"],
+          ["5", "5"],
+          ["6", "6"],
+          ["7", "7"],
+          ["8", "8"],
+          ["9", "9"],
+          ["10", "10"],
+          ["11", "11"]
         ]
       }
     ],
@@ -160,7 +171,7 @@ Blockly.defineBlocksWithJsonArray([
 // 代码生成:获取舵机角度的代码生成器
 javascript.javascriptGenerator.forBlock['get_servo_angle'] = function (block)
 {
-  const servoId = block.getFieldValue('SERVO_ID');
+  const servoId = block.getFieldValue('SERVO');
   return [`parseInt(httpRequest(deviceIP, "m ${servoId} ?", true)) || 0`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
 };
 
