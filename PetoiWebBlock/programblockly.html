@@ -752,7 +752,7 @@
               {
                 "type": "field_input",
                 "name": "IP_ADDRESS",
-                "text": "x.x.x.x"
+                "text": currentDeviceIP || "x.x.x.x"
               }
             ],
             "nextStatement": null,
@@ -1510,8 +1510,8 @@
       {
         // 创建make_connection积木块
         var connectionBlock = workspace.newBlock('make_connection');
-        // 设置默认IP地址
-        connectionBlock.setFieldValue('192.168.4.1', 'IP_ADDRESS');
+        // 设置IP地址为当前设备IP
+        connectionBlock.setFieldValue(currentDeviceIP, 'IP_ADDRESS');
         // 初始化积木块(确保所有连接点正确设置)
         connectionBlock.initSvg();
         // 渲染积木块
@@ -2050,6 +2050,9 @@
     let currentFile = null;
     let currentFilePath = '';
 
+    // 设备IP地址
+    let currentDeviceIP = '192.168.4.1'; // 默认IP地址
+
     async function openSerialPort()
     {
       try
@@ -2098,6 +2101,9 @@
         document.getElementById('quickConnectBtn').disabled = true;
         document.getElementById('closeSerialBtn').disabled = true;
         document.getElementById('ipDisplay').textContent = '';
+
+        // 不要重置当前IP地址，保留上一次的连接信息
+        // currentDeviceIP = '192.168.4.1'; // 重置为默认IP
       } catch (error)
       {
         console.error('关闭串口错误:', error);
@@ -2181,7 +2187,19 @@
           if (ipMatch)
           {
             const ip = ipMatch[1];
+            // 保存设备IP到全局变量
+            currentDeviceIP = ip;
             document.getElementById('ipDisplay').textContent = `${getText("serialConfiguredIP")}${ip}`;
+
+            // 查找工作区中的make_connection积木块并更新IP地址
+            const makeConnectionBlocks = workspace.getBlocksByType('make_connection');
+            if (makeConnectionBlocks && makeConnectionBlocks.length > 0)
+            {
+              // 更新第一个make_connection积木块的IP_ADDRESS字段
+              makeConnectionBlocks[0].setFieldValue(ip, 'IP_ADDRESS');
+              console.log(`已自动更新连接积木的IP地址: ${ip}`);
+            }
+
             serialBuffer = '';  // 清空缓冲区
           }
 

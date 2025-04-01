@@ -35,7 +35,7 @@ Blockly.defineBlocksWithJsonArray([
       {
         type: "field_input",
         name: "IP_ADDRESS",
-        text: "x.x.x.x"
+        text: "192.168.4.1"
       }
     ],
     nextStatement: null,
