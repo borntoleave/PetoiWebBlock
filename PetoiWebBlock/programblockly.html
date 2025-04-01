@@ -12,6 +12,8 @@
   <script src="./node_modules/blockly/msg/zh-hans.js"></script>
   <!-- 移除英文语言文件，使用动态加载 -->
   <!-- <script src="./node_modules/blockly/msg/en.js"></script> -->
+  <!-- 3. 加载自定义翻译 -->
+  <script src="./lang/translations.js"></script>
   <!-- 4. 然后加载自定义积木块文件 -->
   <script src="./blocks/communication.js"></script>
   <script src="./blocks/control.js"></script>
@@ -497,8 +499,239 @@
     const enMessages = {};
 
     // 当前语言
-    let currentLang = 'zh';
     let isChangingLanguage = false;
+
+    // 新增翻译助手函数
+    function getText(key)
+    {
+      return TRANSLATIONS[currentLang][key] || key;
+    }
+
+    // 更新自定义积木的定义
+    function updateCustomBlockDefinitions()
+    {
+      // 通信积木
+      if (Blockly.Blocks['make_connection'])
+      {
+        Blockly.Blocks['make_connection'].init = function ()
+        {
+          this.jsonInit({
+            "type": "make_connection",
+            "message0": getText("connectWithIP"),
+            "args0": [
+              {
+                "type": "field_input",
+                "name": "IP_ADDRESS",
+                "text": "x.x.x.x"
+              }
+            ],
+            "nextStatement": null,
+            "colour": 230,
+            "tooltip": "",
+            "helpUrl": ""
+          });
+        };
+      }
+
+      // 数字输入积木
+      if (Blockly.Blocks['get_digital_input'])
+      {
+        Blockly.Blocks['get_digital_input'].init = function ()
+        {
+          this.jsonInit({
+            "type": "get_digital_input",
+            "message0": getText("getDigitalInput"),
+            "args0": [
+              {
+                "type": "field_dropdown",
+                "name": "PIN",
+                "options": [
+                  ["34", "34"],
+                  ["35", "35"],
+                  ["36", "36"],
+                  ["39", "39"],
+                  ["BackTouch(38)", "38"],
+                  ["Rx2(9)", "9"],
+                  ["Tx2(10)", "10"]
+                ]
+              }
+            ],
+            "output": true,
+            "outputType": "Number",
+            "colour": 230,
+            "tooltip": ""
+          });
+        };
+      }
+
+      // 模拟输入积木
+      if (Blockly.Blocks['get_analog_input'])
+      {
+        Blockly.Blocks['get_analog_input'].init = function ()
+        {
+          this.jsonInit({
+            "type": "get_analog_input",
+            "message0": getText("getAnalogInput"),
+            "args0": [
+              {
+                "type": "field_dropdown",
+                "name": "PIN",
+                "options": [
+                  ["34", "34"],
+                  ["35", "35"],
+                  ["36", "36"],
+                  ["39", "39"],
+                  ["BackTouch(38)", "38"],
+                  ["Rx2(9)", "9"],
+                  ["Tx2(10)", "10"]
+                ]
+              }
+            ],
+            "output": true,
+            "outputType": "Number",
+            "colour": 230,
+            "tooltip": ""
+          });
+        };
+      }
+
+      // 方向动作积木
+      if (Blockly.Blocks['direction_action'])
+      {
+        Blockly.Blocks['direction_action'].init = function ()
+        {
+          this.jsonInit({
+            "type": "direction_action",
+            "message0": getText("directionAction"),
+            "args0": [
+              {
+                "type": "field_dropdown",
+                "name": "ACTION",
+                "options": [
+                  [getText("forward"), "kWalk"],
+                  [getText("backward"), "kBackward"],
+                  [getText("left"), "kL"],
+                  [getText("right"), "kR"],
+                  [getText("leftForward"), "kLF"],
+                  [getText("leftBackward"), "kLB"],
+                  [getText("rightForward"), "kRF"],
+                  [getText("rightBackward"), "kRB"],
+                  [getText("stop"), "kStop"]
+                ]
+              }
+            ],
+            "previousStatement": null,
+            "nextStatement": null,
+            "colour": 160,
+            "tooltip": ""
+          });
+        };
+      }
+
+      // 本地动作积木
+      if (Blockly.Blocks['local_action'])
+      {
+        Blockly.Blocks['local_action'].init = function ()
+        {
+          this.jsonInit({
+            "type": "local_action",
+            "message0": getText("localAction"),
+            "args0": [
+              {
+                "type": "field_dropdown",
+                "name": "ACTION",
+                "options": [
+                  [getText("balance"), "kBalance"],
+                  [getText("sit"), "kSit"],
+                  [getText("defecate"), "kPee"],
+                  [getText("urinate"), "kPoo"]
+                ]
+              }
+            ],
+            "previousStatement": null,
+            "nextStatement": null,
+            "colour": 160,
+            "tooltip": ""
+          });
+        };
+      }
+
+      // 高难度动作积木
+      if (Blockly.Blocks['high_difficulty_action'])
+      {
+        Blockly.Blocks['high_difficulty_action'].init = function ()
+        {
+          this.jsonInit({
+            "type": "high_difficulty_action",
+            "message0": getText("highDifficultyAction"),
+            "args0": [
+              {
+                "type": "field_dropdown",
+                "name": "ACTION",
+                "options": [
+                  [getText("jump"), "kJump"],
+                  [getText("backflip"), "kBackFlip"],
+                  [getText("roll"), "kRoll"],
+                  [getText("rotate"), "kRot"]
+                ]
+              }
+            ],
+            "previousStatement": null,
+            "nextStatement": null,
+            "colour": 160,
+            "tooltip": ""
+          });
+        };
+      }
+
+      // 更新所有工作区中的积木
+      if (workspace)
+      {
+        workspace.getAllBlocks().forEach(block =>
+        {
+          if (block.type === 'make_connection' ||
+            block.type === 'get_digital_input' ||
+            block.type === 'get_analog_input' ||
+            block.type === 'direction_action' ||
+            block.type === 'local_action' ||
+            block.type === 'high_difficulty_action')
+          {
+            // 重新初始化积木
+            const initFunc = Blockly.Blocks[block.type].init;
+            if (initFunc)
+            {
+              // 保存原有字段值
+              const fieldValues = {};
+              for (let i = 0; i < block.inputList.length; i++)
+              {
+                const input = block.inputList[i];
+                for (let j = 0; j < input.fieldRow.length; j++)
+                {
+                  const field = input.fieldRow[j];
+                  if (field.name)
+                  {
+                    fieldValues[field.name] = field.getValue();
+                  }
+                }
+              }
+
+              // 重新初始化
+              block.init();
+
+              // 恢复字段值
+              for (const name in fieldValues)
+              {
+                const field = block.getField(name);
+                if (field)
+                {
+                  field.setValue(fieldValues[name]);
+                }
+              }
+            }
+          }
+        });
+      }
+    }
 
     // 保存当前工作区的积木
     function saveCurrentWorkspace()
@@ -529,6 +762,12 @@
       const script = document.createElement('script');
       script.onload = function ()
       {
+        // 设置当前语言
+        currentLang = lang;
+
+        // 更新自定义积木的定义
+        updateCustomBlockDefinitions();
+
         // 创建新的工具箱配置并更新类别名称
         const categoryMap = {
           zh: {
@@ -601,6 +840,9 @@
         // 恢复工作区状态
         restoreWorkspace(workspaceState);
 
+        // 再次更新自定义积木
+        updateCustomBlockDefinitions();
+
         // 更新UI文本
         if (lang === 'zh')
         {
@@ -646,7 +888,6 @@
           if (consoleTitle) consoleTitle.textContent = 'Console Log';
         }
 
-        currentLang = lang;
         isChangingLanguage = false;
       };
 
@@ -675,7 +916,10 @@
     window.addEventListener('DOMContentLoaded', function ()
     {
       // 不需要调用setLanguage，因为默认已经是中文
-      currentLang = 'zh';
+      // currentLang = 'zh'; // 删除这行，currentLang已在translations.js中初始化
+
+      // 初始化自定义积木
+      updateCustomBlockDefinitions();
     });
 
     function showCode()
