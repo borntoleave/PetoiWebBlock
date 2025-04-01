@@ -8,15 +8,15 @@ Blockly.defineBlocksWithJsonArray([
         type: "field_dropdown",
         name: "COMMAND",
         options: [
-          ['原地踏步', 'kvtF'],
-          ['左转', 'kvtL'],
-          ['右转', 'kvtR'],
-          ['前进', 'kwkF'],
-          ['左前进', 'kwkL'],
-          ['右前进', 'kwkR'],
-          ['后退', 'kbkF'],
-          ['左后退', 'kbkL'],
-          ['右后退', 'kbkR'],
+          ['原地踏步', 'kvtf'],
+          ['左转', 'kvtl'],
+          ['右转', 'kvtr'],
+          ['前进', 'kwkf'],
+          ['左前进', 'kwkl'],
+          ['右前进', 'kwkr'],
+          ['后退', 'kbkf'],
+          ['左后退', 'kbkl'],
+          ['右后退', 'kbkr'],
         ]
       }
     ],
@@ -77,7 +77,7 @@ Blockly.defineBlocksWithJsonArray([
         type: "field_dropdown",
         name: "COMMAND",
         options: [
-          ['后空翻', 'kbkF'],
+          ['后空翻', 'kbkf'],
           ['跳跃', 'kjmp'],
         ],
       }

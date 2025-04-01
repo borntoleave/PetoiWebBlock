@@ -813,15 +813,15 @@
                 "type": "field_dropdown",
                 "name": "ACTION",
                 "options": [
-                  [getText("forward"), "kWalk"],
-                  [getText("backward"), "kBackward"],
-                  [getText("left"), "kL"],
-                  [getText("right"), "kR"],
-                  [getText("leftForward"), "kLF"],
-                  [getText("leftBackward"), "kLB"],
-                  [getText("rightForward"), "kRF"],
-                  [getText("rightBackward"), "kRB"],
-                  [getText("stop"), "kStop"]
+                  [getText("forward"), "kwkF"],
+                  [getText("backward"), "kbkF"],
+                  [getText("left"), "kvtL"],
+                  [getText("right"), "kvtR"],
+                  [getText("leftForward"), "klf"],
+                  [getText("leftBackward"), "klb"],
+                  [getText("rightForward"), "krf"],
+                  [getText("rightBackward"), "krb"],
+                  [getText("stop"), "kstop"]
                 ]
               }
             ],
@@ -846,10 +846,10 @@
                 "type": "field_dropdown",
                 "name": "ACTION",
                 "options": [
-                  [getText("balance"), "kBalance"],
-                  [getText("sit"), "kSit"],
-                  [getText("defecate"), "kPee"],
-                  [getText("urinate"), "kPoo"]
+                  [getText("stand"), "kup"],
+                  [getText("sit"), "ksit"],
+                  [getText("rest"), "d"],
+                  [getText("pee"), "kpee"]
                 ]
               }
             ],
@@ -874,10 +874,10 @@
                 "type": "field_dropdown",
                 "name": "ACTION",
                 "options": [
-                  [getText("jump"), "kJump"],
-                  [getText("backflip"), "kBackFlip"],
-                  [getText("roll"), "kRoll"],
-                  [getText("rotate"), "kRot"]
+                  [getText("jump"), "kjmp"],
+                  [getText("backflip"), "kbkF"],
+                  [getText("roll"), "kroll"],
+                  [getText("rotate"), "krot"]
                 ]
               }
             ],
@@ -1552,21 +1552,106 @@
 
       // 添加辅助函数确保异步操作按顺序执行
       const asyncHelper = `
-          // 辅助函数，确保异步打印能够立即执行
-          function asyncLog(message) {
-            return new Promise((resolve) => {
-              console.log(message);
-              // 强制浏览器更新DOM
-              setTimeout(resolve, 0);
-            });
+        // 创建一个拦截器劫持控制台自动打印
+        const originalLog = console.log;
+        const originalDir = console.dir;
+        
+        // 保存Promise的原始toString方法
+        const originalPromiseToString = Promise.prototype.toString;
+        const originalPromiseValueOf = Promise.prototype.valueOf;
+        
+        // 重写Promise的toString和valueOf方法以阻止打印
+        Promise.prototype.toString = function() {
+          return '[Promise]';
+        };
+        
+        Promise.prototype.valueOf = function() {
+          return {};
+        };
+        
+        // 辅助函数，确保异步打印能够立即执行
+        function asyncLog(message) {
+          return new Promise((resolve) => {
+            originalLog(message);
+            // 强制浏览器更新DOM
+            setTimeout(resolve, 0);
+          });
+        }
+
+        // 阻止表达式结果自动打印的辅助函数
+        function preventAutoLog(fn) {
+          return async function(...args) {
+            // 创建一个不会显示中间态的Promise包装
+            const result = await (async () => {
+              try {
+                return await fn(...args);
+              } catch (e) {
+                console.error(e);
+                throw e;
+              }
+            })();
+            
+            // 使用void操作符阻止Promise值在控制台上显示
+            void(0);
+            return result;
+          };
+        }
+
+        // HTTP请求函数 - 发送命令到设备
+        async function httpRequest(ip, command, returnResult = false) {
+          try {
+            await asyncLog("发送命令: " + command);
+            const response = await fetch(\`http://\${ip}/?cmd=\${command}\`);
+            
+            if (!response.ok) {
+              throw new Error(\`HTTP错误: \${response.status}\`);
+            }
+            
+            const result = await response.text();
+            await asyncLog("命令执行成功，返回: " + result);
+            
+            if (returnResult) {
+              // 检查命令是否为读取模拟、数字输入或传感器的命令
+              const isReadCommand = command.startsWith("Ra") || 
+                                   command.startsWith("Rd") || 
+                                   command.startsWith("i ");
+              
+              if (isReadCommand) {
+                // 从结果中提取等号后面的数字
+                const match = result.match(/=\\s*(-?\\d+)/);
+                if (match && match[1]) {
+                  return match[1]; // 返回等号后的数字（字符串格式）
+                }
+              }
+              return result; // 对于其他命令或未找到匹配，返回原始结果
+            }
+            return true;
+          } catch (error) {
+            console.error("命令执行失败:", error.message);
+            if (returnResult) {
+              return "";
+            }
+            return false;
           }
-        `;
+        }
 
-      // 将普通的console.log替换为使用asyncLog的形式
-      code = code.replace(/console\.log\((.*?)\);/g, 'await asyncLog($1);');
+        // 使用preventAutoLog包装httpRequest函数，阻止自动打印
+        httpRequest = preventAutoLog(httpRequest);
+        
+        // 重写eval的执行环境，阻止Promise的自动打印
+        const originalSetTimeout = setTimeout;
+        const noLogPromiseSetTimeout = (fn, delay, ...args) => {
+          return originalSetTimeout(() => {
+            Promise.prototype.toString = function() { return '[Promise]'; };
+            Promise.prototype.valueOf = function() { return {}; };
+            fn(...args);
+          }, delay);
+        };
+        setTimeout = noLogPromiseSetTimeout;
+      `;
 
-      // 包装整个代码到一个异步函数中
-      code = asyncHelper + "\n(async function() {\n" + code + "\n})().catch(e => alert(e));";
+      // 包装整个代码到一个自执行函数中，防止值打印
+      code = asyncHelper + "\n(function() { return (async function() {\n" + code + "\n})(); })();";
 
       try
       {

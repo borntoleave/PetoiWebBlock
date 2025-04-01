@@ -35,7 +35,7 @@ Blockly.JavaScript.forBlock['set_motor_angle'] = function (block)
 Blockly.JavaScript.forBlock['get_servo_angle'] = function (block)
 {
   const servoId = block.getFieldValue('SERVO');
-  return [`parseInt(httpRequest(deviceIP, "m ${servoId} ?", true)) || 0`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
+  return [`(function() { var _temp = httpRequest(deviceIP, "m ${servoId} ?", true); return parseInt(_temp) || 0; })()`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
 };
 
 // 代码生成:获取所有舵机角度的代码生成器
@@ -78,21 +78,21 @@ Blockly.JavaScript.forBlock['make_connection'] = function (block)
 Blockly.JavaScript.forBlock['get_digital_input'] = function (block)
 {
   const pin = block.getFieldValue('PIN');
-  return [`parseInt(httpRequest(deviceIP, "i ${pin} d", true)) || 0`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
+  return [`(function() { var _temp = httpRequest(deviceIP, "Rd" + String.fromCharCode(${pin}) + "\\n", true); return parseInt(_temp) || 0; })()`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
 };
 
 // 代码生成:获取模拟输入代码生成器
 Blockly.JavaScript.forBlock['get_analog_input'] = function (block)
 {
   const pin = block.getFieldValue('PIN');
-  return [`parseInt(httpRequest(deviceIP, "i ${pin} a", true)) || 0`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
+  return [`(function() { var _temp = httpRequest(deviceIP, "Ra" + String.fromCharCode(${pin}) + "\\n", true); return parseInt(_temp) || 0; })()`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
 };
 
 // 代码生成:获取传感器输入代码生成器
 Blockly.JavaScript.forBlock['get_sensor_input'] = function (block)
 {
   const sensor = block.getFieldValue('SENSOR');
-  return [`parseInt(httpRequest(deviceIP, "i ${sensor}", true)) || 0`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
+  return [`(function() { var _temp = httpRequest(deviceIP, "i ${sensor}", true); return parseInt(_temp) || 0; })()`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
 };
 
 // 代码生成:设置数字输出代码生成器
@@ -128,7 +128,7 @@ Blockly.JavaScript.forBlock['console_log_variable'] = function (block)
 // HTTP请求函数，用于在生成的代码中使用
 function httpRequest(ip, command, returnResult = false)
 {
-  // 实际实现会根据需要进行调整
-  console.log(`请求: http://${ip}/${command}`);
+  // 更新请求URL格式以使用?cmd=参数
+  console.log(`请求: http://${ip}/?cmd=${command}`);
   return "0"; // 默认返回值
 }
