@@ -34,6 +34,11 @@ const TRANSLATIONS = {
     "commandFailed": "命令执行失败:",
     "httpError": "HTTP错误: ",
 
+    // 显示代码窗口
+    "generatedCode": "生成的JavaScript代码",
+    "copyCode": "复制代码",
+    "codeCopied": "复制成功！",
+
     // 积木分类
     "categoryLogic": "逻辑",
     "categoryLoops": "循环",
@@ -136,6 +141,11 @@ const TRANSLATIONS = {
     "sendingCommand": "Sending command: ",
     "commandFailed": "Command execution failed:",
     "httpError": "HTTP error: ",
+
+    // Code Display Window
+    "generatedCode": "Generated JavaScript Code",
+    "copyCode": "Copy Code",
+    "codeCopied": "Copied!",
 
     // Block categories
     "categoryLogic": "Logic",

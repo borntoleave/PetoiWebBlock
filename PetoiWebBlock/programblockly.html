@@ -88,20 +88,23 @@
 
     .workspace-container {
       display: flex;
-      gap: 20px;
+      gap: 0;
+      /* 移除间隙，由分隔线控制 */
       height: calc(100vh - 150px);
       /* 使用视口高度计算容器高度 */
     }
 
     #blocklyDiv {
-      width: 70%;
+      flex: 7;
+      /* 默认占据70%空间 */
       height: 100%;
       /* 使用100%高度填充父容器 */
       border: 1px solid #ccc;
     }
 
     .windows-container {
-      width: 30%;
+      flex: 3;
+      /* 默认占据30%空间 */
       height: 100%;
       /* 使用100%高度填充父容器 */
       display: flex;
@@ -219,7 +222,7 @@
       padding: 20px;
       border-radius: 8px;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      z-index: 1000;
+      z-index: 1201;
     }
 
     .wifi-dialog input {
@@ -262,7 +265,7 @@
       right: 0;
       bottom: 0;
       background: rgba(0, 0, 0, 0.5);
-      z-index: 999;
+      z-index: 1200;
     }
 
     .blocklyZoom>image,
@@ -338,6 +341,27 @@
     .undoRedoButton[disabled] svg {
       opacity: 0.2;
     }
+
+    /* 可拖动分隔线样式 */
+    .resizer {
+      width: 8px;
+      height: 100%;
+      background-color: #f0f0f0;
+      cursor: col-resize;
+      transition: background-color 0.2s;
+      user-select: none;
+    }
+
+    .resizer:hover,
+    .resizer.active {
+      background-color: #ccc;
+    }
+
+    /* 拖动时应用的样式 */
+    .workspace-container.resizing {
+      cursor: col-resize;
+      user-select: none;
+    }
   </style>
 </head>
 
@@ -363,6 +387,7 @@
 
     <div class="workspace-container">
       <div id="blocklyDiv"></div>
+      <div class="resizer" id="divider"></div>
       <div class="windows-container">
         <div id="consoleWindow">
           <div style="margin-bottom: 10px;">
@@ -1542,7 +1567,7 @@
       overlay.style.width = '100%';
       overlay.style.height = '100%';
       overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-      overlay.style.zIndex = '999';
+      overlay.style.zIndex = '1200';  // 提高z-index值，高于控件
       overlay.style.display = 'flex';
       overlay.style.justifyContent = 'center';
       overlay.style.alignItems = 'center';
@@ -1565,11 +1590,11 @@
       codeDialog.style.padding = '20px';
       codeDialog.style.borderRadius = '8px';
       codeDialog.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.5)';
-      codeDialog.style.zIndex = '1000';
+      codeDialog.style.zIndex = '1201';  // 比overlay高1
       codeDialog.style.maxWidth = '90%';
       codeDialog.style.maxHeight = '80%';
       codeDialog.style.overflow = 'auto';
-      codeDialog.style.fontFamily = '"Consolas", "Monaco", monospace';
+      codeDialog.style.fontFamily = '"Consolas", "Monaco", "Microsoft YaHei", "PingFang SC", "SimHei", sans-serif';
 
       // 标题
       var titleBar = document.createElement('div');
@@ -1579,9 +1604,17 @@
       titleBar.style.marginBottom = '15px';
 
       var title = document.createElement('h3');
-      title.textContent = '生成的JavaScript代码';
+      // 直接使用字符串而不是文本节点，避免字符编码问题
+      if (currentLang === 'zh')
+      {
+        title.innerHTML = '生成的JavaScript代码';
+      } else
+      {
+        title.innerHTML = 'Generated JavaScript Code';
+      }
       title.style.margin = '0';
       title.style.color = '#e6e6e6';
+      title.style.fontFamily = '"Microsoft YaHei", "PingFang SC", "SimHei", "Arial", sans-serif';
 
       var closeButton = document.createElement('button');
       closeButton.textContent = '×';
@@ -1626,7 +1659,13 @@
 
       // 添加复制按钮
       var copyButton = document.createElement('button');
-      copyButton.textContent = '复制代码';
+      if (currentLang === 'zh')
+      {
+        copyButton.innerHTML = '复制代码';
+      } else
+      {
+        copyButton.innerHTML = 'Copy Code';
+      }
       copyButton.style.marginTop = '15px';
       copyButton.style.padding = '6px 12px';
       copyButton.style.backgroundColor = '#4d78cc';
@@ -1634,14 +1673,27 @@
       copyButton.style.border = 'none';
       copyButton.style.borderRadius = '4px';
       copyButton.style.cursor = 'pointer';
+      copyButton.style.fontFamily = '"Microsoft YaHei", "PingFang SC", "SimHei", "Arial", sans-serif';
       copyButton.onclick = function ()
       {
         navigator.clipboard.writeText(code).then(function ()
         {
-          copyButton.textContent = '复制成功！';
+          if (currentLang === 'zh')
+          {
+            copyButton.innerHTML = '复制成功！';
+          } else
+          {
+            copyButton.innerHTML = 'Copied!';
+          }
           setTimeout(function ()
           {
-            copyButton.textContent = '复制代码';
+            if (currentLang === 'zh')
+            {
+              copyButton.innerHTML = '复制代码';
+            } else
+            {
+              copyButton.innerHTML = 'Copy Code';
+            }
           }, 2000);
         });
       };
@@ -2341,6 +2393,88 @@
         redoButton.title = currentLang === 'zh' ? '重做' : 'Redo';
       }
     }
+
+    // 添加分隔线拖动功能
+    document.addEventListener('DOMContentLoaded', function ()
+    {
+      const divider = document.getElementById('divider');
+      const container = document.querySelector('.workspace-container');
+      const blocklyDiv = document.getElementById('blocklyDiv');
+      const windowsContainer = document.querySelector('.windows-container');
+
+      let isResizing = false;
+      let initialX, initialWidth;
+
+      divider.addEventListener('mousedown', function (e)
+      {
+        // 启动调整大小
+        isResizing = true;
+        initialX = e.clientX;
+        initialWidth = blocklyDiv.getBoundingClientRect().width;
+
+        // 添加调整中的样式
+        container.classList.add('resizing');
+        divider.classList.add('active');
+      });
+
+      document.addEventListener('mousemove', function (e)
+      {
+        if (!isResizing) return;
+
+        // 计算移动距离
+        const deltaX = e.clientX - initialX;
+
+        // 计算容器总宽度
+        const containerWidth = container.getBoundingClientRect().width;
+
+        // 计算新的blocklyDiv宽度 (百分比)
+        let newWidthPercent = ((initialWidth + deltaX) / containerWidth) * 100;
+
+        // 确保合理范围 (20% - 80%)
+        newWidthPercent = Math.max(20, Math.min(80, newWidthPercent));
+
+        // 应用新宽度
+        blocklyDiv.style.flexBasis = `${newWidthPercent}%`;
+        blocklyDiv.style.width = `${newWidthPercent}%`;
+        windowsContainer.style.flexBasis = `${100 - newWidthPercent - 1}%`; // 减去分隔线宽度的百分比
+        windowsContainer.style.width = `${100 - newWidthPercent - 1}%`;
+
+        // 提高性能，减少重新渲染
+        window.requestAnimationFrame(function ()
+        {
+          // 调整Blockly工作区大小以适应新尺寸
+          if (workspace)
+          {
+            Blockly.svgResize(workspace);
+
+            // 重新定位撤销和重做按钮
+            repositionUndoRedoButtons();
+          }
+        });
+      });
+
+      document.addEventListener('mouseup', function ()
+      {
+        if (isResizing)
+        {
+          // 停止调整大小
+          isResizing = false;
+
+          // 移除调整中的样式
+          container.classList.remove('resizing');
+          divider.classList.remove('active');
+
+          // 确保Blockly工作区尺寸正确
+          if (workspace)
+          {
+            Blockly.svgResize(workspace);
+          }
+
+          // 重新定位撤销和重做按钮
+          repositionUndoRedoButtons();
+        }
+      });
+    });
   </script>
 </body>
 
