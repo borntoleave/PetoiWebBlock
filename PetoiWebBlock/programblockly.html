@@ -2250,11 +2250,14 @@
       }
 
       // 立即设置滚动位置到底部，确保最新消息可见
-      const consoleWindow = document.getElementById('consoleWindow');
-      consoleWindow.scrollTop = consoleWindow.scrollHeight;
+      // 使用setTimeout确保在DOM更新后滚动
+      setTimeout(() =>
+      {
+        logDiv.scrollTop = logDiv.scrollHeight;
+      }, 0);
 
       // 强制DOM重绘，确保视图更新
-      void consoleWindow.offsetHeight;
+      void logDiv.offsetHeight;
     }
 
     function clearConsole()
@@ -2482,7 +2485,12 @@
           // 更新输出显示，确保每条消息后面都有换行符
           const outputDiv = document.getElementById('serialOutput');
           outputDiv.innerHTML += text.replace(/\n/g, '<br>');  // 将\n替换为<br>
-          outputDiv.scrollTop = outputDiv.scrollHeight;
+
+          // 确保滚动到底部，增加延时处理以保证更新后滚动
+          setTimeout(() =>
+          {
+            outputDiv.scrollTop = outputDiv.scrollHeight;
+          }, 0);
         }
       } catch (error)
       {
