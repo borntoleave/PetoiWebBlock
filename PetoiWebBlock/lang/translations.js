@@ -27,11 +27,15 @@ const TRANSLATIONS = {
     "serialReadError": "读取串口数据错误:",
     "serialSendError": "发送数据错误:",
     "serialConnectionError": "串口连接错误:",
+    "serialPortBusy": "串口无法打开，可能被其他程序占用。请关闭所有可能使用该串口的程序后重试。",
     "enterWifiName": "请输入WiFi名称",
     "wifiCommandError": "发送WiFi命令错误:",
     "wifiCommandFailed": "发送WiFi命令失败",
     "connectedToDevice": "已连接到设备: ",
     "textCopied": "文本已复制到剪贴板",
+    "processingValidIP": "处理有效IP地址: ",
+    "blockIPUpdated": "已自动更新连接积木的IP地址: ",
+    "invalidIPFormat": "IP地址格式不正确: ",
 
     // 命令消息
     "sendingCommand": "发送命令: ",
@@ -169,11 +173,15 @@ const TRANSLATIONS = {
     "serialReadError": "Error reading serial data:",
     "serialSendError": "Error sending data:",
     "serialConnectionError": "Serial connection error:",
+    "serialPortBusy": "Serial port cannot be opened, possibly occupied by other programs. Please close all programs that might be using the serial port before retrying.",
     "enterWifiName": "Please enter WiFi name",
     "wifiCommandError": "Error sending WiFi command:",
     "wifiCommandFailed": "Failed to send WiFi command",
     "connectedToDevice": "Connected to device: ",
     "textCopied": "Text copied to clipboard",
+    "processingValidIP": "Processing valid IP address: ",
+    "blockIPUpdated": "The connect block's IP address is updated automatically: ",
+    "invalidIPFormat": "Invalid IP format: ",
 
     // Command messages
     "sendingCommand": "Sending command: ",
