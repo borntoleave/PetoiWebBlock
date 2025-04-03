@@ -117,18 +117,46 @@
       padding: 10px;
       flex: 3;
       /* 保持固定比例 */
-      gap: 20px;
-      /* 增加容器之间的间距 */
+      gap: 0;
+      /* 移除容器之间的间距，由分隔线控制 */
     }
 
     /* 控制台区域 */
-    #consoleWindow,
-    #serialInterface {
+    #consoleWindow {
+      flex: 1;
+      /* 当串口未连接时占据所有可用空间 */
+      background-color: #1e1e1e;
+      padding: 0;
+      font-family: 'Consolas', monospace;
+      min-height: 0;
       display: flex;
       flex-direction: column;
-      min-width: 0;
       width: 100%;
       overflow: hidden;
+    }
+
+    /* 串口容器，初始状态下只显示按钮部分 */
+    #serialContainer {
+      background-color: #f5f5f5;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      min-height: auto;
+      /* 未连接时高度自适应内容 */
+      max-height: 60px;
+      /* 未连接时只显示按钮区高度 */
+      overflow: hidden;
+    }
+
+    /* 串口连接后应用此样式 */
+    #serialContainer.connected {
+      flex: 4;
+      /* 连接后占据适当比例 */
+      min-height: 180px;
+      /* 连接后确保有足够高度 */
+      max-height: none;
+      /* 移除高度限制 */
     }
 
     /* 控制台内容项样式 */
@@ -146,9 +174,16 @@
 
     /* 串口输出区域 */
     .serial-output {
-      height: 200px;
+      flex: 1;
+      /* 使输出区域占用所有剩余空间 */
+      height: auto;
+      /* 自动高度，不再需要计算 */
+      min-height: 30px;
+      /* 设置最小高度 */
       margin: 0;
       padding: 10px;
+      padding-right: 15px;
+      /* 为滚动条留出空间 */
       overflow-y: auto;
       overflow-x: hidden;
       background-color: #1e1e1e;
@@ -181,13 +216,32 @@
     .serial-input-container {
       display: flex;
       gap: 5px;
+      padding: 10px;
+      background-color: #1e1e1e;
+      border-top: 1px solid #333;
+      /* 不再使用绝对定位，而是作为flex布局的一部分 */
+      height: 50px;
+      /* 固定高度 */
+      min-height: 50px;
+      /* 防止压缩 */
+      box-sizing: border-box;
     }
 
     .serial-input-container input {
       flex: 1;
-      padding: 5px;
-      border: 1px solid #ccc;
+      padding: 8px 10px;
+      border: 1px solid #444;
       border-radius: 4px;
+      background-color: #2a2a2a;
+      color: #fff;
+      font-family: 'Consolas', monospace;
+      font-size: 13px;
+    }
+
+    .serial-input-container input:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
     }
 
     .serial-buttons {
@@ -195,9 +249,14 @@
       gap: 10px;
       padding: 10px;
       background-color: #f5f5f5;
-      /* 灰色背景，与页面背景一致 */
       border: none;
-      margin-bottom: 10px;
+      margin-top: auto;
+      /* 推到底部 */
+      align-self: flex-end;
+      /* 确保在底部 */
+      width: 100%;
+      /* 占满宽度 */
+      box-sizing: border-box;
     }
 
     .serial-button:disabled {
@@ -355,39 +414,10 @@
       user-select: none;
     }
 
-    /* 窗口容器样式 */
-    #consoleWindow {
-      flex: 1;
-      background-color: #1e1e1e;
-      padding: 0;
-      font-family: 'Consolas', monospace;
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      min-width: 0;
-    }
-
-    #serialContainer {
-      margin-top: 0;
-      /* 去除顶部边距，因为已经在父容器中添加了gap */
-      flex: 0 0 auto;
-      /* 阻止自动扩展 */
-      width: 100%;
-      /* 确保宽度固定 */
-      max-width: 100%;
-      /* 限制最大宽度 */
-      overflow-x: hidden;
-      /* 阻止水平溢出 */
-      background-color: #f5f5f5;
-      /* 灰色背景，与页面背景一致 */
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-    }
-
     /* 串口输出容器 */
     #serialInterface {
       display: none;
+      /* 默认隐藏 */
       flex-direction: column;
       overflow: hidden;
       height: 100%;
@@ -395,6 +425,10 @@
       max-width: 100%;
       background-color: #1e1e1e;
       /* 黑色背景 */
+      position: relative;
+      /* 添加相对定位，用于绝对定位的子元素 */
+      min-height: 150px;
+      /* 设置最小高度以确保小尺寸下显示正常 */
     }
 
     /* 修复积木块文字偏移问题 */
@@ -444,18 +478,6 @@
       outline: 1px solid #007bff;
     }
 
-    /* 串口输出区域结构样式 */
-    #serialInterface {
-      display: none;
-      flex-direction: column;
-      overflow: hidden;
-      height: 100%;
-      width: 100%;
-      max-width: 100%;
-      background-color: #1e1e1e;
-      /* 黑色背景 */
-    }
-
     /* 区域标题栏样式 */
     .area-header {
       margin: 0;
@@ -498,21 +520,26 @@
 
     /* 串口通信相关样式 */
     #serialContainer {
-      margin-top: 0;
-      /* 去除顶部边距，因为已经在父容器中添加了gap */
-      flex: 0 0 auto;
-      /* 阻止自动扩展 */
-      width: 100%;
-      /* 确保宽度固定 */
-      max-width: 100%;
-      /* 限制最大宽度 */
-      overflow-x: hidden;
-      /* 阻止水平溢出 */
       background-color: #f5f5f5;
-      /* 灰色背景，与页面背景一致 */
       padding: 0;
       display: flex;
       flex-direction: column;
+      width: 100%;
+      min-height: auto;
+      /* 未连接时高度自适应内容 */
+      max-height: 60px;
+      /* 未连接时只显示按钮区高度 */
+      overflow: hidden;
+    }
+
+    /* 串口连接后应用此样式 */
+    #serialContainer.connected {
+      flex: 4;
+      /* 连接后占据适当比例 */
+      min-height: 180px;
+      /* 连接后确保有足够高度 */
+      max-height: none;
+      /* 移除高度限制 */
     }
 
     /* 串口按钮区域 */
@@ -521,9 +548,14 @@
       gap: 10px;
       padding: 10px;
       background-color: #f5f5f5;
-      /* 灰色背景，与页面背景一致 */
       border: none;
-      margin-bottom: 10px;
+      margin-top: auto;
+      /* 推到底部 */
+      align-self: flex-end;
+      /* 确保在底部 */
+      width: 100%;
+      /* 占满宽度 */
+      box-sizing: border-box;
     }
 
     .serial-button {
@@ -549,6 +581,74 @@
       -ms-user-select: text;
       user-select: text;
       cursor: text;
+    }
+
+    /* 水平分隔线样式 */
+    .horizontal-resizer {
+      width: 100%;
+      height: 8px;
+      background-color: #f0f0f0;
+      cursor: row-resize;
+      transition: background-color 0.2s;
+      user-select: none;
+      margin: 5px 0;
+      display: none;
+      /* 初始隐藏 */
+    }
+
+    .horizontal-resizer:hover,
+    .horizontal-resizer.active {
+      background-color: #ccc;
+    }
+
+    .serial-input-container button {
+      padding: 8px 15px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background-color 0.2s;
+    }
+
+    .serial-input-container button:hover {
+      background-color: #0069d9;
+    }
+
+    .serial-input-container button:active {
+      background-color: #0062cc;
+    }
+
+    /* 滚动条样式 */
+    .dark-scrollbar::-webkit-scrollbar {
+      width: 12px;
+      /* 增加滚动条宽度 */
+      height: 12px;
+    }
+
+    .dark-scrollbar::-webkit-scrollbar-track {
+      background: #333;
+      border-radius: 6px;
+    }
+
+    .dark-scrollbar::-webkit-scrollbar-thumb {
+      background: #666;
+      border-radius: 6px;
+      min-height: 40px;
+      /* 确保滑块有最小高度 */
+    }
+
+    .dark-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #888;
+    }
+
+    /* 确保滚动条在小窗口下也能正常显示 */
+    #serialOutput.dark-scrollbar {
+      scrollbar-width: thin;
+      scrollbar-color: #666 #333;
+      margin-right: 4px;
+      /* 为滚动条留出更多空间 */
     }
   </style>
 </head>
@@ -584,6 +684,8 @@
           </div>
           <div id="consoleLog" class="dark-scrollbar"></div>
         </div>
+        <!-- 添加水平分隔线，用于调整控制台和串口区域的高度比例 -->
+        <div class="horizontal-resizer" id="console-serial-divider"></div>
         <!-- 添加串口通信相关的HTML结构 -->
         <div id="serialContainer">
           <div class="serial-buttons">
@@ -2028,13 +2130,48 @@
 
       // 添加辅助函数确保异步操作按顺序执行
       const asyncHelper = `
-          // 辅助函数，确保异步打印能够立即执行
+          // 辅助函数，确保异步打印能够立即执行并更新DOM
           function asyncLog(message) {
             return new Promise((resolve) => {
               console.log(message);
-              // 强制浏览器更新DOM
-              setTimeout(resolve, 0);
+              
+              // 强制浏览器更新DOM - 使用requestAnimationFrame和setTimeout组合
+              requestAnimationFrame(() => {
+                // 强制重绘
+                const logDiv = document.getElementById('consoleLog');
+                if (logDiv) {
+                  // 强制DOM重绘
+                  void logDiv.offsetHeight;
+                  // 强制滚动到底部
+                  logDiv.scrollTop = logDiv.scrollHeight;
+                  
+                  // 使用更长的延迟，确保DOM更新完成
+                  setTimeout(() => {
+                    // 再次滚动确保可见
+                    logDiv.scrollTop = logDiv.scrollHeight;
+                    resolve();
+                  }, 10);
+                } else {
+                  setTimeout(resolve, 10);
+                }
+              });
             });
+          }
+          
+          // 暂停函数，让浏览器有时间更新UI
+          function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+          }
+          
+          // 每执行N次循环暂停一下，防止界面冻结
+          let loopCounter = 0;
+          async function yieldToUI() {
+            loopCounter++;
+            if (loopCounter > 5) {
+              loopCounter = 0;
+              await sleep(0); // 简短暂停让UI有时间响应
+            }
+            return true;
           }
 
         // HTTP请求函数 - 发送命令到设备 (同步版本)
@@ -2102,6 +2239,11 @@
 
       // 将普通的console.log替换为使用asyncLog的形式
       code = code.replace(/console\.log\((.*?)\);/g, 'await asyncLog($1);');
+
+      // 在循环中添加yield调用，防止长循环导致界面卡死
+      code = code.replace(/for\s*\((.*?)\)\s*\{/g, 'for($1){ await yieldToUI(); ');
+      code = code.replace(/while\s*\((.*?)\)\s*\{/g, 'while($1){ await yieldToUI(); ');
+      code = code.replace(/do\s*\{/g, 'do{ await yieldToUI(); ');
 
       // 包装整个代码到一个异步函数中
       code = asyncHelper + "\n(async function() {\n" + code + "\n})().catch(e => { console.error('程序执行出错:', e.message); alert('程序执行出错: ' + e.message); });";
@@ -2395,14 +2537,24 @@
       }
 
       // 立即设置滚动位置到底部，确保最新消息可见
-      // 使用setTimeout确保在DOM更新后滚动
-      setTimeout(() =>
-      {
-        logDiv.scrollTop = logDiv.scrollHeight;
-      }, 0);
+      logDiv.scrollTop = logDiv.scrollHeight;
 
       // 强制DOM重绘，确保视图更新
       void logDiv.offsetHeight;
+
+      // 使用requestAnimationFrame强制下一帧渲染
+      requestAnimationFrame(() =>
+      {
+        // 再次滚动到底部，确保在渲染后可见
+        logDiv.scrollTop = logDiv.scrollHeight;
+
+        // 设置闪烁效果突出显示最新消息
+        messageDiv.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+        setTimeout(() =>
+        {
+          messageDiv.style.backgroundColor = '';
+        }, 300);
+      });
     }
 
     function clearConsole()
@@ -2410,12 +2562,29 @@
       document.getElementById('consoleLog').innerHTML = '';
     }
 
-    // 只重写 console.log
+    // 重写 console.log 确保实时显示
     const originalLog = console.log;
     console.log = function ()
     {
-      addConsoleMessage(arguments);
+      // 先调用原始console.log保证在控制台显示
       originalLog.apply(console, arguments);
+
+      // 添加消息到自定义控制台
+      addConsoleMessage(arguments);
+
+      // 确保在重写的console.log调用完毕后强制刷新界面
+      const logDiv = document.getElementById('consoleLog');
+      if (logDiv)
+      {
+        // 立即尝试滚动一次
+        logDiv.scrollTop = logDiv.scrollHeight;
+
+        // 再使用requestAnimationFrame确保在下一帧渲染
+        requestAnimationFrame(() =>
+        {
+          logDiv.scrollTop = logDiv.scrollHeight;
+        });
+      }
     };
 
     // 添加串口通信相关的JavaScript代码
@@ -2468,6 +2637,13 @@
         // 显示串口界面，使用flex布局但不改变整体宽度
         const serialInterface = document.getElementById('serialInterface');
         serialInterface.style.display = 'flex';
+
+        // 添加connected类，调整串口容器样式
+        const serialContainer = document.getElementById('serialContainer');
+        serialContainer.classList.add('connected');
+
+        // 显示分隔线
+        document.getElementById('console-serial-divider').style.display = 'block';
 
         // 更新按钮状态
         document.getElementById('openSerialBtn').style.display = 'none'; // 隐藏连接按钮
@@ -2535,6 +2711,13 @@
 
         // 更新UI状态
         document.getElementById('serialInterface').style.display = 'none';
+
+        // 移除connected类，恢复串口容器默认样式
+        const serialContainer = document.getElementById('serialContainer');
+        serialContainer.classList.remove('connected');
+
+        // 隐藏分隔线
+        document.getElementById('console-serial-divider').style.display = 'none';
         document.getElementById('openSerialBtn').style.display = 'inline-flex'; // 显示连接按钮
         document.getElementById('closeSerialBtn').style.display = 'none'; // 隐藏关闭按钮
         document.getElementById('quickConnectBtn').disabled = true; // 禁用快速连接按钮
@@ -2953,6 +3136,13 @@
     // 添加分隔线拖动功能
     document.addEventListener('DOMContentLoaded', function ()
     {
+      // 确保分隔线初始隐藏
+      const horizontalDivider = document.getElementById('console-serial-divider');
+      if (horizontalDivider)
+      {
+        horizontalDivider.style.display = 'none';
+      }
+
       const divider = document.getElementById('divider');
       const container = document.querySelector('.workspace-container');
       const blocklyDiv = document.getElementById('blocklyDiv');
@@ -3028,6 +3218,72 @@
 
           // 重新定位撤销和重做按钮
           repositionUndoRedoButtons();
+        }
+
+        // 同时处理垂直调整的停止
+        if (isVerticalResizing)
+        {
+          // 停止垂直调整
+          isVerticalResizing = false;
+
+          // 移除调整中的样式
+          horizontalDivider.classList.remove('active');
+          document.body.style.cursor = '';
+        }
+      });
+
+      // 添加垂直分隔线拖动功能
+      const consoleWindow = document.getElementById('consoleWindow');
+      const serialContainer = document.getElementById('serialContainer');
+
+      let isVerticalResizing = false;
+      let initialY, initialConsoleHeight;
+
+      // 确保分隔线存在
+      if (horizontalDivider)
+      {
+        horizontalDivider.addEventListener('mousedown', function (e)
+        {
+          // 启动垂直调整
+          isVerticalResizing = true;
+          initialY = e.clientY;
+          initialConsoleHeight = consoleWindow.getBoundingClientRect().height;
+
+          // 添加调整中的样式
+          horizontalDivider.classList.add('active');
+          document.body.style.cursor = 'row-resize';
+
+          // 阻止事件冒泡和默认行为
+          e.stopPropagation();
+          e.preventDefault();
+        });
+      }
+
+      // 扩展现有的mousemove事件处理程序，处理垂直调整
+      document.addEventListener('mousemove', function (e)
+      {
+        // 处理垂直调整
+        if (isVerticalResizing && horizontalDivider)
+        {
+          // 计算移动距离
+          const deltaY = e.clientY - initialY;
+
+          // 获取windows-container的总高度
+          const containerHeight = windowsContainer.getBoundingClientRect().height;
+
+          // 计算新的控制台高度百分比
+          let newConsoleHeightPercent = ((initialConsoleHeight + deltaY) / containerHeight) * 100;
+
+          // 确保合理范围 (20% - 80%)
+          newConsoleHeightPercent = Math.max(20, Math.min(80, newConsoleHeightPercent));
+
+          // 应用新高度比例
+          consoleWindow.style.flex = `${newConsoleHeightPercent}`;
+          serialContainer.style.flex = `${100 - newConsoleHeightPercent - 1}`;  // 减去分隔线高度
+
+          // 阻止事件继续传播和默认行为
+          e.stopPropagation();
+          e.preventDefault();
         }
       });
     });
