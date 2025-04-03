@@ -71,7 +71,15 @@ Blockly.JavaScript.forBlock['gyro_control'] = function (block)
 Blockly.JavaScript.forBlock['make_connection'] = function (block)
 {
   const ip = block.getFieldValue('IP_ADDRESS');
-  return `deviceIP = "${ip}";\nconsole.log(getText("connectedToDevice") + deviceIP);\n`;
+  return `// ${getText("connectingIPAddress")}
+const connectionResult = await makeConnection("${ip}");
+if(connectionResult) {
+  deviceIP = "${ip}";
+  // console.log(getText("connectedToDevice") + deviceIP);
+} else {
+  // ${getText("connectionFailedComment")}
+  return; // ${getText("executionStoppedComment")}
+}\n`;
 };
 
 // 代码生成:获取数字输入代码生成器
@@ -125,10 +133,32 @@ Blockly.JavaScript.forBlock['console_log_variable'] = function (block)
   return `console.log(${variable});\n`;
 };
 
-// HTTP请求函数，用于在生成的代码中使用
-function httpRequest(ip, command, returnResult = false)
+// HTTP请求函数，用于在生成的代码中使用 - 仅供模拟测试
+function mockHttpRequest(ip, command, returnResult = false)
 {
-  // 更新请求URL格式以使用?cmd=参数
-  console.log(`请求: http://${ip}/?cmd=${command}`);
-  return "0"; // 默认返回值
+  // 在命令前添加标识前缀，用于调试，但不改变原始命令行为
+  const debugCommand = "[MOCK]" + command;
+  // console.log(getText("mockRequest") + `${debugCommand} -> ${ip}`);
+
+  // 针对不同命令返回不同模拟值
+  if (returnResult)
+  {
+    // 模拟设备型号查询
+    if (command === '?')
+    {
+      // console.warn(getText("usingMockHttpRequest"));
+      return "PetoiModel-v1.0";
+    }
+
+    // 模拟传感器、数字和模拟输入的响应
+    if (command.startsWith("Ra") || command.startsWith("Rd") || command.startsWith("i ") || command.includes(" ?"))
+    {
+      return "123";
+    }
+  }
+
+  return returnResult ? "0" : true; // 默认返回值
 }
+
+// 调试时可以通过以下方式启用模拟请求
+// window.httpRequest = mockHttpRequest;

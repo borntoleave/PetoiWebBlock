@@ -160,6 +160,15 @@
       word-break: break-all;
       line-height: 1.4;
       max-width: 100%;
+      user-select: text;
+      /* 允许文本选择 */
+      outline: none;
+      /* 移除默认outline */
+    }
+
+    .serial-output:focus {
+      outline: 1px solid #007bff;
+      /* 获得焦点时显示蓝色outline */
     }
 
     .serial-output br {
@@ -422,6 +431,15 @@
       word-wrap: break-word;
       white-space: pre-wrap;
       word-break: break-all;
+      user-select: text;
+      /* 允许文本选择 */
+      outline: none;
+      /* 移除默认outline */
+    }
+
+    #consoleLog:focus {
+      outline: 1px solid #007bff;
+      /* 获得焦点时显示蓝色outline */
     }
 
     /* 串口输出区域结构样式 */
@@ -1580,6 +1598,74 @@
         document.getElementById('zhBtn').classList.toggle('active', false);
         document.getElementById('enBtn').classList.toggle('active', true);
       });
+
+      // 加载默认语言积木
+      loadLanguage('en', function ()
+      {
+        // 初始化工作区
+        initWorkspace();
+        // 翻译UI
+        updateUIText();
+      });
+
+      // 添加控制台和串口输出区域的键盘复制功能
+      function setupCopyKeyboardShortcuts()
+      {
+        // 控制台区域复制功能
+        const consoleLogElement = document.getElementById('consoleLog');
+        // 设置tabindex，使元素可以接收键盘事件
+        consoleLogElement.setAttribute('tabindex', '0');
+
+        consoleLogElement.addEventListener('keydown', function (e)
+        {
+          // 检测Ctrl+C或Command+C (Mac)
+          if ((e.ctrlKey || e.metaKey) && e.key === 'c')
+          {
+            const selectedText = window.getSelection().toString();
+            if (selectedText)
+            {
+              navigator.clipboard.writeText(selectedText)
+                .then(() => console.log(getText('textCopied')))
+                .catch(err => console.error('复制失败:', err));
+            }
+          }
+        });
+
+        // 使控制台区域可以通过点击获得焦点
+        consoleLogElement.addEventListener('click', function ()
+        {
+          this.focus();
+        });
+
+        // 串口输出区域复制功能
+        const serialOutputElement = document.getElementById('serialOutput');
+        // 设置tabindex，使元素可以接收键盘事件
+        serialOutputElement.setAttribute('tabindex', '0');
+
+        serialOutputElement.addEventListener('keydown', function (e)
+        {
+          // 检测Ctrl+C或Command+C (Mac)
+          if ((e.ctrlKey || e.metaKey) && e.key === 'c')
+          {
+            const selectedText = window.getSelection().toString();
+            if (selectedText)
+            {
+              navigator.clipboard.writeText(selectedText)
+                .then(() => console.log(getText('textCopied')))
+                .catch(err => console.error('复制失败:', err));
+            }
+          }
+        });
+
+        // 使串口输出区域可以通过点击获得焦点
+        serialOutputElement.addEventListener('click', function ()
+        {
+          this.focus();
+        });
+      }
+
+      // 初始化复制功能
+      setupCopyKeyboardShortcuts();
     });
 
     // 添加动态加载语言文件的辅助函数
@@ -1913,7 +1999,10 @@
         // HTTP请求函数 - 发送命令到设备 (同步版本)
         function httpRequest(ip, command, returnResult = false) {
           console.log(getText("sendingCommand") + command);
-          const url = \`http://\${ip}/?cmd=\${encodeURIComponent(command)}\`;
+          
+          // 构造请求URL
+          const url = "http://" + ip + "/?cmd=" + encodeURIComponent(command);
+          console.log("发送HTTP请求: " + url);
           
           try {
             const xhr = new XMLHttpRequest();
@@ -1923,19 +2012,30 @@
             
             if (xhr.status === 200) {
               const result = xhr.responseText.trim();
-              // 移除结果日志输出
-              // console.log("命令执行成功，返回: " + result);
+              console.log("命令返回结果: " + result);
               
               if (returnResult) {
+                // 特别检查是否是连接测试命令并返回了模拟数据
+                if (command === '?' && result === 'PetoiModel-v1.0') {
+                  console.error("警告：返回了模拟数据而非真实设备信息");
+                }
+                
                 // 检查命令是否为读取模拟、数字输入或传感器的命令
                 const isReadCommand = command.startsWith("Ra") || 
                                      command.startsWith("Rd") || 
                                      command.startsWith("i ") ||
+                                     command === '?' ||
                                      command.includes(" ?");
                 
                 if (isReadCommand) {
-                  // 从结果中提取等号后面的数字
-                  const match = result.match(/=\s*(-?\d+)/);
+                  // 对于连接测试命令，直接返回响应
+                  if (command === '?') {
+                    console.log("设备型号信息: " + result);
+                    return result;
+                  }
+                  
+                  // 从结果中提取等号后面的数字，如果有的话
+                  const match = result.match(/=\\s*(-?\\d+)/);
                   if (match && match[1]) {
                     return match[1]; // 返回等号后的数字（字符串格式）
                   }
@@ -1944,10 +2044,10 @@
               }
               return true;
             } else {
-              throw new Error(\`${getText("httpError")}\${xhr.status}\`);
+              throw new Error("HTTP错误: " + xhr.status);
             }
           } catch (error) {
-            console.error(getText("commandFailed"), error.message);
+            console.error("命令执行失败:", error.message);
             if (returnResult) {
               return "";
             }
@@ -1960,14 +2060,15 @@
       code = code.replace(/console\.log\((.*?)\);/g, 'await asyncLog($1);');
 
       // 包装整个代码到一个异步函数中
-      code = asyncHelper + "\n(async function() {\n" + code + "\n})().catch(e => alert(e));";
+      code = asyncHelper + "\n(async function() {\n" + code + "\n})().catch(e => { console.error('程序执行出错:', e.message); alert('程序执行出错: ' + e.message); });";
 
       try
       {
         eval(code);
       } catch (e)
       {
-        alert(e);
+        console.error("代码执行出错:", e.message);
+        alert('程序执行出错: ' + e.message);
       }
     }
 
@@ -2484,7 +2585,29 @@
 
           // 更新输出显示，确保每条消息后面都有换行符
           const outputDiv = document.getElementById('serialOutput');
-          outputDiv.innerHTML += text.replace(/\n/g, '<br>');  // 将\n替换为<br>
+          // 修复：优化换行符处理，避免产生过多空行
+          // 1. 将连续的换行符替换为单个换行
+          // 2. 只在文本末尾不是换行符时添加换行
+          const processedText = text.replace(/\n{2,}/g, '\n');
+
+          // 只拼接内容，不使用innerHTML直接累加，避免渲染问题
+          const textNode = document.createTextNode(processedText);
+          const fragment = document.createDocumentFragment();
+
+          // 将文本内容分行，逐行添加
+          processedText.split('\n').forEach((line, index, array) =>
+          {
+            if (index > 0)
+            {
+              fragment.appendChild(document.createElement('br'));
+            }
+            if (line)
+            {
+              fragment.appendChild(document.createTextNode(line));
+            }
+          });
+
+          outputDiv.appendChild(fragment);
 
           // 确保滚动到底部，增加延时处理以保证更新后滚动
           setTimeout(() =>
