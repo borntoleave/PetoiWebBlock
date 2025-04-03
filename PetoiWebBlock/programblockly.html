@@ -2038,8 +2038,10 @@
           }
 
         // HTTP请求函数 - 发送命令到设备 (同步版本)
-        function httpRequest(ip, command, returnResult = false) {
-          console.log(getText("sendingCommand") + command);
+        function httpRequest(ip, command, returnResult = false, logOutput = true) {
+          if (logOutput) {
+            console.log(getText("sendingCommand") + command);
+          }
           
           // 构造请求URL
           const url = "http://" + ip + "/?cmd=" + encodeURIComponent(command);
@@ -2052,7 +2054,9 @@
             
             if (xhr.status === 200) {
               const result = xhr.responseText.trim();
-              console.log(result);
+              if (logOutput) {
+                console.log(result);
+              }
               
               if (returnResult) {
                 // 特别检查是否是连接测试命令并返回了模拟数据

@@ -35,7 +35,10 @@ Blockly.JavaScript.forBlock['set_motor_angle'] = function (block)
 Blockly.JavaScript.forBlock['get_joint_angle'] = function (block)
 {
   const jointId = block.getFieldValue('JOINT');
-  return [`parseInt(httpRequest(deviceIP, "m ${jointId} ?", true)) || 0`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
+  return [`(function() {
+    const result = httpRequest(deviceIP, "m ${jointId} ?", true, false);
+    return parseInt(result) || 0;
+  })()`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
 };
 
 // 代码生成:获取所有关节角度的代码生成器
@@ -45,7 +48,7 @@ Blockly.JavaScript.forBlock['get_all_joint_angles'] = function (block)
     (function() {
       let angles = {};
       for(let i = 0; i <= 11; i++) {
-        angles["joint" + i] = parseInt(httpRequest(deviceIP, "m " + i + " ?", true)) || 0;
+        angles["joint" + i] = parseInt(httpRequest(deviceIP, "m " + i + " ?", true, false)) || 0;
       }
       return JSON.stringify(angles);
     })()
@@ -86,21 +89,31 @@ if(connectionResult) {
 Blockly.JavaScript.forBlock['get_digital_input'] = function (block)
 {
   const pin = block.getFieldValue('PIN');
-  return [`parseInt(httpRequest(deviceIP, "Rd" + String.fromCharCode(${pin}) + "\\n", true)) || 0`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
+  return [`(function() {
+    const result = httpRequest(deviceIP, "Rd" + String.fromCharCode(${pin}) + "\\n", true, false); 
+    return parseInt(result) || 0;
+  })()`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
 };
 
 // 代码生成:获取模拟输入代码生成器
 Blockly.JavaScript.forBlock['get_analog_input'] = function (block)
 {
   const pin = block.getFieldValue('PIN');
-  return [`parseInt(httpRequest(deviceIP, "Ra" + String.fromCharCode(${pin}) + "\\n", true)) || 0`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
+  return [`(function() { 
+    // 禁止在积木内部输出console日志，仅返回值
+    const result = httpRequest(deviceIP, "Ra" + String.fromCharCode(${pin}) + "\\n", true, false); 
+    return parseInt(result) || 0;
+  })()`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
 };
 
 // 代码生成:获取传感器输入代码生成器
 Blockly.JavaScript.forBlock['get_sensor_input'] = function (block)
 {
   const sensor = block.getFieldValue('SENSOR');
-  return [`parseInt(httpRequest(deviceIP, "i ${sensor}", true)) || 0`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
+  return [`(function() {
+    const result = httpRequest(deviceIP, "i ${sensor}", true, false);
+    return parseInt(result) || 0;
+  })()`, Blockly.JavaScript.ORDER_FUNCTION_CALL];
 };
 
 // 代码生成:设置数字输出代码生成器
