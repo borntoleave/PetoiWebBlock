@@ -2414,7 +2414,26 @@
       try
       {
         port = await navigator.serial.requestPort();
-        await port.open({ baudRate: 115200 });
+        try
+        {
+          await port.open({ baudRate: 115200 });
+        } catch (portError)
+        {
+          // 检查是否是因为串口被占用
+          if (portError.name === 'NetworkError' ||
+            portError.message.includes('failed to open') ||
+            portError.message.includes('busy') ||
+            portError.message.includes('in use'))
+          {
+            // 显示提示窗口
+            alert(getText("serialPortBusy"));
+            return;
+          } else
+          {
+            // 其他错误，继续抛出
+            throw portError;
+          }
+        }
 
         // 显示串口界面，使用flex布局但不改变整体宽度
         const serialInterface = document.getElementById('serialInterface');
