@@ -2016,7 +2016,6 @@
           
           // 构造请求URL
           const url = "http://" + ip + "/?cmd=" + encodeURIComponent(command);
-          console.log("发送HTTP请求: " + url);
           
           try {
             const xhr = new XMLHttpRequest();
@@ -2026,7 +2025,6 @@
             
             if (xhr.status === 200) {
               const result = xhr.responseText.trim();
-              console.log("命令返回结果: " + result);
               
               if (returnResult) {
                 // 特别检查是否是连接测试命令并返回了模拟数据
@@ -2709,7 +2707,6 @@
       }))
       {
         // IP地址格式完整且合法，可以安全使用
-        console.log(`处理有效IP地址: ${ip}`);
 
         // 保存设备IP到全局变量
         currentDeviceIP = ip;
@@ -2721,7 +2718,6 @@
         {
           // 更新第一个make_connection积木块的IP_ADDRESS字段
           makeConnectionBlocks[0].setFieldValue(ip, 'IP_ADDRESS');
-          console.log(`已自动更新连接积木的IP地址: ${ip}`);
         }
 
         // 从缓冲区中清除已处理的IP地址部分
