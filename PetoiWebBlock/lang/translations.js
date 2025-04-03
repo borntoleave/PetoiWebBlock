@@ -37,6 +37,7 @@ const TRANSLATIONS = {
     "sendingCommand": "发送命令: ",
     "commandFailed": "命令执行失败:",
     "httpError": "HTTP错误: ",
+    "commandResult": "命令返回结果: ",
 
     // 显示代码窗口
     "generatedCode": "生成的JavaScript代码",
@@ -178,6 +179,7 @@ const TRANSLATIONS = {
     "sendingCommand": "Sending command: ",
     "commandFailed": "Command execution failed:",
     "httpError": "HTTP error: ",
+    "commandResult": "Command result: ",
 
     // Code Display Window
     "generatedCode": "Generated JavaScript Code",

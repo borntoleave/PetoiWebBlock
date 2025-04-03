@@ -161,14 +161,15 @@
       line-height: 1.4;
       max-width: 100%;
       user-select: text;
-      /* 允许文本选择 */
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
       outline: none;
-      /* 移除默认outline */
+      cursor: text;
     }
 
     .serial-output:focus {
       outline: 1px solid #007bff;
-      /* 获得焦点时显示蓝色outline */
     }
 
     .serial-output br {
@@ -432,14 +433,15 @@
       white-space: pre-wrap;
       word-break: break-all;
       user-select: text;
-      /* 允许文本选择 */
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
       outline: none;
-      /* 移除默认outline */
+      cursor: text;
     }
 
     #consoleLog:focus {
       outline: 1px solid #007bff;
-      /* 获得焦点时显示蓝色outline */
     }
 
     /* 串口输出区域结构样式 */
@@ -537,6 +539,16 @@
       font-size: 12px;
       cursor: pointer;
       transition: all 0.3s;
+    }
+
+    /* 使Console和Serial文本可选择的CSS样式 */
+    #consoleLog,
+    #serialOutput {
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+      user-select: text;
+      cursor: text;
     }
   </style>
 </head>
@@ -1611,61 +1623,90 @@
       // 添加控制台和串口输出区域的键盘复制功能
       function setupCopyKeyboardShortcuts()
       {
-        // 控制台区域复制功能
-        const consoleLogElement = document.getElementById('consoleLog');
-        // 设置tabindex，使元素可以接收键盘事件
-        consoleLogElement.setAttribute('tabindex', '0');
-
-        consoleLogElement.addEventListener('keydown', function (e)
+        // 为元素添加复制功能
+        function enableCopyForElement(element)
         {
-          // 检测Ctrl+C或Command+C (Mac)
+          if (!element) return;
+
+          // 设置元素属性
+          element.setAttribute('tabindex', '0');
+          element.setAttribute('contenteditable', 'true');
+
+          // 移除旧事件监听器（避免重复）
+          element.removeEventListener('keydown', handleKeyDown);
+          element.removeEventListener('click', handleClick);
+          element.removeEventListener('input', handleInput);
+
+          // 添加事件监听器
+          element.addEventListener('keydown', handleKeyDown);
+          element.addEventListener('click', handleClick);
+          element.addEventListener('input', handleInput);
+        }
+
+        // 键盘快捷键处理函数
+        function handleKeyDown(e)
+        {
           if ((e.ctrlKey || e.metaKey) && e.key === 'c')
           {
+            e.preventDefault();
             const selectedText = window.getSelection().toString();
             if (selectedText)
             {
               navigator.clipboard.writeText(selectedText)
-                .then(() => console.log(getText('textCopied')))
+                .then(() =>
+                {
+                  console.log(getText('textCopied'));
+                })
                 .catch(err => console.error('复制失败:', err));
             }
           }
-        });
+        }
 
-        // 使控制台区域可以通过点击获得焦点
-        consoleLogElement.addEventListener('click', function ()
+        // 点击获取焦点处理函数
+        function handleClick()
         {
           this.focus();
-        });
+        }
 
-        // 串口输出区域复制功能
-        const serialOutputElement = document.getElementById('serialOutput');
-        // 设置tabindex，使元素可以接收键盘事件
-        serialOutputElement.setAttribute('tabindex', '0');
-
-        serialOutputElement.addEventListener('keydown', function (e)
+        // 防止编辑处理函数
+        function handleInput(e)
         {
-          // 检测Ctrl+C或Command+C (Mac)
-          if ((e.ctrlKey || e.metaKey) && e.key === 'c')
+          e.preventDefault();
+        }
+
+        // 初始化两个区域
+        enableCopyForElement(document.getElementById('consoleLog'));
+        enableCopyForElement(document.getElementById('serialOutput'));
+
+        // 创建MutationObserver监视DOM变化
+        const observer = new MutationObserver(function (mutations)
+        {
+          mutations.forEach(function (mutation)
           {
-            const selectedText = window.getSelection().toString();
-            if (selectedText)
+            if (mutation.type === 'childList' || mutation.type === 'subtree')
             {
-              navigator.clipboard.writeText(selectedText)
-                .then(() => console.log(getText('textCopied')))
-                .catch(err => console.error('复制失败:', err));
+              // 当DOM发生变化时，重新应用复制功能
+              enableCopyForElement(document.getElementById('consoleLog'));
+              enableCopyForElement(document.getElementById('serialOutput'));
             }
-          }
+          });
         });
 
-        // 使串口输出区域可以通过点击获得焦点
-        serialOutputElement.addEventListener('click', function ()
-        {
-          this.focus();
+        // 监视整个文档的变化
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true
         });
       }
 
-      // 初始化复制功能
-      setupCopyKeyboardShortcuts();
+      // 在页面加载完成和window对象可用后初始化
+      if (document.readyState === 'complete')
+      {
+        setupCopyKeyboardShortcuts();
+      } else
+      {
+        window.addEventListener('load', setupCopyKeyboardShortcuts);
+      }
     });
 
     // 添加动态加载语言文件的辅助函数
@@ -2002,7 +2043,6 @@
           
           // 构造请求URL
           const url = "http://" + ip + "/?cmd=" + encodeURIComponent(command);
-          console.log("发送HTTP请求: " + url);
           
           try {
             const xhr = new XMLHttpRequest();
@@ -2012,7 +2052,7 @@
             
             if (xhr.status === 200) {
               const result = xhr.responseText.trim();
-              console.log("命令返回结果: " + result);
+              console.log(result);
               
               if (returnResult) {
                 // 特别检查是否是连接测试命令并返回了模拟数据
@@ -2985,6 +3025,77 @@
         }
       });
     }
+
+    // 复制到剪贴板的函数
+    function copyTextToClipboard(text)
+    {
+      // 创建临时文本区域
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+
+      // 设置样式使其不可见
+      textarea.style.position = 'fixed';
+      textarea.style.top = '-9999px';
+      textarea.style.left = '-9999px';
+      textarea.style.opacity = '0';
+      textarea.style.zIndex = '-1';
+
+      // 添加到文档
+      document.body.appendChild(textarea);
+
+      // 选择文本
+      textarea.select();
+      textarea.setSelectionRange(0, textarea.value.length);
+
+      // 尝试复制
+      let success = false;
+      try
+      {
+        success = document.execCommand('copy');
+      } catch (err)
+      {
+        console.error('复制出错:', err);
+      }
+
+      // 清理
+      document.body.removeChild(textarea);
+
+      return success;
+    }
+
+    // 添加全局复制事件监听器
+    document.addEventListener('keydown', function (e)
+    {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'c')
+      {
+        const selection = window.getSelection();
+        const selectedText = selection.toString();
+
+        if (selectedText)
+        {
+          // 检查选择是否在控制台或串口输出区域内
+          let isInTextArea = false;
+          let node = selection.anchorNode;
+
+          while (node && !isInTextArea)
+          {
+            const parentId = node.id || (node.parentNode && node.parentNode.id);
+            if (parentId === 'consoleLog' || parentId === 'serialOutput')
+            {
+              isInTextArea = true;
+            }
+            node = node.parentNode;
+          }
+
+          if (isInTextArea)
+          {
+            // 阻止默认行为并使用我们的复制功能
+            e.preventDefault();
+            copyTextToClipboard(selectedText);
+          }
+        }
+      }
+    });
   </script>
 </body>
 
