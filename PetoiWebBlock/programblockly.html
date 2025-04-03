@@ -2391,6 +2391,10 @@
     let historyIndex = -1;
     let tempInputValue = '';
 
+    let ipCheckTimer = null;
+    let lastPartialIP = null;
+    let serialBuffer = '';
+
     async function openSerialPort()
     {
       try
@@ -2544,9 +2548,6 @@
       }
     }
 
-    let ipCheckInterval = null;
-    let serialBuffer = '';
-
     async function readSerialData()
     {
       try
@@ -2562,25 +2563,50 @@
           const text = new TextDecoder().decode(value);
           serialBuffer += text;
 
-          // 检查是否包含IP地址信息
-          const ipMatch = serialBuffer.match(/IP Address: ([0-9.]+)/);
-          if (ipMatch)
+          // 取消任何正在进行的IP检查定时器
+          if (ipCheckTimer)
           {
-            const ip = ipMatch[1];
-            // 保存设备IP到全局变量
-            currentDeviceIP = ip;
-            document.getElementById('ipDisplay').textContent = `${getText("serialConfiguredIP")}${ip}`;
+            clearTimeout(ipCheckTimer);
+            ipCheckTimer = null;
+          }
 
-            // 查找工作区中的make_connection积木块并更新IP地址
-            const makeConnectionBlocks = workspace.getBlocksByType('make_connection');
-            if (makeConnectionBlocks && makeConnectionBlocks.length > 0)
+          // 检查是否找到"IP Address:"字符串
+          const ipAddressPosition = serialBuffer.indexOf("IP Address:");
+          if (ipAddressPosition !== -1)
+          {
+            // 找到IP地址前缀，提取后续内容检查
+            const afterPrefix = serialBuffer.substring(ipAddressPosition + "IP Address:".length).trim();
+
+            // 使用更宽松的正则表达式先找出可能的IP地址
+            const possibleIPMatch = afterPrefix.match(/^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/);
+
+            if (possibleIPMatch)
             {
-              // 更新第一个make_connection积木块的IP_ADDRESS字段
-              makeConnectionBlocks[0].setFieldValue(ip, 'IP_ADDRESS');
-              console.log(`已自动更新连接积木的IP地址: ${ip}`);
-            }
+              const possibleIP = possibleIPMatch[1];
 
-            serialBuffer = '';  // 清空缓冲区
+              // 检查该IP地址后是否紧跟着还有数字，如果有可能是不完整的
+              const afterIP = afterPrefix.substring(possibleIP.length);
+              const hasMoreDigits = /^\d/.test(afterIP);
+
+              if (hasMoreDigits)
+              {
+                // 后面还有数字，可能是不完整的IP，暂时不处理，等待更多数据
+                console.log(`检测到可能不完整的IP地址: ${possibleIP}，后面还有数字`);
+                lastPartialIP = possibleIP;
+              } else
+              {
+                // 延迟处理IP地址，等待可能的后续数据片段
+                lastPartialIP = possibleIP;
+
+                // 设置延迟处理定时器 (100ms)
+                ipCheckTimer = setTimeout(() =>
+                {
+                  processDetectedIP(lastPartialIP);
+                  ipCheckTimer = null;
+                  lastPartialIP = null;
+                }, 100);
+              }
+            }
           }
 
           // 更新输出显示，确保每条消息后面都有换行符
@@ -2618,6 +2644,55 @@
       } catch (error)
       {
         console.error(getText("serialReadError"), error);
+      }
+    }
+
+    // 处理检测到的IP地址
+    function processDetectedIP(ip)
+    {
+      if (!ip) return;
+
+      // 验证IP地址格式是否合法
+      const ipSegments = ip.split('.');
+      if (ipSegments.length === 4 && ipSegments.every(segment =>
+      {
+        // 检查每段是否为有效数字且在0-255范围内
+        const num = parseInt(segment, 10);
+        return !isNaN(num) && num >= 0 && num <= 255;
+      }))
+      {
+        // IP地址格式完整且合法，可以安全使用
+        console.log(`处理有效IP地址: ${ip}`);
+
+        // 保存设备IP到全局变量
+        currentDeviceIP = ip;
+        document.getElementById('ipDisplay').textContent = `${getText("serialConfiguredIP")}${ip}`;
+
+        // 查找工作区中的make_connection积木块并更新IP地址
+        const makeConnectionBlocks = workspace.getBlocksByType('make_connection');
+        if (makeConnectionBlocks && makeConnectionBlocks.length > 0)
+        {
+          // 更新第一个make_connection积木块的IP_ADDRESS字段
+          makeConnectionBlocks[0].setFieldValue(ip, 'IP_ADDRESS');
+          console.log(`已自动更新连接积木的IP地址: ${ip}`);
+        }
+
+        // 从缓冲区中清除已处理的IP地址部分
+        const ipPosition = serialBuffer.indexOf('IP Address: ' + ip);
+        if (ipPosition !== -1)
+        {
+          serialBuffer = serialBuffer.substring(0, ipPosition) +
+            serialBuffer.substring(ipPosition + ('IP Address: ' + ip).length);
+        }
+      } else
+      {
+        console.log(`IP地址格式不正确: ${ip}`);
+      }
+
+      // 如果缓冲区过大，防止内存泄漏
+      if (serialBuffer.length > 10000)
+      {
+        serialBuffer = serialBuffer.substring(serialBuffer.length - 5000);
       }
     }
 
