@@ -117,46 +117,21 @@
       padding: 10px;
       flex: 3;
       /* 保持固定比例 */
-      gap: 0;
-      /* 移除容器之间的间距，由分隔线控制 */
+      gap: 20px;
+      /* 增加容器之间的间距 */
     }
 
     /* 控制台区域 */
     #consoleWindow {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      width: 100%;
+      overflow: hidden;
       flex: 1;
-      /* 当串口未连接时占据所有可用空间 */
       background-color: #1e1e1e;
       padding: 0;
       font-family: 'Consolas', monospace;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      overflow: hidden;
-    }
-
-    /* 串口容器，初始状态下只显示按钮部分 */
-    #serialContainer {
-      background-color: #f5f5f5;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      min-height: auto;
-      /* 未连接时高度自适应内容 */
-      max-height: 60px;
-      /* 未连接时只显示按钮区高度 */
-      overflow: hidden;
-    }
-
-    /* 串口连接后应用此样式 */
-    #serialContainer.connected {
-      flex: 4;
-      /* 连接后占据适当比例 */
-      min-height: 180px;
-      /* 连接后确保有足够高度 */
-      max-height: none;
-      /* 移除高度限制 */
     }
 
     /* 控制台内容项样式 */
@@ -164,47 +139,60 @@
       padding: 3px 0;
       margin-bottom: 3px;
       font-size: 13px;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      word-break: break-all;
+      white-space: nowrap;
       line-height: 1.3;
       color: #ffffff;
       border-bottom: 1px dotted #333;
     }
 
+    /* 水平滚动条样式 */
+    #consoleLog::-webkit-scrollbar,
+    .serial-output::-webkit-scrollbar {
+      height: 8px;
+      width: 8px;
+    }
+
+    #consoleLog::-webkit-scrollbar-track,
+    .serial-output::-webkit-scrollbar-track {
+      background: #2d2d2d;
+    }
+
+    #consoleLog::-webkit-scrollbar-thumb,
+    .serial-output::-webkit-scrollbar-thumb {
+      background: #555;
+      border-radius: 4px;
+    }
+
+    #consoleLog::-webkit-scrollbar-thumb:hover,
+    .serial-output::-webkit-scrollbar-thumb:hover {
+      background: #777;
+    }
+
     /* 串口输出区域 */
     .serial-output {
       flex: 1;
-      /* 使输出区域占用所有剩余空间 */
-      height: auto;
-      /* 自动高度，不再需要计算 */
-      min-height: 30px;
-      /* 设置最小高度 */
+      min-height: 0;
       margin: 0;
       padding: 10px;
-      padding-right: 15px;
-      /* 为滚动条留出空间 */
       overflow-y: auto;
-      overflow-x: hidden;
+      overflow-x: auto;
+      /* 启用水平滚动条 */
       background-color: #1e1e1e;
       color: #fff;
       font-family: 'Consolas', monospace;
       font-size: 13px;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      word-break: break-all;
+      white-space: nowrap;
       line-height: 1.4;
       max-width: 100%;
       user-select: text;
-      -webkit-user-select: text;
-      -moz-user-select: text;
-      -ms-user-select: text;
+      /* 允许文本选择 */
       outline: none;
-      cursor: text;
+      /* 移除默认outline */
     }
 
     .serial-output:focus {
       outline: 1px solid #007bff;
+      /* 获得焦点时显示蓝色outline */
     }
 
     .serial-output br {
@@ -219,44 +207,24 @@
       padding: 10px;
       background-color: #1e1e1e;
       border-top: 1px solid #333;
-      /* 不再使用绝对定位，而是作为flex布局的一部分 */
-      height: 50px;
-      /* 固定高度 */
-      min-height: 50px;
-      /* 防止压缩 */
-      box-sizing: border-box;
     }
 
     .serial-input-container input {
       flex: 1;
-      padding: 8px 10px;
-      border: 1px solid #444;
+      padding: 5px;
+      border: 1px solid #ccc;
       border-radius: 4px;
-      background-color: #2a2a2a;
-      color: #fff;
-      font-family: 'Consolas', monospace;
-      font-size: 13px;
     }
 
-    .serial-input-container input:focus {
-      outline: none;
-      border-color: #007bff;
-      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-    }
-
+    /* 串口按钮区域 */
     .serial-buttons {
       display: flex;
       gap: 10px;
-      padding: 10px;
+      padding: 5px;
       background-color: #f5f5f5;
+      /* 灰色背景，与页面背景一致 */
       border: none;
-      margin-top: auto;
-      /* 推到底部 */
-      align-self: flex-end;
-      /* 确保在底部 */
-      width: 100%;
-      /* 占满宽度 */
-      box-sizing: border-box;
+      margin-bottom: 5px;
     }
 
     .serial-button:disabled {
@@ -414,10 +382,33 @@
       user-select: none;
     }
 
+    /* 串口容器样式 */
+    #serialContainer {
+      background-color: #f5f5f5;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      min-height: auto;
+      /* 未连接时高度自适应内容 */
+      max-height: 60px;
+      /* 未连接时只显示按钮区高度 */
+      overflow: hidden;
+    }
+
+    /* 串口连接后应用此样式 */
+    #serialContainer.connected {
+      flex: 4;
+      /* 连接后占据适当比例 */
+      min-height: 180px;
+      /* 连接后确保有足够高度 */
+      max-height: none;
+      /* 移除高度限制 */
+    }
+
     /* 串口输出容器 */
     #serialInterface {
       display: none;
-      /* 默认隐藏 */
       flex-direction: column;
       overflow: hidden;
       height: 100%;
@@ -425,10 +416,6 @@
       max-width: 100%;
       background-color: #1e1e1e;
       /* 黑色背景 */
-      position: relative;
-      /* 添加相对定位，用于绝对定位的子元素 */
-      min-height: 150px;
-      /* 设置最小高度以确保小尺寸下显示正常 */
     }
 
     /* 修复积木块文字偏移问题 */
@@ -456,6 +443,8 @@
     #consoleLog {
       flex: 1;
       overflow-y: auto;
+      overflow-x: auto;
+      /* 启用水平滚动条 */
       padding: 10px;
       background-color: #1e1e1e;
       color: #fff;
@@ -463,19 +452,16 @@
       font-size: 13px;
       line-height: 1.4;
       max-height: 100%;
-      word-wrap: break-word;
-      white-space: pre-wrap;
-      word-break: break-all;
+      white-space: nowrap;
       user-select: text;
-      -webkit-user-select: text;
-      -moz-user-select: text;
-      -ms-user-select: text;
+      /* 允许文本选择 */
       outline: none;
-      cursor: text;
+      /* 移除默认outline */
     }
 
     #consoleLog:focus {
       outline: 1px solid #007bff;
+      /* 获得焦点时显示蓝色outline */
     }
 
     /* 区域标题栏样式 */
@@ -546,52 +532,37 @@
     .serial-buttons {
       display: flex;
       gap: 10px;
-      padding: 10px;
+      padding: 5px;
       background-color: #f5f5f5;
+      /* 灰色背景，与页面背景一致 */
       border: none;
-      margin-top: auto;
-      /* 推到底部 */
-      align-self: flex-end;
-      /* 确保在底部 */
-      width: 100%;
-      /* 占满宽度 */
-      box-sizing: border-box;
+      margin-bottom: 5px;
     }
 
     .serial-button {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 6px 10px;
+      padding: 8px 15px;
       background: #007bff;
       color: #fff;
       border: none;
       border-radius: 4px;
       margin: 2px;
-      font-size: 12px;
+      font-size: 14px;
       cursor: pointer;
       transition: all 0.3s;
-    }
-
-    /* 使Console和Serial文本可选择的CSS样式 */
-    #consoleLog,
-    #serialOutput {
-      -webkit-user-select: text;
-      -moz-user-select: text;
-      -ms-user-select: text;
-      user-select: text;
-      cursor: text;
     }
 
     /* 水平分隔线样式 */
     .horizontal-resizer {
       width: 100%;
-      height: 8px;
+      height: 6px;
       background-color: #f0f0f0;
       cursor: row-resize;
       transition: background-color 0.2s;
       user-select: none;
-      margin: 5px 0;
+      margin: 2px 0;
       display: none;
       /* 初始隐藏 */
     }
@@ -599,56 +570,6 @@
     .horizontal-resizer:hover,
     .horizontal-resizer.active {
       background-color: #ccc;
-    }
-
-    .serial-input-container button {
-      padding: 8px 15px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 13px;
-      transition: background-color 0.2s;
-    }
-
-    .serial-input-container button:hover {
-      background-color: #0069d9;
-    }
-
-    .serial-input-container button:active {
-      background-color: #0062cc;
-    }
-
-    /* 滚动条样式 */
-    .dark-scrollbar::-webkit-scrollbar {
-      width: 12px;
-      /* 增加滚动条宽度 */
-      height: 12px;
-    }
-
-    .dark-scrollbar::-webkit-scrollbar-track {
-      background: #333;
-      border-radius: 6px;
-    }
-
-    .dark-scrollbar::-webkit-scrollbar-thumb {
-      background: #666;
-      border-radius: 6px;
-      min-height: 40px;
-      /* 确保滑块有最小高度 */
-    }
-
-    .dark-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: #888;
-    }
-
-    /* 确保滚动条在小窗口下也能正常显示 */
-    #serialOutput.dark-scrollbar {
-      scrollbar-width: thin;
-      scrollbar-color: #666 #333;
-      margin-right: 4px;
-      /* 为滚动条留出更多空间 */
     }
   </style>
 </head>
@@ -1725,90 +1646,61 @@
       // 添加控制台和串口输出区域的键盘复制功能
       function setupCopyKeyboardShortcuts()
       {
-        // 为元素添加复制功能
-        function enableCopyForElement(element)
+        // 控制台区域复制功能
+        const consoleLogElement = document.getElementById('consoleLog');
+        // 设置tabindex，使元素可以接收键盘事件
+        consoleLogElement.setAttribute('tabindex', '0');
+
+        consoleLogElement.addEventListener('keydown', function (e)
         {
-          if (!element) return;
-
-          // 设置元素属性
-          element.setAttribute('tabindex', '0');
-          element.setAttribute('contenteditable', 'true');
-
-          // 移除旧事件监听器（避免重复）
-          element.removeEventListener('keydown', handleKeyDown);
-          element.removeEventListener('click', handleClick);
-          element.removeEventListener('input', handleInput);
-
-          // 添加事件监听器
-          element.addEventListener('keydown', handleKeyDown);
-          element.addEventListener('click', handleClick);
-          element.addEventListener('input', handleInput);
-        }
-
-        // 键盘快捷键处理函数
-        function handleKeyDown(e)
-        {
+          // 检测Ctrl+C或Command+C (Mac)
           if ((e.ctrlKey || e.metaKey) && e.key === 'c')
           {
-            e.preventDefault();
             const selectedText = window.getSelection().toString();
             if (selectedText)
             {
               navigator.clipboard.writeText(selectedText)
-                .then(() =>
-                {
-                  console.log(getText('textCopied'));
-                })
+                .then(() => console.log(getText('textCopied')))
                 .catch(err => console.error('复制失败:', err));
             }
           }
-        }
+        });
 
-        // 点击获取焦点处理函数
-        function handleClick()
+        // 使控制台区域可以通过点击获得焦点
+        consoleLogElement.addEventListener('click', function ()
         {
           this.focus();
-        }
+        });
 
-        // 防止编辑处理函数
-        function handleInput(e)
+        // 串口输出区域复制功能
+        const serialOutputElement = document.getElementById('serialOutput');
+        // 设置tabindex，使元素可以接收键盘事件
+        serialOutputElement.setAttribute('tabindex', '0');
+
+        serialOutputElement.addEventListener('keydown', function (e)
         {
-          e.preventDefault();
-        }
-
-        // 初始化两个区域
-        enableCopyForElement(document.getElementById('consoleLog'));
-        enableCopyForElement(document.getElementById('serialOutput'));
-
-        // 创建MutationObserver监视DOM变化
-        const observer = new MutationObserver(function (mutations)
-        {
-          mutations.forEach(function (mutation)
+          // 检测Ctrl+C或Command+C (Mac)
+          if ((e.ctrlKey || e.metaKey) && e.key === 'c')
           {
-            if (mutation.type === 'childList' || mutation.type === 'subtree')
+            const selectedText = window.getSelection().toString();
+            if (selectedText)
             {
-              // 当DOM发生变化时，重新应用复制功能
-              enableCopyForElement(document.getElementById('consoleLog'));
-              enableCopyForElement(document.getElementById('serialOutput'));
+              navigator.clipboard.writeText(selectedText)
+                .then(() => console.log(getText('textCopied')))
+                .catch(err => console.error('复制失败:', err));
             }
-          });
+          }
         });
 
-        // 监视整个文档的变化
-        observer.observe(document.body, {
-          childList: true,
-          subtree: true
+        // 使串口输出区域可以通过点击获得焦点
+        serialOutputElement.addEventListener('click', function ()
+        {
+          this.focus();
         });
       }
 
-      // 在页面加载完成和window对象可用后初始化
-      if (document.readyState === 'complete')
-      {
-        setupCopyKeyboardShortcuts();
-      } else
-      {
-        window.addEventListener('load', setupCopyKeyboardShortcuts);
-      }
+      // 初始化复制功能
+      setupCopyKeyboardShortcuts();
     });
 
     // 添加动态加载语言文件的辅助函数
@@ -2130,55 +2022,18 @@
 
       // 添加辅助函数确保异步操作按顺序执行
       const asyncHelper = `
-          // 辅助函数，确保异步打印能够立即执行并更新DOM
+          // 辅助函数，确保异步打印能够立即执行
           function asyncLog(message) {
             return new Promise((resolve) => {
               console.log(message);
-              
-              // 强制浏览器更新DOM - 使用requestAnimationFrame和setTimeout组合
-              requestAnimationFrame(() => {
-                // 强制重绘
-                const logDiv = document.getElementById('consoleLog');
-                if (logDiv) {
-                  // 强制DOM重绘
-                  void logDiv.offsetHeight;
-                  // 强制滚动到底部
-                  logDiv.scrollTop = logDiv.scrollHeight;
-                  
-                  // 使用更长的延迟，确保DOM更新完成
-                  setTimeout(() => {
-                    // 再次滚动确保可见
-                    logDiv.scrollTop = logDiv.scrollHeight;
-                    resolve();
-                  }, 10);
-                } else {
-                  setTimeout(resolve, 10);
-                }
-              });
+              // 强制浏览器更新DOM
+              setTimeout(resolve, 0);
             });
-          }
-          
-          // 暂停函数，让浏览器有时间更新UI
-          function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-          }
-          
-          // 每执行N次循环暂停一下，防止界面冻结
-          let loopCounter = 0;
-          async function yieldToUI() {
-            loopCounter++;
-            if (loopCounter > 5) {
-              loopCounter = 0;
-              await sleep(0); // 简短暂停让UI有时间响应
-            }
-            return true;
           }
 
         // HTTP请求函数 - 发送命令到设备 (同步版本)
-        function httpRequest(ip, command, returnResult = false, logOutput = true) {
-          if (logOutput) {
-            console.log(getText("sendingCommand") + command);
-          }
+        function httpRequest(ip, command, returnResult = false) {
+          console.log(getText("sendingCommand") + command);
           
           // 构造请求URL
           const url = "http://" + ip + "/?cmd=" + encodeURIComponent(command);
@@ -2191,9 +2046,6 @@
             
             if (xhr.status === 200) {
               const result = xhr.responseText.trim();
-              if (logOutput) {
-                console.log(result);
-              }
               
               if (returnResult) {
                 // 特别检查是否是连接测试命令并返回了模拟数据
@@ -2240,13 +2092,10 @@
       // 将普通的console.log替换为使用asyncLog的形式
       code = code.replace(/console\.log\((.*?)\);/g, 'await asyncLog($1);');
 
-      // 在循环中添加yield调用，防止长循环导致界面卡死
-      code = code.replace(/for\s*\((.*?)\)\s*\{/g, 'for($1){ await yieldToUI(); ');
-      code = code.replace(/while\s*\((.*?)\)\s*\{/g, 'while($1){ await yieldToUI(); ');
-      code = code.replace(/do\s*\{/g, 'do{ await yieldToUI(); ');
-
       // 包装整个代码到一个异步函数中
-      code = asyncHelper + "\n(async function() {\n" + code + "\n})().catch(e => { console.error('程序执行出错:', e.message); alert('程序执行出错: ' + e.message); });";
+      code = asyncHelper + "\n(async function() {\n" + code + "\n" +
+        "console.log(getText('runCompleted'));" + // 添加运行结束消息
+        "\n})().catch(e => { console.error('程序执行出错:', e.message); alert('程序执行出错: ' + e.message); });";
 
       try
       {
@@ -2525,7 +2374,15 @@
         return String(arg);
       });
 
-      messageDiv.textContent = `[${time}] ${messages.join(' ')}`;
+      const messageText = messages.join(' ');
+      messageDiv.textContent = `[${time}] ${messageText}`;
+
+      // 检测是否为"运行结束"消息，如果是则使用绿色字体
+      if (messageText === getText('runCompleted'))
+      {
+        messageDiv.style.color = '#4CAF50'; // 使用绿色
+        messageDiv.style.fontWeight = 'bold'; // 加粗显示
+      }
 
       // 使用原生DOM方法确保立即渲染，改为添加到末尾
       logDiv.appendChild(messageDiv);
@@ -2536,55 +2393,116 @@
         logDiv.removeChild(logDiv.firstChild);
       }
 
-      // 立即设置滚动位置到底部，确保最新消息可见
+      // 只对长消息进行容器宽度调整
+      if (messageText.length > 30)
+      { // 只处理超过30个字符的消息
+        // 自动调整宽度以适应内容
+        adjustContainerWidth('consoleWindow', messageDiv.scrollWidth);
+      }
+
+      // 立即滚动到底部，不使用setTimeout
       logDiv.scrollTop = logDiv.scrollHeight;
 
       // 强制DOM重绘，确保视图更新
       void logDiv.offsetHeight;
+    }
 
-      // 使用requestAnimationFrame强制下一帧渲染
-      requestAnimationFrame(() =>
+    // 添加一个辅助函数来调整容器宽度
+    function adjustContainerWidth(containerId, contentWidth)
+    {
+      const container = document.getElementById(containerId);
+      const windowsContainer = document.querySelector('.windows-container');
+      const extraPadding = 40; // 额外的内边距
+
+      // 添加最小宽度阈值，过短的内容不触发宽度调整
+      const minWidthThreshold = 250; // 小于这个宽度的内容不会触发调整
+
+      // 只有内容宽度大于阈值，且超过历史最大宽度时才考虑调整
+      if (contentWidth > minWidthThreshold && contentWidth > maxContentWidths[containerId])
       {
-        // 再次滚动到底部，确保在渲染后可见
-        logDiv.scrollTop = logDiv.scrollHeight;
+        // 计算增长百分比
+        const growthPercentage = (contentWidth - maxContentWidths[containerId]) / maxContentWidths[containerId] * 100;
 
-        // 设置闪烁效果突出显示最新消息
-        messageDiv.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-        setTimeout(() =>
+        // 只有显著增长（超过5%）时才调整，避免小幅波动
+        if (maxContentWidths[containerId] === 0 || growthPercentage > 5)
         {
-          messageDiv.style.backgroundColor = '';
-        }, 300);
-      });
+          // 更新记录的最大宽度
+          maxContentWidths[containerId] = contentWidth;
+
+          // 检查内容是否需要更宽的容器
+          if (contentWidth + extraPadding > container.offsetWidth)
+          {
+            // 计算需要的宽度百分比
+            const workspaceContainer = document.querySelector('.workspace-container');
+            const totalWidth = workspaceContainer.offsetWidth;
+            let newContainerWidth = (contentWidth + extraPadding) / totalWidth * 100;
+
+            // 获取当前blockly工作区宽度
+            const blocklyDiv = document.getElementById('blocklyDiv');
+            const currentBlocklyWidthPercent = parseFloat(blocklyDiv.style.width) || 70;
+
+            // 定义blockly工作区最小宽度百分比
+            const minBlocklyWidthPercent = 45; // 确保Blockly区域至少占45%
+
+            // 检查扩展后是否会使blockly区域小于最小值
+            if (99 - newContainerWidth - 1 < minBlocklyWidthPercent)
+            {
+              // 如果扩展会导致blockly区域太小，则添加横向滚动条而不是扩展宽度
+              if (containerId === 'consoleWindow')
+              {
+                document.getElementById('consoleLog').style.overflowX = 'auto';
+              } else if (containerId === 'serialContainer')
+              {
+                document.getElementById('serialOutput').style.overflowX = 'auto';
+              }
+              return; // 不再继续调整宽度
+            }
+
+            // 限制最大宽度百分比
+            newContainerWidth = Math.min(newContainerWidth, 53); // 最大53%，确保blockly区域至少有45%加上1%分隔线
+
+            // 应用新宽度
+            const newBlocklyWidth = 99 - newContainerWidth - 1; // 减去分隔线宽度的1%
+
+            blocklyDiv.style.width = `${newBlocklyWidth}%`;
+            blocklyDiv.style.flexBasis = `${newBlocklyWidth}%`;
+            windowsContainer.style.width = `${newContainerWidth}%`;
+            windowsContainer.style.flexBasis = `${newContainerWidth}%`;
+
+            // 调整Blockly工作区大小
+            if (workspace)
+            {
+              Blockly.svgResize(workspace);
+
+              // 更新撤销和重做按钮位置
+              repositionUndoRedoButtons();
+            }
+          }
+        }
+      }
     }
 
     function clearConsole()
     {
       document.getElementById('consoleLog').innerHTML = '';
+      // 重置控制台最大宽度记录
+      maxContentWidths['consoleWindow'] = 0;
     }
 
-    // 重写 console.log 确保实时显示
+    function clearSerialOutput()
+    {
+      const outputDiv = document.getElementById('serialOutput');
+      outputDiv.innerHTML = '';
+      // 重置串口输出最大宽度记录
+      maxContentWidths['serialContainer'] = 0;
+    }
+
+    // 只重写 console.log
     const originalLog = console.log;
     console.log = function ()
     {
-      // 先调用原始console.log保证在控制台显示
-      originalLog.apply(console, arguments);
-
-      // 添加消息到自定义控制台
       addConsoleMessage(arguments);
-
-      // 确保在重写的console.log调用完毕后强制刷新界面
-      const logDiv = document.getElementById('consoleLog');
-      if (logDiv)
-      {
-        // 立即尝试滚动一次
-        logDiv.scrollTop = logDiv.scrollHeight;
-
-        // 再使用requestAnimationFrame确保在下一帧渲染
-        requestAnimationFrame(() =>
-        {
-          logDiv.scrollTop = logDiv.scrollHeight;
-        });
-      }
+      originalLog.apply(console, arguments);
     };
 
     // 添加串口通信相关的JavaScript代码
@@ -2603,6 +2521,12 @@
     let commandHistory = [];
     let historyIndex = -1;
     let tempInputValue = '';
+
+    // 跟踪各容器内容的最大宽度
+    let maxContentWidths = {
+      'consoleWindow': 0,
+      'serialContainer': 0
+    };
 
     let ipCheckTimer = null;
     let lastPartialIP = null;
@@ -2644,6 +2568,10 @@
 
         // 显示分隔线
         document.getElementById('console-serial-divider').style.display = 'block';
+
+        // 设置控制台和串口区域的初始高度比例为50%/50%
+        document.getElementById('consoleWindow').style.flex = '50';
+        serialContainer.style.flex = '49'; // 减去分隔线高度
 
         // 更新按钮状态
         document.getElementById('openSerialBtn').style.display = 'none'; // 隐藏连接按钮
@@ -2722,6 +2650,9 @@
         document.getElementById('closeSerialBtn').style.display = 'none'; // 隐藏关闭按钮
         document.getElementById('quickConnectBtn').disabled = true; // 禁用快速连接按钮
         document.getElementById('ipDisplay').textContent = '';
+
+        // 重置串口容器的最大宽度记录
+        maxContentWidths['serialContainer'] = 0;
 
         // 不要重置当前IP地址，保留上一次的连接信息
         // currentDeviceIP = '192.168.4.1'; // 重置为默认IP
@@ -2881,11 +2812,44 @@
 
           outputDiv.appendChild(fragment);
 
-          // 确保滚动到底部，增加延时处理以保证更新后滚动
-          setTimeout(() =>
+          // 测量内容宽度并自动调整宽度
+          // 创建临时测量元素
+          const tempMeasure = document.createElement('div');
+          tempMeasure.style.position = 'absolute';
+          tempMeasure.style.visibility = 'hidden';
+          tempMeasure.style.whiteSpace = 'nowrap';
+          tempMeasure.style.fontFamily = 'Consolas, monospace';
+          tempMeasure.style.fontSize = '13px';
+
+          // 查找最长的行
+          const lines = processedText.split('\n');
+          const longestLine = lines.reduce((a, b) => a.length > b.length ? a : b, '');
+
+          // 只测量长度超过一定阈值的行，避免时间戳等短内容引起容器变化
+          if (longestLine.length > 30)
+          { // 只处理超过30个字符的行
+            tempMeasure.textContent = longestLine;
+            document.body.appendChild(tempMeasure);
+
+            // 获取宽度并应用
+            const contentWidth = tempMeasure.offsetWidth;
+            document.body.removeChild(tempMeasure);
+
+            // 调整容器宽度
+            adjustContainerWidth('serialContainer', contentWidth);
+          } else
           {
-            outputDiv.scrollTop = outputDiv.scrollHeight;
-          }, 0);
+            // 对于短行，移除临时元素
+            if (tempMeasure.parentNode === document.body)
+            {
+              document.body.removeChild(tempMeasure);
+            }
+          }
+
+          // 立即滚动到底部，不使用setTimeout
+          outputDiv.scrollTop = outputDiv.scrollHeight;
+          // 强制DOM重绘
+          void outputDiv.offsetHeight;
         }
       } catch (error)
       {
@@ -2908,7 +2872,6 @@
       }))
       {
         // IP地址格式完整且合法，可以安全使用
-        console.log(getText("processingValidIP") + ip);
 
         // 保存设备IP到全局变量
         currentDeviceIP = ip;
@@ -2920,7 +2883,6 @@
         {
           // 更新第一个make_connection积木块的IP_ADDRESS字段
           makeConnectionBlocks[0].setFieldValue(ip, 'IP_ADDRESS');
-          console.log(getText("blockIPUpdated") + ip);
         }
 
         // 从缓冲区中清除已处理的IP地址部分
@@ -2932,7 +2894,7 @@
         }
       } else
       {
-        console.log(getText("invalidIPFormat") + ip);
+        console.log(`IP地址格式不正确: ${ip}`);
       }
 
       // 如果缓冲区过大，防止内存泄漏
@@ -2979,12 +2941,6 @@
       {
         console.error(getText("serialSendError"), error);
       }
-    }
-
-    function clearSerialOutput()
-    {
-      const outputDiv = document.getElementById('serialOutput');
-      outputDiv.innerHTML = '';
     }
 
     // 添加回车键发送功能
@@ -3180,23 +3136,14 @@
         newWidthPercent = Math.max(20, Math.min(80, newWidthPercent));
 
         // 应用新宽度
-        blocklyDiv.style.flexBasis = `${newWidthPercent}%`;
         blocklyDiv.style.width = `${newWidthPercent}%`;
-        windowsContainer.style.flexBasis = `${100 - newWidthPercent - 1}%`; // 减去分隔线宽度的百分比
-        windowsContainer.style.width = `${100 - newWidthPercent - 1}%`;
+        windowsContainer.style.width = `${100 - newWidthPercent - 1}%`; // 减去分隔线宽度的百分比
 
-        // 提高性能，减少重新渲染
-        window.requestAnimationFrame(function ()
+        // 调整Blockly工作区大小以适应新尺寸
+        if (workspace)
         {
-          // 调整Blockly工作区大小以适应新尺寸
-          if (workspace)
-          {
-            Blockly.svgResize(workspace);
-
-            // 重新定位撤销和重做按钮
-            repositionUndoRedoButtons();
-          }
-        });
+          Blockly.svgResize(workspace);
+        }
       });
 
       document.addEventListener('mouseup', function ()
@@ -3215,9 +3162,6 @@
           {
             Blockly.svgResize(workspace);
           }
-
-          // 重新定位撤销和重做按钮
-          repositionUndoRedoButtons();
         }
 
         // 同时处理垂直调整的停止
@@ -3304,77 +3248,6 @@
         }
       });
     }
-
-    // 复制到剪贴板的函数
-    function copyTextToClipboard(text)
-    {
-      // 创建临时文本区域
-      const textarea = document.createElement('textarea');
-      textarea.value = text;
-
-      // 设置样式使其不可见
-      textarea.style.position = 'fixed';
-      textarea.style.top = '-9999px';
-      textarea.style.left = '-9999px';
-      textarea.style.opacity = '0';
-      textarea.style.zIndex = '-1';
-
-      // 添加到文档
-      document.body.appendChild(textarea);
-
-      // 选择文本
-      textarea.select();
-      textarea.setSelectionRange(0, textarea.value.length);
-
-      // 尝试复制
-      let success = false;
-      try
-      {
-        success = document.execCommand('copy');
-      } catch (err)
-      {
-        console.error('复制出错:', err);
-      }
-
-      // 清理
-      document.body.removeChild(textarea);
-
-      return success;
-    }
-
-    // 添加全局复制事件监听器
-    document.addEventListener('keydown', function (e)
-    {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'c')
-      {
-        const selection = window.getSelection();
-        const selectedText = selection.toString();
-
-        if (selectedText)
-        {
-          // 检查选择是否在控制台或串口输出区域内
-          let isInTextArea = false;
-          let node = selection.anchorNode;
-
-          while (node && !isInTextArea)
-          {
-            const parentId = node.id || (node.parentNode && node.parentNode.id);
-            if (parentId === 'consoleLog' || parentId === 'serialOutput')
-            {
-              isInTextArea = true;
-            }
-            node = node.parentNode;
-          }
-
-          if (isInTextArea)
-          {
-            // 阻止默认行为并使用我们的复制功能
-            e.preventDefault();
-            copyTextToClipboard(selectedText);
-          }
-        }
-      }
-    });
   </script>
 </body>
 
