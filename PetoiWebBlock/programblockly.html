@@ -139,12 +139,33 @@
       padding: 3px 0;
       margin-bottom: 3px;
       font-size: 13px;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      word-break: break-all;
+      white-space: nowrap;
       line-height: 1.3;
       color: #ffffff;
       border-bottom: 1px dotted #333;
+    }
+
+    /* 水平滚动条样式 */
+    #consoleLog::-webkit-scrollbar,
+    .serial-output::-webkit-scrollbar {
+      height: 8px;
+      width: 8px;
+    }
+
+    #consoleLog::-webkit-scrollbar-track,
+    .serial-output::-webkit-scrollbar-track {
+      background: #2d2d2d;
+    }
+
+    #consoleLog::-webkit-scrollbar-thumb,
+    .serial-output::-webkit-scrollbar-thumb {
+      background: #555;
+      border-radius: 4px;
+    }
+
+    #consoleLog::-webkit-scrollbar-thumb:hover,
+    .serial-output::-webkit-scrollbar-thumb:hover {
+      background: #777;
     }
 
     /* 串口输出区域 */
@@ -154,14 +175,13 @@
       margin: 0;
       padding: 10px;
       overflow-y: auto;
-      overflow-x: hidden;
+      overflow-x: auto;
+      /* 启用水平滚动条 */
       background-color: #1e1e1e;
       color: #fff;
       font-family: 'Consolas', monospace;
       font-size: 13px;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      word-break: break-all;
+      white-space: nowrap;
       line-height: 1.4;
       max-width: 100%;
       user-select: text;
@@ -196,14 +216,15 @@
       border-radius: 4px;
     }
 
+    /* 串口按钮区域 */
     .serial-buttons {
       display: flex;
       gap: 10px;
-      padding: 10px;
+      padding: 5px;
       background-color: #f5f5f5;
       /* 灰色背景，与页面背景一致 */
       border: none;
-      margin-bottom: 10px;
+      margin-bottom: 5px;
     }
 
     .serial-button:disabled {
@@ -422,6 +443,8 @@
     #consoleLog {
       flex: 1;
       overflow-y: auto;
+      overflow-x: auto;
+      /* 启用水平滚动条 */
       padding: 10px;
       background-color: #1e1e1e;
       color: #fff;
@@ -429,9 +452,7 @@
       font-size: 13px;
       line-height: 1.4;
       max-height: 100%;
-      word-wrap: break-word;
-      white-space: pre-wrap;
-      word-break: break-all;
+      white-space: nowrap;
       user-select: text;
       /* 允许文本选择 */
       outline: none;
@@ -511,24 +532,24 @@
     .serial-buttons {
       display: flex;
       gap: 10px;
-      padding: 10px;
+      padding: 5px;
       background-color: #f5f5f5;
       /* 灰色背景，与页面背景一致 */
       border: none;
-      margin-bottom: 10px;
+      margin-bottom: 5px;
     }
 
     .serial-button {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 6px 10px;
+      padding: 8px 15px;
       background: #007bff;
       color: #fff;
       border: none;
       border-radius: 4px;
       margin: 2px;
-      font-size: 12px;
+      font-size: 14px;
       cursor: pointer;
       transition: all 0.3s;
     }
@@ -536,12 +557,12 @@
     /* 水平分隔线样式 */
     .horizontal-resizer {
       width: 100%;
-      height: 8px;
+      height: 6px;
       background-color: #f0f0f0;
       cursor: row-resize;
       transition: background-color 0.2s;
       user-select: none;
-      margin: 5px 0;
+      margin: 2px 0;
       display: none;
       /* 初始隐藏 */
     }
@@ -2072,7 +2093,9 @@
       code = code.replace(/console\.log\((.*?)\);/g, 'await asyncLog($1);');
 
       // 包装整个代码到一个异步函数中
-      code = asyncHelper + "\n(async function() {\n" + code + "\n})().catch(e => { console.error('程序执行出错:', e.message); alert('程序执行出错: ' + e.message); });";
+      code = asyncHelper + "\n(async function() {\n" + code + "\n" +
+        "console.log(getText('runCompleted'));" + // 添加运行结束消息
+        "\n})().catch(e => { console.error('程序执行出错:', e.message); alert('程序执行出错: ' + e.message); });";
 
       try
       {
@@ -2351,7 +2374,15 @@
         return String(arg);
       });
 
-      messageDiv.textContent = `[${time}] ${messages.join(' ')}`;
+      const messageText = messages.join(' ');
+      messageDiv.textContent = `[${time}] ${messageText}`;
+
+      // 检测是否为"运行结束"消息，如果是则使用绿色字体
+      if (messageText === getText('runCompleted'))
+      {
+        messageDiv.style.color = '#4CAF50'; // 使用绿色
+        messageDiv.style.fontWeight = 'bold'; // 加粗显示
+      }
 
       // 使用原生DOM方法确保立即渲染，改为添加到末尾
       logDiv.appendChild(messageDiv);
@@ -2362,20 +2393,108 @@
         logDiv.removeChild(logDiv.firstChild);
       }
 
-      // 立即设置滚动位置到底部，确保最新消息可见
-      // 使用setTimeout确保在DOM更新后滚动
-      setTimeout(() =>
-      {
-        logDiv.scrollTop = logDiv.scrollHeight;
-      }, 0);
+      // 只对长消息进行容器宽度调整
+      if (messageText.length > 30)
+      { // 只处理超过30个字符的消息
+        // 自动调整宽度以适应内容
+        adjustContainerWidth('consoleWindow', messageDiv.scrollWidth);
+      }
+
+      // 立即滚动到底部，不使用setTimeout
+      logDiv.scrollTop = logDiv.scrollHeight;
 
       // 强制DOM重绘，确保视图更新
       void logDiv.offsetHeight;
     }
 
+    // 添加一个辅助函数来调整容器宽度
+    function adjustContainerWidth(containerId, contentWidth)
+    {
+      const container = document.getElementById(containerId);
+      const windowsContainer = document.querySelector('.windows-container');
+      const extraPadding = 40; // 额外的内边距
+
+      // 添加最小宽度阈值，过短的内容不触发宽度调整
+      const minWidthThreshold = 250; // 小于这个宽度的内容不会触发调整
+
+      // 只有内容宽度大于阈值，且超过历史最大宽度时才考虑调整
+      if (contentWidth > minWidthThreshold && contentWidth > maxContentWidths[containerId])
+      {
+        // 计算增长百分比
+        const growthPercentage = (contentWidth - maxContentWidths[containerId]) / maxContentWidths[containerId] * 100;
+
+        // 只有显著增长（超过5%）时才调整，避免小幅波动
+        if (maxContentWidths[containerId] === 0 || growthPercentage > 5)
+        {
+          // 更新记录的最大宽度
+          maxContentWidths[containerId] = contentWidth;
+
+          // 检查内容是否需要更宽的容器
+          if (contentWidth + extraPadding > container.offsetWidth)
+          {
+            // 计算需要的宽度百分比
+            const workspaceContainer = document.querySelector('.workspace-container');
+            const totalWidth = workspaceContainer.offsetWidth;
+            let newContainerWidth = (contentWidth + extraPadding) / totalWidth * 100;
+
+            // 获取当前blockly工作区宽度
+            const blocklyDiv = document.getElementById('blocklyDiv');
+            const currentBlocklyWidthPercent = parseFloat(blocklyDiv.style.width) || 70;
+
+            // 定义blockly工作区最小宽度百分比
+            const minBlocklyWidthPercent = 45; // 确保Blockly区域至少占45%
+
+            // 检查扩展后是否会使blockly区域小于最小值
+            if (99 - newContainerWidth - 1 < minBlocklyWidthPercent)
+            {
+              // 如果扩展会导致blockly区域太小，则添加横向滚动条而不是扩展宽度
+              if (containerId === 'consoleWindow')
+              {
+                document.getElementById('consoleLog').style.overflowX = 'auto';
+              } else if (containerId === 'serialContainer')
+              {
+                document.getElementById('serialOutput').style.overflowX = 'auto';
+              }
+              return; // 不再继续调整宽度
+            }
+
+            // 限制最大宽度百分比
+            newContainerWidth = Math.min(newContainerWidth, 53); // 最大53%，确保blockly区域至少有45%加上1%分隔线
+
+            // 应用新宽度
+            const newBlocklyWidth = 99 - newContainerWidth - 1; // 减去分隔线宽度的1%
+
+            blocklyDiv.style.width = `${newBlocklyWidth}%`;
+            blocklyDiv.style.flexBasis = `${newBlocklyWidth}%`;
+            windowsContainer.style.width = `${newContainerWidth}%`;
+            windowsContainer.style.flexBasis = `${newContainerWidth}%`;
+
+            // 调整Blockly工作区大小
+            if (workspace)
+            {
+              Blockly.svgResize(workspace);
+
+              // 更新撤销和重做按钮位置
+              repositionUndoRedoButtons();
+            }
+          }
+        }
+      }
+    }
+
     function clearConsole()
     {
       document.getElementById('consoleLog').innerHTML = '';
+      // 重置控制台最大宽度记录
+      maxContentWidths['consoleWindow'] = 0;
+    }
+
+    function clearSerialOutput()
+    {
+      const outputDiv = document.getElementById('serialOutput');
+      outputDiv.innerHTML = '';
+      // 重置串口输出最大宽度记录
+      maxContentWidths['serialContainer'] = 0;
     }
 
     // 只重写 console.log
@@ -2402,6 +2521,12 @@
     let commandHistory = [];
     let historyIndex = -1;
     let tempInputValue = '';
+
+    // 跟踪各容器内容的最大宽度
+    let maxContentWidths = {
+      'consoleWindow': 0,
+      'serialContainer': 0
+    };
 
     let ipCheckTimer = null;
     let lastPartialIP = null;
@@ -2443,6 +2568,10 @@
 
         // 显示分隔线
         document.getElementById('console-serial-divider').style.display = 'block';
+
+        // 设置控制台和串口区域的初始高度比例为50%/50%
+        document.getElementById('consoleWindow').style.flex = '50';
+        serialContainer.style.flex = '49'; // 减去分隔线高度
 
         // 更新按钮状态
         document.getElementById('openSerialBtn').style.display = 'none'; // 隐藏连接按钮
@@ -2521,6 +2650,9 @@
         document.getElementById('closeSerialBtn').style.display = 'none'; // 隐藏关闭按钮
         document.getElementById('quickConnectBtn').disabled = true; // 禁用快速连接按钮
         document.getElementById('ipDisplay').textContent = '';
+
+        // 重置串口容器的最大宽度记录
+        maxContentWidths['serialContainer'] = 0;
 
         // 不要重置当前IP地址，保留上一次的连接信息
         // currentDeviceIP = '192.168.4.1'; // 重置为默认IP
@@ -2680,11 +2812,44 @@
 
           outputDiv.appendChild(fragment);
 
-          // 确保滚动到底部，增加延时处理以保证更新后滚动
-          setTimeout(() =>
+          // 测量内容宽度并自动调整宽度
+          // 创建临时测量元素
+          const tempMeasure = document.createElement('div');
+          tempMeasure.style.position = 'absolute';
+          tempMeasure.style.visibility = 'hidden';
+          tempMeasure.style.whiteSpace = 'nowrap';
+          tempMeasure.style.fontFamily = 'Consolas, monospace';
+          tempMeasure.style.fontSize = '13px';
+
+          // 查找最长的行
+          const lines = processedText.split('\n');
+          const longestLine = lines.reduce((a, b) => a.length > b.length ? a : b, '');
+
+          // 只测量长度超过一定阈值的行，避免时间戳等短内容引起容器变化
+          if (longestLine.length > 30)
+          { // 只处理超过30个字符的行
+            tempMeasure.textContent = longestLine;
+            document.body.appendChild(tempMeasure);
+
+            // 获取宽度并应用
+            const contentWidth = tempMeasure.offsetWidth;
+            document.body.removeChild(tempMeasure);
+
+            // 调整容器宽度
+            adjustContainerWidth('serialContainer', contentWidth);
+          } else
           {
-            outputDiv.scrollTop = outputDiv.scrollHeight;
-          }, 0);
+            // 对于短行，移除临时元素
+            if (tempMeasure.parentNode === document.body)
+            {
+              document.body.removeChild(tempMeasure);
+            }
+          }
+
+          // 立即滚动到底部，不使用setTimeout
+          outputDiv.scrollTop = outputDiv.scrollHeight;
+          // 强制DOM重绘
+          void outputDiv.offsetHeight;
         }
       } catch (error)
       {
@@ -2776,12 +2941,6 @@
       {
         console.error(getText("serialSendError"), error);
       }
-    }
-
-    function clearSerialOutput()
-    {
-      const outputDiv = document.getElementById('serialOutput');
-      outputDiv.innerHTML = '';
     }
 
     // 添加回车键发送功能

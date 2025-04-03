@@ -33,6 +33,7 @@ const TRANSLATIONS = {
     "connectedToDevice": "已连接到设备: ",
     "textCopied": "文本已复制到剪贴板",
     "serialPortBusy": "串口已被占用，请关闭其他正在使用此串口的程序",
+    "runCompleted": "任务结束",
 
     // 命令消息
     "sendingCommand": "发送命令: ",
@@ -175,6 +176,7 @@ const TRANSLATIONS = {
     "connectedToDevice": "Connected to device: ",
     "textCopied": "Text copied to clipboard",
     "serialPortBusy": "Serial port is busy, please close other programs using this serial port",
+    "runCompleted": "Task ended",
 
     // Command messages
     "sendingCommand": "Sending command: ",
