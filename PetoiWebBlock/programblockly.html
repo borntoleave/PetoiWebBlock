@@ -2282,6 +2282,11 @@
     // 设备IP地址
     let currentDeviceIP = '192.168.4.1'; // 默认IP地址
 
+    // 添加命令历史记录相关变量
+    let commandHistory = [];
+    let historyIndex = -1;
+    let tempInputValue = '';
+
     async function openSerialPort()
     {
       try
@@ -2490,11 +2495,33 @@
       if (!writer) return;
 
       const input = document.getElementById('serialInput');
+      // 检查输入是否为空
+      if (input.value.trim() === '') return;
+
       const data = input.value + '\n';
 
       try
       {
         await writer.write(new TextEncoder().encode(data));
+
+        // 添加命令到历史记录
+        if (input.value.trim() !== '')
+        {
+          // 避免重复添加相同的命令
+          if (commandHistory.length === 0 || commandHistory[commandHistory.length - 1] !== input.value)
+          {
+            commandHistory.push(input.value);
+          }
+          // 保持历史记录在合理范围内(最多保存50条)
+          if (commandHistory.length > 50)
+          {
+            commandHistory.shift();
+          }
+          // 重置历史索引
+          historyIndex = -1;
+          tempInputValue = '';
+        }
+
         input.value = '';
       } catch (error)
       {
@@ -2514,6 +2541,47 @@
       if (e.key === 'Enter')
       {
         sendSerialData();
+      }
+    });
+
+    // 添加上下箭头键历史命令功能
+    document.getElementById('serialInput').addEventListener('keydown', function (e)
+    {
+      // 上箭头键
+      if (e.key === 'ArrowUp')
+      {
+        e.preventDefault(); // 防止光标移到文本开头
+
+        if (commandHistory.length > 0)
+        {
+          // 如果是第一次按上箭头，保存当前输入的内容
+          if (historyIndex === -1)
+          {
+            tempInputValue = this.value;
+          }
+
+          // 向上浏览历史
+          historyIndex = Math.min(historyIndex + 1, commandHistory.length - 1);
+          this.value = commandHistory[commandHistory.length - 1 - historyIndex];
+        }
+      }
+      // 下箭头键
+      else if (e.key === 'ArrowDown')
+      {
+        e.preventDefault(); // 防止光标移到文本末尾
+
+        if (historyIndex > 0)
+        {
+          // 向下浏览历史
+          historyIndex--;
+          this.value = commandHistory[commandHistory.length - 1 - historyIndex];
+        }
+        else if (historyIndex === 0)
+        {
+          // 回到临时保存的输入
+          historyIndex = -1;
+          this.value = tempInputValue;
+        }
       }
     });
 
