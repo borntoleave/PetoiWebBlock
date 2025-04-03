@@ -21,11 +21,80 @@
   <script src="./blocks/generators.js"></script>
 
   <style>
+    /* 全局滚动设置 */
+    html,
     body {
+      overscroll-behavior: none;
+      /* 禁用整个页面的橡皮筋效果 */
+      height: 100%;
       margin: 0;
       padding: 0;
-      font-family: Arial, sans-serif;
-      background-color: #f0f0f0;
+      overflow: hidden;
+      /* 防止整个页面出现滚动条 */
+    }
+
+    /* 所有可滚动区域通用样式 */
+    .dark-scrollbar {
+      overscroll-behavior: none;
+      /* 禁用弹性效果 */
+      scrollbar-width: thin;
+      /* Firefox - 细滚动条 */
+      scrollbar-color: #555 #1e1e1e;
+      /* Firefox - 滑块颜色和轨道颜色 */
+      overflow-y: scroll !important;
+      /* 强制显示垂直滚动条 */
+      overflow-x: hidden;
+      /* 隐藏水平滚动条 */
+    }
+
+    /* Webkit浏览器通用滚动条样式 */
+    .dark-scrollbar::-webkit-scrollbar {
+      width: 14px;
+      /* 滚动条宽度 */
+      height: 14px;
+      /* 水平滚动条高度 */
+      background-color: transparent;
+      /* 透明背景 */
+    }
+
+    .dark-scrollbar::-webkit-scrollbar-track {
+      background-color: #1e1e1e;
+      /* 轨道背景色 */
+      border-radius: 10px;
+    }
+
+    .dark-scrollbar::-webkit-scrollbar-thumb {
+      background-color: #555;
+      /* 滑块颜色 */
+      border: 3px solid #1e1e1e;
+      /* 边框颜色与背景一致，创造间隙 */
+      border-radius: 10px;
+      min-height: 40px;
+      /* 确保滑块有足够高度 */
+    }
+
+    .dark-scrollbar::-webkit-scrollbar-thumb:hover {
+      background-color: #777;
+      /* 悬停时颜色变亮 */
+    }
+
+    .dark-scrollbar::-webkit-scrollbar-corner {
+      background-color: #1e1e1e;
+      /* 角落颜色与背景一致 */
+    }
+
+    /* 确保内容区域显示滚动条 */
+    #consoleWindow,
+    #serialContainer {
+      overflow: visible;
+      /* 允许子元素溢出并显示滚动条 */
+    }
+
+    body {
+      background-color: #f5f5f5;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
     }
 
     .header {
@@ -117,18 +186,77 @@
       padding: 10px;
       flex: 3;
       /* 保持固定比例 */
-      gap: 20px;
-      /* 增加容器之间的间距 */
+      gap: 0;
+      /* 移除容器之间的间距，改用分隔线控制 */
     }
 
-    /* 控制台区域 */
-    #consoleWindow,
-    #serialInterface {
+    /* 控制台容器样式 */
+    #consoleWindow {
+      flex: 1;
+      /* 默认flex比例，给console更多空间 */
+      min-height: 150px;
+      /* 设置最小高度，防止被压缩过小 */
+      max-height: 70%;
+      /* 最大高度限制 */
+      border: 1px solid #333;
+      margin-bottom: 5px;
+      position: relative;
+      background-color: #1e1e1e;
       display: flex;
       flex-direction: column;
-      min-width: 0;
-      width: 100%;
       overflow: hidden;
+      /* 确保内部溢出不影响布局 */
+    }
+
+    /* 串口容器样式，初始较小，连接后扩展 */
+    #serialContainer {
+      flex: 0.5;
+      /* 初始时占较小比例 */
+      border: 1px solid #333;
+      background-color: #1e1e1e;
+      display: flex;
+      flex-direction: column;
+      min-height: 70px;
+      /* 当未连接时，确保只显示按钮 */
+      max-height: 70px;
+      /* 未连接时固定高度 */
+      transition: all 0.3s ease;
+      overflow: hidden;
+      /* 防止出现滚动条 */
+      margin-bottom: 5px;
+    }
+
+    /* 连接状态下的串口容器样式 */
+    #serialContainer.connected {
+      min-height: 200px;
+      /* 连接后的最小高度，确保输入框和内容可见 */
+      max-height: 50%;
+      /* 连接后的最大高度，避免占用过多空间 */
+      flex: 0.5;
+      /* 连接后占据合适的空间比例 */
+    }
+
+    /* 串口按钮区域样式 */
+    .serial-buttons {
+      display: flex;
+      gap: 10px;
+      padding: 8px 10px 12px 10px;
+      /* 增加下部内边距 */
+      background-color: #f5f5f5;
+      /* 灰色背景，与页面背景一致 */
+      border: none;
+      margin: 0;
+      /* 移除所有外边距 */
+    }
+
+    /* 串口容器连接后的样式 */
+    #serialContainer.connected {
+      flex: 1;
+      /* 连接后可以弹性调整高度 */
+      max-height: none;
+      /* 连接后不限制最大高度 */
+      min-height: 200px;
+      /* 连接后的最小高度 */
     }
 
     /* 控制台内容项样式 */
@@ -144,13 +272,20 @@
       border-bottom: 1px dotted #333;
     }
 
-    /* 串口输出区域 */
+    /* 串口输出区域，优化滚动和溢出处理 */
     .serial-output {
-      height: 200px;
+      height: auto;
+      /* 自动高度 */
       margin: 0;
       padding: 10px;
-      overflow-y: auto;
+      padding-bottom: 60px;
+      /* 为输入框留出空间 */
+      padding-right: 25px;
+      /* 为滚动条留出空间 */
+      overflow-y: scroll !important;
+      /* 强制显示垂直滚动条 */
       overflow-x: hidden;
+      /* 隐藏水平滚动条 */
       background-color: #1e1e1e;
       color: #fff;
       font-family: 'Consolas', monospace;
@@ -159,7 +294,25 @@
       word-wrap: break-word;
       word-break: break-all;
       line-height: 1.4;
-      max-width: 100%;
+      box-sizing: border-box;
+      /* 确保padding不会增加元素的实际尺寸 */
+      max-height: calc(100% - 60px);
+      /* 设置最大高度，确保不会超出容器 */
+      width: calc(100% - 15px);
+      /* 减少宽度，确保滚动条可见 */
+    }
+
+    /* 串口输出容器样式，处理滚动区域 */
+    .serial-output-container {
+      flex: 1;
+      /* 占据剩余空间 */
+      position: relative;
+      overflow: hidden;
+      /* 防止溢出影响布局 */
+      height: calc(100% - 90px);
+      /* 减去标题栏和输入框的高度 */
+      min-height: 100px;
+      /* 最小高度 */
     }
 
     .serial-output br {
@@ -175,19 +328,19 @@
 
     .serial-input-container input {
       flex: 1;
-      padding: 5px;
-      border: 1px solid #ccc;
+      padding: 8px 10px;
+      border: 1px solid #444;
       border-radius: 4px;
+      background-color: #2a2a2a;
+      color: #fff;
+      font-family: 'Consolas', monospace;
+      font-size: 13px;
+      outline: none;
     }
 
-    .serial-buttons {
-      display: flex;
-      gap: 10px;
-      padding: 10px;
-      background-color: #f5f5f5;
-      /* 灰色背景，与页面背景一致 */
-      border: none;
-      margin-bottom: 10px;
+    .serial-input-container input:focus {
+      border-color: #007bff;
+      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
     }
 
     .serial-button:disabled {
@@ -345,97 +498,6 @@
       user-select: none;
     }
 
-    /* 窗口容器样式 */
-    #consoleWindow {
-      flex: 1;
-      background-color: #1e1e1e;
-      padding: 0;
-      font-family: 'Consolas', monospace;
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      min-width: 0;
-    }
-
-    #serialContainer {
-      margin-top: 0;
-      /* 去除顶部边距，因为已经在父容器中添加了gap */
-      flex: 0 0 auto;
-      /* 阻止自动扩展 */
-      width: 100%;
-      /* 确保宽度固定 */
-      max-width: 100%;
-      /* 限制最大宽度 */
-      overflow-x: hidden;
-      /* 阻止水平溢出 */
-      background-color: #f5f5f5;
-      /* 灰色背景，与页面背景一致 */
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* 串口输出容器 */
-    #serialInterface {
-      display: none;
-      flex-direction: column;
-      overflow: hidden;
-      height: 100%;
-      width: 100%;
-      max-width: 100%;
-      background-color: #1e1e1e;
-      /* 黑色背景 */
-    }
-
-    /* 修复积木块文字偏移问题 */
-    .blocklyText {
-      fill: #fff;
-      font-family: sans-serif;
-      font-size: 11pt;
-      font-weight: normal;
-    }
-
-    .blocklyNonEditableText>text,
-    .blocklyEditableText>text {
-      fill: #000;
-    }
-
-    .blocklyDropdownText {
-      fill: #000 !important;
-    }
-
-    #loadInput {
-      display: none;
-    }
-
-    /* 控制台区域 */
-    #consoleLog {
-      flex: 1;
-      overflow-y: auto;
-      padding: 10px;
-      background-color: #1e1e1e;
-      color: #fff;
-      font-family: 'Consolas', monospace;
-      font-size: 13px;
-      line-height: 1.4;
-      max-height: 100%;
-      word-wrap: break-word;
-      white-space: pre-wrap;
-      word-break: break-all;
-    }
-
-    /* 串口输出区域结构样式 */
-    #serialInterface {
-      display: none;
-      flex-direction: column;
-      overflow: hidden;
-      height: 100%;
-      width: 100%;
-      max-width: 100%;
-      background-color: #1e1e1e;
-      /* 黑色背景 */
-    }
-
     /* 区域标题栏样式 */
     .area-header {
       margin: 0;
@@ -499,11 +561,13 @@
     .serial-buttons {
       display: flex;
       gap: 10px;
-      padding: 10px;
+      padding: 8px 10px 12px 10px;
+      /* 增加下部内边距 */
       background-color: #f5f5f5;
       /* 灰色背景，与页面背景一致 */
       border: none;
-      margin-bottom: 10px;
+      margin: 0;
+      /* 移除所有外边距 */
     }
 
     .serial-button {
@@ -520,6 +584,172 @@
       cursor: pointer;
       transition: all 0.3s;
     }
+
+    /* 可拖动水平分隔线样式 */
+    .h-resizer {
+      height: 8px;
+      width: 100%;
+      background-color: #f0f0f0;
+      cursor: row-resize;
+      transition: background-color 0.2s;
+      user-select: none;
+      margin: 4px 0;
+      border-top: 1px solid #ddd;
+      border-bottom: 1px solid #ddd;
+      flex-shrink: 0;
+      /* 防止分隔线被压缩 */
+      display: none;
+      /* 默认隐藏 */
+    }
+
+    /* 当串口连接后显示分隔线 */
+    .h-resizer.active-divider {
+      display: block;
+    }
+
+    .h-resizer:hover,
+    .h-resizer.active {
+      background-color: #ccc;
+    }
+
+    /* 拖动时应用的样式 */
+    .windows-container.h-resizing {
+      cursor: row-resize;
+      user-select: none;
+    }
+
+    /* 修复积木块文字偏移问题 */
+    .blocklyText {
+      fill: #fff;
+      font-family: sans-serif;
+      font-size: 11pt;
+      font-weight: normal;
+    }
+
+    .blocklyNonEditableText>text,
+    .blocklyEditableText>text {
+      fill: #000;
+    }
+
+    .blocklyDropdownText {
+      fill: #000 !important;
+    }
+
+    #loadInput {
+      display: none;
+    }
+
+    /* 控制台日志区域样式，确保滚动条正常显示 */
+    #consoleLog {
+      height: 100%;
+      /* 占满可用空间 */
+      margin: 0;
+      padding: 10px;
+      overflow-y: scroll !important;
+      /* 强制显示垂直滚动条 */
+      overflow-x: hidden;
+      background-color: #1e1e1e;
+      color: #fff;
+      font-family: 'Consolas', monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      word-break: break-all;
+      line-height: 1.4;
+      flex: 1;
+      /* 填充剩余空间 */
+      box-sizing: border-box;
+      /* 确保padding不会增加元素的实际尺寸 */
+    }
+
+    /* 整体调整串口输入区域和内容区域的布局，避免遮挡滚动条 */
+    #serialInterface {
+      display: none;
+      flex-direction: column;
+      height: 100%;
+      position: relative;
+      background-color: #1e1e1e;
+      overflow: hidden;
+    }
+
+    /* 确保串口输出区域和滚动条不会被遮挡 */
+    .serial-output-container {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      overflow: hidden;
+      padding-right: 0;
+      /* 移除右侧内边距 */
+    }
+
+    /* 串口输入区域固定在底部，确保不遮挡滚动条 */
+    .serial-input-container {
+      display: flex;
+      gap: 5px;
+      padding: 10px;
+      background-color: #1e1e1e;
+      flex: 0 0 auto;
+      /* 不缩放 */
+      min-height: 40px;
+      /* 最小高度 */
+      position: absolute;
+      /* 固定位置 */
+      bottom: 0;
+      /* 固定在底部 */
+      left: 0;
+      right: 20px;
+      /* 留出右侧空间给滚动条 */
+      z-index: 5;
+      /* 确保在合适的层级 */
+      box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+      /* 添加阴影效果区分 */
+      border-radius: 0 0 0 5px;
+      /* 左下角圆角 */
+    }
+
+    /* 为输入框和按钮添加样式 */
+    .serial-input {
+      flex: 1;
+      /* 占据可用空间 */
+      padding: 5px 10px;
+      background-color: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 3px;
+      color: #fff;
+      font-family: 'Consolas', monospace;
+      font-size: 13px;
+    }
+
+    .serial-send-button {
+      padding: 5px 10px;
+      background-color: #3a3a3a;
+      border: 1px solid #444;
+      border-radius: 3px;
+      color: #fff;
+      cursor: pointer;
+      min-width: 60px;
+      /* 确保按钮有足够宽度 */
+      text-align: center;
+    }
+
+    .serial-send-button:hover {
+      background-color: #4a4a4a;
+    }
+
+    /* 高度调整分隔线 */
+    #h-divider {
+      cursor: row-resize;
+      height: 5px;
+      background-color: #444;
+      margin: 0 -10px;
+      display: none;
+      /* 默认隐藏，连接时显示 */
+    }
+
+    /* 分隔线拖动状态 */
+    #h-divider.active {
+      background-color: #007bff;
+    }
   </style>
 </head>
 
@@ -533,11 +763,11 @@
   </div>
   <div class="container">
     <div class="button-group">
-      <button onclick="showCode()" data-i18n="showCode">Show Code</button>
-      <button onclick="runCode()" data-i18n="runCode">Run Code</button>
-      <button onclick="saveWorkspace()" data-i18n="saveProgram">Save Program</button>
-      <button onclick="document.getElementById('loadInput').click()" data-i18n="loadProgram">Load Program</button>
-      <button onclick="clearWorkspace()" data-i18n="clearAll">Clear All</button>
+      <button onclick="showCode()">Show Code</button>
+      <button onclick="runCode()">Run Code</button>
+      <button onclick="saveWorkspace()">Save Program</button>
+      <button onclick="document.getElementById('loadInput').click()">Load Program</button>
+      <button onclick="clearWorkspace()">Clear All</button>
       <input type="file" id="loadInput" accept=".json" onchange="loadWorkspace(this.files[0])">
       <span id="currentFileName" style="margin-left: 10px; color: #555; font-style: italic;"></span>
       <span id="ipDisplay" style="margin-left: 10px; color: #007bff;"></span>
@@ -549,31 +779,36 @@
       <div class="windows-container">
         <div id="consoleWindow">
           <div class="area-header">
-            <span class="area-title" data-i18n="consoleLog">Console Log</span>
-            <button onclick="clearConsole()" class="clear-button" data-i18n="clearConsole">Clear Log</button>
+            <span class="area-title">Console Log</span>
+            <button onclick="clearConsole()" class="clear-button">Clear Log</button>
           </div>
           <div id="consoleLog" class="dark-scrollbar"></div>
         </div>
+        <!-- 添加水平分隔线 -->
+        <div class="h-resizer" id="h-divider"></div>
         <!-- 添加串口通信相关的HTML结构 -->
         <div id="serialContainer">
+          <div class="area-header" style="background-color: #f5f5f5; color: #333;">
+            <span class="area-title" style="color: #333; font-weight: bold;">Serial Port</span>
+          </div>
           <div class="serial-buttons">
-            <button onclick="openSerialPort()" class="serial-button" id="openSerialBtn"
-              data-i18n="serialConnect">Connect Serial Port</button>
-            <button onclick="quickConnect()" class="serial-button" id="quickConnectBtn" disabled
-              data-i18n="quickConnect">Quick Connect</button>
-            <button onclick="closeSerialPort()" class="serial-button" id="closeSerialBtn" style="display: none;"
-              data-i18n="closeSerial">Close Connection</button>
+            <button onclick="openSerialPort()" class="serial-button" id="openSerialBtn">Connect Serial Port</button>
+            <button onclick="directConnect(currentDeviceIP)" class="serial-button" id="quickConnectBtn" disabled>Quick
+              Connect</button>
+            <button onclick="closeSerialPort()" class="serial-button" id="closeSerialBtn" style="display: none;">Close
+              Connection</button>
           </div>
           <div id="serialInterface" style="display: none;">
             <div class="area-header">
-              <span class="area-title" id="serialOutputTitle" data-i18n="serialOutput">Serial Output</span>
-              <button onclick="clearSerialOutput()" class="clear-button" data-i18n="clearDisplay">Clear Display</button>
+              <span class="area-title">Serial Output</span>
+              <button onclick="clearSerialOutput()" class="clear-button">Clear Display</button>
             </div>
-            <div class="serial-output dark-scrollbar" id="serialOutput"></div>
+            <div class="serial-output-container">
+              <pre class="serial-output dark-scrollbar" id="serialOutput"></pre>
+            </div>
             <div class="serial-input-container">
-              <input type="text" id="serialInput" placeholder="Enter content to send"
-                data-i18n="serialInputPlaceholder">
-              <button onclick="sendSerialData()" class="serial-button" data-i18n="send">Send</button>
+              <input type="text" class="serial-input" id="serialInput" placeholder="Enter content to send">
+              <button onclick="sendSerialData()" class="serial-send-button">Send</button>
             </div>
           </div>
         </div>
@@ -1411,7 +1646,7 @@
       if (isChangingLanguage || currentLang === lang) return;
       isChangingLanguage = true;
 
-      // 更新按钮样式
+      // 更新按钮状态
       document.getElementById('zhBtn').classList.toggle('active', lang === 'zh');
       document.getElementById('enBtn').classList.toggle('active', lang === 'en');
 
@@ -1519,7 +1754,39 @@
         }
 
         // 更新UI文本
-        updateUITranslations();
+        if (lang === 'zh')
+        {
+          // 主界面文本
+          document.querySelector('.title').textContent = '陪拓网页编程积木';
+          document.querySelector('button[onclick="showCode()"]').textContent = '显示代码';
+          document.querySelector('button[onclick="runCode()"]').textContent = '运行代码';
+          document.querySelector('button[onclick="saveWorkspace()"]').textContent = '保存程序';
+          document.querySelector('button[onclick="document.getElementById(\'loadInput\').click()"]').textContent = '载入程序';
+          document.querySelector('button[onclick="clearWorkspace()"]').textContent = '清空全部';
+          document.querySelector('button[onclick="clearConsole()"]').textContent = '清除日志';
+
+          // 更新当前文件名显示
+          if (currentFile)
+          {
+            document.getElementById('currentFileName').textContent = `当前文件: ${currentFile.name}`;
+          }
+
+          // 串口连接界面文本
+          document.querySelector('button[onclick="openSerialPort()"]').textContent = '使用串口有线连接';
+          document.querySelector('button[onclick="directConnect(currentDeviceIP)"]').textContent = '快速联网';
+          document.querySelector('button[onclick="closeSerialPort()"]').textContent = '关闭串口连接';
+          document.querySelector('#serialInput').placeholder = '输入要发送的内容';
+          document.querySelector('button[onclick="sendSerialData()"]').textContent = '发送';
+          document.querySelector('button[onclick="clearSerialOutput()"]').textContent = '清空显示';
+
+          // 控制台标题
+          const consoleTitle = document.querySelector('#consoleWindow span');
+          if (consoleTitle) consoleTitle.textContent = '控制台日志';
+        } else
+        {
+          // 使用updateUIText函数更新英文UI
+          updateUIText();
+        }
 
         isChangingLanguage = false;
       });
@@ -1548,10 +1815,17 @@
         const blocklyDiv = document.getElementById('blocklyDiv');
         const windowsContainer = document.querySelector('.windows-container');
 
+        // 设置工作区与输出区宽度比例
         blocklyDiv.style.flexBasis = '70%';
         blocklyDiv.style.width = '70%';
         windowsContainer.style.flexBasis = '29%'; // 减去分隔线宽度
         windowsContainer.style.width = '29%';
+
+        // 设置控制台与串口区高度比例
+        const consoleWindow = document.getElementById('consoleWindow');
+        const serialContainer = document.getElementById('serialContainer');
+        consoleWindow.style.flex = '1';
+        serialContainer.style.flex = '1';
 
         // 初始调整工作区大小
         resizeBlocklyWorkspace();
@@ -1607,51 +1881,29 @@
       document.head.appendChild(script);
     }
 
-    // 更新UI文本的函数
+    // 更新UI文本的辅助函数
     function updateUIText()
     {
-      // 更新页面标题
+      // 主界面文本
       document.querySelector('.title').textContent = 'Petoi Web Coding Blocks';
+      document.querySelector('button[onclick="showCode()"]').textContent = 'Show Code';
+      document.querySelector('button[onclick="runCode()"]').textContent = 'Run Code';
+      document.querySelector('button[onclick="saveWorkspace()"]').textContent = 'Save Program';
+      document.querySelector('button[onclick="document.getElementById(\'loadInput\').click()"]').textContent = 'Load Program';
+      document.querySelector('button[onclick="clearWorkspace()"]').textContent = 'Clear All';
+      document.querySelector('button[onclick="clearConsole()"]').textContent = 'Clear Log';
 
-      // 更新主要按钮
-      document.querySelector('button[onclick="showCode()"]').textContent = getText('showCode');
-      document.querySelector('button[onclick="runCode()"]').textContent = getText('runCode');
-      document.querySelector('button[onclick="saveWorkspace()"]').textContent = getText('saveProgram');
-      document.querySelector('button[onclick="document.getElementById(\'loadInput\').click()"]').textContent = getText('loadProgram');
-      document.querySelector('button[onclick="clearWorkspace()"]').textContent = getText('clearAll');
+      // 串口连接界面文本
+      document.querySelector('button[onclick="openSerialPort()"]').textContent = 'Connect Serial Port';
+      document.querySelector('button[onclick="directConnect(currentDeviceIP)"]').textContent = 'Quick Connect';
+      document.querySelector('button[onclick="closeSerialPort()"]').textContent = 'Close Connection';
+      document.querySelector('#serialInput').placeholder = 'Enter content to send';
+      document.querySelector('button[onclick="sendSerialData()"]').textContent = 'Send';
+      document.querySelector('button[onclick="clearSerialOutput()"]').textContent = 'Clear Display';
 
-      // 更新控制台区域文本
-      const consoleClearBtn = document.querySelector('button[onclick="clearConsole()"]');
-      if (consoleClearBtn) consoleClearBtn.textContent = getText('clearConsole');
-
-      // 更新串口区域文本
-      const serialClearBtn = document.querySelector('button[onclick="clearSerialOutput()"]');
-      if (serialClearBtn) serialClearBtn.textContent = getText('clearDisplay');
-
-      const openSerialBtn = document.getElementById('openSerialBtn');
-      if (openSerialBtn) openSerialBtn.textContent = getText('serialConnect');
-
-      const quickConnectBtn = document.getElementById('quickConnectBtn');
-      if (quickConnectBtn) quickConnectBtn.textContent = getText('quickConnect');
-
-      const closeSerialBtn = document.getElementById('closeSerialBtn');
-      if (closeSerialBtn) closeSerialBtn.textContent = getText('closeSerial');
-
-      const sendButton = document.querySelector('button[onclick="sendSerialData()"]');
-      if (sendButton) sendButton.textContent = getText('send');
-
-      const serialInput = document.getElementById('serialInput');
-      if (serialInput) serialInput.placeholder = getText('serialInputPlaceholder');
-
-      // 更新标题文本
-      const consoleTitles = document.querySelectorAll('.area-title');
-      if (consoleTitles.length > 0)
-      {
-        consoleTitles[0].textContent = getText('consoleLog');
-      }
-
-      const serialTitle = document.getElementById('serialOutputTitle');
-      if (serialTitle) serialTitle.textContent = getText('serialOutput');
+      // 控制台标题
+      const consoleTitle = document.querySelector('#consoleWindow span');
+      if (consoleTitle) consoleTitle.textContent = 'Console Log';
     }
 
     // 窗口大小变化时调整Blockly工作区
@@ -2298,6 +2550,12 @@
         document.getElementById('closeSerialBtn').style.display = 'inline-flex'; // 显示关闭按钮
         document.getElementById('quickConnectBtn').disabled = false; // 启用快速连接按钮
 
+        // 更新串口容器样式，允许调整高度
+        document.getElementById('serialContainer').classList.add('connected');
+
+        // 显示分隔线
+        document.getElementById('h-divider').classList.add('active-divider');
+
         // 强制重新调整工作区大小，确保布局不变
         // 等DOM更新后再执行调整
         setTimeout(function ()
@@ -2364,6 +2622,22 @@
         document.getElementById('quickConnectBtn').disabled = true; // 禁用快速连接按钮
         document.getElementById('ipDisplay').textContent = '';
 
+        // 更新串口容器样式，减小高度
+        document.getElementById('serialContainer').classList.remove('connected');
+
+        // 隐藏分隔线
+        document.getElementById('h-divider').classList.remove('active-divider');
+
+        // 重置控制台区域高度为最大
+        document.getElementById('consoleWindow').style.flex = '1';
+
+        // 给控制台额外的高度，使其占据更多空间
+        setTimeout(function ()
+        {
+          // 强制重新应用布局
+          document.getElementById('consoleLog').style.height = '100%';
+        }, 50);
+
         // 不要重置当前IP地址，保留上一次的连接信息
         // currentDeviceIP = '192.168.4.1'; // 重置为默认IP
       } catch (error)
@@ -2392,6 +2666,44 @@
           </div>
         `;
       document.body.appendChild(dialog);
+    }
+
+    // 直接连接使用已知IP地址函数
+    async function directConnect(ip)
+    {
+      try
+      {
+        // 使用指定的IP地址
+        if (!ip)
+        {
+          console.error(getText("noIPConfigured"));
+          return;
+        }
+
+        // 找到工作区中的make_connection积木块并更新IP地址
+        const makeConnectionBlocks = workspace.getBlocksByType('make_connection');
+        if (makeConnectionBlocks && makeConnectionBlocks.length > 0)
+        {
+          // 更新第一个make_connection积木块的IP_ADDRESS字段
+          makeConnectionBlocks[0].setFieldValue(ip, 'IP_ADDRESS');
+        }
+
+        // 更新连接状态UI
+        document.getElementById('serialInterface').style.display = 'flex';
+        document.getElementById('openSerialBtn').style.display = 'none';
+        document.getElementById('closeSerialBtn').style.display = 'inline-flex';
+        document.getElementById('ipDisplay').textContent = `${getText("serialConfiguredIP")}${ip}`;
+
+        // 更新串口容器样式，允许调整高度
+        document.getElementById('serialContainer').classList.add('connected');
+
+        // 显示分隔线
+        document.getElementById('h-divider').classList.add('active-divider');
+
+      } catch (error)
+      {
+        console.error(getText("quickConnectError"), error);
+      }
     }
 
     function closeWifiDialog()
@@ -2438,50 +2750,102 @@
     let ipCheckInterval = null;
     let serialBuffer = '';
 
+    // 读取串口数据，优化输出并防止挤压其他区域
     async function readSerialData()
     {
+      if (!serialPort || !serialPort.readable) return;
+
+      keepReading = true;
+      const serialOutput = document.getElementById('serialOutput');
+
       try
       {
-        while (true)
+        while (keepReading && serialPort.readable)
         {
-          const { value, done } = await reader.read();
-          if (done)
+          const reader = serialPort.readable.getReader();
+          serialReader = reader;
+
+          try
+          {
+            // 设置行数限制，防止内容过多
+            const maxLines = 500;
+
+            while (keepReading)
+            {
+              const { value, done } = await reader.read();
+
+              if (done)
+              {
+                break;
+              }
+
+              if (value)
+              {
+                const textDecoder = new TextDecoder();
+                const text = textDecoder.decode(value);
+
+                // 添加内容
+                serialOutput.textContent += text;
+
+                // 限制最大行数，避免过多内容导致性能问题和布局异常
+                const lines = serialOutput.textContent.split('\n');
+                if (lines.length > maxLines)
+                {
+                  serialOutput.textContent = lines.slice(lines.length - maxLines).join('\n');
+                }
+
+                // 检测IP地址并处理
+                processIPAddressInOutput(text);
+
+                // 自动滚动到底部，但限制频率
+                if (!scrollThrottled)
+                {
+                  scrollThrottled = true;
+                  setTimeout(() =>
+                  {
+                    serialOutput.scrollTop = serialOutput.scrollHeight;
+                    scrollThrottled = false;
+                  }, 100);
+                }
+              }
+            }
+          } finally
           {
             reader.releaseLock();
-            break;
           }
-          const text = new TextDecoder().decode(value);
-          serialBuffer += text;
-
-          // 检查是否包含IP地址信息
-          const ipMatch = serialBuffer.match(/IP Address: ([0-9.]+)/);
-          if (ipMatch)
-          {
-            const ip = ipMatch[1];
-            // 保存设备IP到全局变量
-            currentDeviceIP = ip;
-            document.getElementById('ipDisplay').textContent = `${getText("serialConfiguredIP")}${ip}`;
-
-            // 查找工作区中的make_connection积木块并更新IP地址
-            const makeConnectionBlocks = workspace.getBlocksByType('make_connection');
-            if (makeConnectionBlocks && makeConnectionBlocks.length > 0)
-            {
-              // 更新第一个make_connection积木块的IP_ADDRESS字段
-              makeConnectionBlocks[0].setFieldValue(ip, 'IP_ADDRESS');
-              console.log(`已自动更新连接积木的IP地址: ${ip}`);
-            }
-
-            serialBuffer = '';  // 清空缓冲区
-          }
-
-          // 更新输出显示，确保每条消息后面都有换行符
-          const outputDiv = document.getElementById('serialOutput');
-          outputDiv.innerHTML += text.replace(/\n/g, '<br>');  // 将\n替换为<br>
-          outputDiv.scrollTop = outputDiv.scrollHeight;
         }
       } catch (error)
       {
-        console.error(getText("serialReadError"), error);
+        console.error('读取串口数据时出错:', error);
+      }
+    }
+
+    // 节流标志
+    let scrollThrottled = false;
+
+    // 添加处理IP地址的函数
+    function processIPAddressInOutput(text)
+    {
+      // 检测标准IP地址格式
+      const ipRegex = /IP Address: ([0-9.]+)/;
+      const ipMatch = text.match(ipRegex);
+
+      if (ipMatch)
+      {
+        const ip = ipMatch[1];
+
+        // 保存设备IP到全局变量
+        currentDeviceIP = ip;
+        document.getElementById('ipDisplay').textContent = `${getText("serialConfiguredIP")}${ip}`;
+
+        // 查找工作区中的make_connection积木块并更新IP地址
+        const makeConnectionBlocks = workspace.getBlocksByType('make_connection');
+        if (makeConnectionBlocks && makeConnectionBlocks.length > 0)
+        {
+          // 更新第一个make_connection积木块的IP_ADDRESS字段
+          makeConnectionBlocks[0].setFieldValue(ip, 'IP_ADDRESS');
+          console.log(`已自动更新连接积木的IP地址: ${ip}`);
+        }
       }
     }
 
@@ -2658,6 +3022,9 @@
         windowsContainer.style.flexBasis = `${100 - newWidthPercent - 1}%`; // 减去分隔线宽度的百分比
         windowsContainer.style.width = `${100 - newWidthPercent - 1}%`;
 
+        // 立即更新撤销重做按钮位置
+        repositionUndoRedoButtons();
+
         // 提高性能，减少重新渲染
         window.requestAnimationFrame(function ()
         {
@@ -2665,9 +3032,6 @@
           if (workspace)
           {
             Blockly.svgResize(workspace);
-
-            // 重新定位撤销和重做按钮
-            repositionUndoRedoButtons();
           }
         });
       });
@@ -2695,22 +3059,460 @@
       });
     });
 
-    function updateUITranslations()
+    // 添加水平分隔线拖动功能
+    document.addEventListener('DOMContentLoaded', function ()
     {
-      // 更新UI元素的文本
-      document.querySelectorAll('[data-i18n]').forEach(element =>
+      const hDivider = document.getElementById('h-divider');
+      const consoleWindow = document.getElementById('consoleWindow');
+      const serialContainer = document.getElementById('serialContainer');
+      const windowsContainer = document.querySelector('.windows-container');
+
+      let isHResizing = false;
+      let initialY, initialConsoleHeight, initialSerialHeight;
+
+      hDivider.addEventListener('mousedown', function (e)
       {
-        const key = element.getAttribute('data-i18n');
-        if (element.tagName.toLowerCase() === 'input')
+        // 启动调整大小
+        isHResizing = true;
+        initialY = e.clientY;
+        initialConsoleHeight = consoleWindow.getBoundingClientRect().height;
+        initialSerialHeight = serialContainer.getBoundingClientRect().height;
+
+        // 添加调整中的样式
+        windowsContainer.classList.add('h-resizing');
+        hDivider.classList.add('active');
+
+        // 阻止默认事件和冒泡
+        e.preventDefault();
+        e.stopPropagation();
+      });
+
+      document.addEventListener('mousemove', function (e)
+      {
+        if (!isHResizing) return;
+
+        // 计算移动距离
+        const deltaY = e.clientY - initialY;
+
+        // 计算新高度
+        const newConsoleHeight = initialConsoleHeight + deltaY;
+        const newSerialHeight = initialSerialHeight - deltaY;
+
+        // 严格确保串口区域的最小高度（必须能完全显示所有元素）
+        const minSerialHeight = 300; // 增加最小高度，确保输入框和内容完全可见
+        const minConsoleHeight = 100; // 控制台最小高度
+
+        // 计算总高度
+        const totalHeight = initialConsoleHeight + initialSerialHeight;
+
+        // 只有在满足最小高度要求时才应用新高度
+        if (newConsoleHeight >= minConsoleHeight && newSerialHeight >= minSerialHeight)
         {
-          // 输入框特殊处理
-          element.placeholder = getText(key);
-        } else
+          // 转换为比例
+          const consoleRatio = newConsoleHeight / totalHeight;
+          const serialRatio = newSerialHeight / totalHeight;
+
+          // 应用新高度比例
+          consoleWindow.style.flex = consoleRatio.toString();
+          serialContainer.style.flex = serialRatio.toString();
+        }
+
+        // 阻止默认事件和冒泡
+        e.preventDefault();
+        e.stopPropagation();
+      });
+
+      document.addEventListener('mouseup', function (e)
+      {
+        if (isHResizing)
         {
-          element.textContent = getText(key);
+          // 停止调整大小
+          isHResizing = false;
+
+          // 移除调整中的样式
+          windowsContainer.classList.remove('h-resizing');
+          hDivider.classList.remove('active');
+
+          // 阻止默认事件和冒泡
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      });
+    });
+
+    // 页面加载后设置初始高度比例
+    window.addEventListener('load', function ()
+    {
+      // 设置控制台与串口区高度比例（默认控制台占大部分空间）
+      const consoleWindow = document.getElementById('consoleWindow');
+      const serialContainer = document.getElementById('serialContainer');
+
+      // 确保串口始终保持最小化状态，直到连接建立
+      serialContainer.style.flex = '0 0 auto';
+      consoleWindow.style.flex = '1';
+
+      // 确保正确初始化高度分隔线功能
+      initHeightResizer();
+    });
+
+    // 修改初始化高度分隔线函数，确保布局正确
+    function initHeightResizer()
+    {
+      const hDivider = document.getElementById('h-divider');
+      if (!hDivider) return; // 安全检查
+
+      const consoleWindow = document.getElementById('consoleWindow');
+      const serialContainer = document.getElementById('serialContainer');
+      const serialInterface = document.getElementById('serialInterface');
+      const windowsContainer = document.querySelector('.windows-container');
+
+      let isHResizing = false;
+      let initialY, initialConsoleHeight, initialSerialHeight;
+
+      // 初始隐藏分隔线，连接后显示
+      hDivider.style.display = 'none';
+
+      hDivider.addEventListener('mousedown', function (e)
+      {
+        // 安全检查：只有在串口已连接时才允许调整
+        if (!serialContainer.classList.contains('connected')) return;
+
+        // 启动调整大小
+        isHResizing = true;
+        initialY = e.clientY;
+        initialConsoleHeight = consoleWindow.getBoundingClientRect().height;
+        initialSerialHeight = serialContainer.getBoundingClientRect().height;
+
+        // 添加调整中的样式
+        windowsContainer.classList.add('h-resizing');
+        hDivider.classList.add('active');
+
+        // 阻止默认事件
+        e.preventDefault();
+      });
+
+      document.addEventListener('mousemove', function (e)
+      {
+        if (!isHResizing) return;
+
+        // 计算移动距离
+        const deltaY = e.clientY - initialY;
+
+        // 计算新高度
+        const newConsoleHeight = initialConsoleHeight + deltaY;
+        const newSerialHeight = initialSerialHeight - deltaY;
+
+        // 严格确保串口区域的最小高度（必须能完全显示所有元素）
+        const minSerialHeight = 250; // 最小高度，确保输入框和内容可见
+        const minConsoleHeight = 100; // 控制台最小高度
+
+        // 计算总高度
+        const totalHeight = initialConsoleHeight + initialSerialHeight;
+
+        // 只有在满足最小高度要求时才应用新高度
+        if (newConsoleHeight >= minConsoleHeight && newSerialHeight >= minSerialHeight)
+        {
+          // 应用新高度
+          consoleWindow.style.height = newConsoleHeight + 'px';
+          serialContainer.style.height = newSerialHeight + 'px';
+
+          // 更新flex比例以保持布局
+          const consoleRatio = newConsoleHeight / totalHeight;
+          const serialRatio = newSerialHeight / totalHeight;
+          consoleWindow.style.flex = consoleRatio.toString();
+          serialContainer.style.flex = serialRatio.toString();
+
+          // 更新串口输出区域的最大高度
+          const serialOutput = document.getElementById('serialOutput');
+          serialOutput.style.maxHeight = (newSerialHeight - 60) + 'px';
+        }
+
+        // 阻止默认事件
+        e.preventDefault();
+      });
+
+      document.addEventListener('mouseup', function (e)
+      {
+        if (isHResizing)
+        {
+          // 停止调整大小
+          isHResizing = false;
+
+          // 移除调整中的样式
+          windowsContainer.classList.remove('h-resizing');
+          hDivider.classList.remove('active');
+
+          // 重新布局输入框位置
+          if (serialInterface.style.display !== 'none')
+          {
+            // 触发窗口调整以重新计算布局
+            window.dispatchEvent(new Event('resize'));
+          }
+
+          // 阻止默认事件
+          e.preventDefault();
         }
       });
     }
+
+    // 在窗口加载完毕时初始化布局
+    window.addEventListener('load', function ()
+    {
+      initializeLayout();
+    });
+
+    // 初始化布局函数
+    function initializeLayout()
+    {
+      var consoleWindow = document.getElementById('consoleWindow');
+      var serialContainer = document.getElementById('serialContainer');
+
+      // 设置初始比例
+      consoleWindow.style.flex = '0.7'; // 控制台占70%
+      serialContainer.style.flex = '0.3'; // 串口占30%
+
+      // 如果串口连接了，调整为合适的比例
+      if (serialContainer.classList.contains('connected'))
+      {
+        serialContainer.style.flex = '0.5';
+        consoleWindow.style.flex = '0.5';
+      }
+    }
+
+    /* 修改串口连接处理函数，确保布局正确 */
+    function connectSerialPort()
+    {
+      if (!navigator.serial)
+      {
+        showMessage('您的浏览器不支持Web Serial API，请使用Chrome或Edge浏览器。');
+        return;
+      }
+
+      if (serialPort && serialPort.readable)
+      {
+        showMessage('已连接串口');
+        return;
+      }
+
+      connectSerial().then(connected =>
+      {
+        if (connected)
+        {
+          // 更新界面状态
+          updateUIConnected();
+
+          // 调整窗口布局比例
+          adjustWindowLayouts();
+        }
+      }).catch(error =>
+      {
+        console.error('串口连接错误:', error);
+        showMessage('串口连接失败: ' + error.message);
+      });
+    }
+
+    // 调整窗口布局比例
+    function adjustWindowLayouts()
+    {
+      const consoleWindow = document.getElementById('consoleWindow');
+      const serialContainer = document.getElementById('serialContainer');
+
+      // 设置连接后的比例
+      consoleWindow.style.flex = '0.6'; // 控制台占60%
+      serialContainer.style.flex = '0.4'; // 串口区域占40%
+    }
+
+    // 关闭连接时恢复布局
+    function closeConnection()
+    {
+      if (serialPort)
+      {
+        keepReading = false;
+        if (serialReader)
+        {
+          serialReader.cancel();
+        }
+
+        if (serialPort.readable)
+        {
+          serialPort.forget();
+        }
+
+        serialPort = null;
+        serialReader = null;
+
+        // 更新界面为未连接状态
+        updateUIDisconnected();
+
+        // 恢复初始布局
+        resetWindowLayouts();
+
+        showMessage('串口连接已关闭');
+      }
+    }
+
+    // 恢复初始布局
+    function resetWindowLayouts()
+    {
+      const consoleWindow = document.getElementById('consoleWindow');
+      const serialContainer = document.getElementById('serialContainer');
+
+      // 恢复默认比例
+      consoleWindow.style.flex = '0.7';
+      serialContainer.style.flex = '0.3';
+    }
+
+    // 更新UI状态为已连接
+    function updateUIConnected()
+    {
+      const serialContainer = document.getElementById('serialContainer');
+      const serialInterface = document.getElementById('serialInterface');
+      const serialButtons = document.querySelector('.serial-buttons');
+      const connectButton = document.getElementById('connectSerialButton');
+      const quickConnectButton = document.getElementById('quickConnectButton');
+      const closeButton = document.getElementById('closeConnectionButton');
+
+      // 添加连接状态类
+      serialContainer.classList.add('connected');
+
+      // 显示串口界面
+      serialInterface.style.display = 'flex';
+
+      // 更新按钮状态
+      connectButton.disabled = true;
+      quickConnectButton.disabled = true;
+      closeButton.disabled = false;
+
+      // 设置最大高度为自适应
+      serialContainer.style.maxHeight = '50%';
+
+      // 调整flex比例
+      adjustWindowLayouts();
+
+      // 清空串口输出区
+      clearSerialOutput();
+
+      // 聚焦到输入框
+      document.getElementById('serialInput').focus();
+    }
+
+    // 更新UI状态为已断开连接
+    function updateUIDisconnected()
+    {
+      const serialContainer = document.getElementById('serialContainer');
+      const serialInterface = document.getElementById('serialInterface');
+      const connectButton = document.getElementById('connectSerialButton');
+      const quickConnectButton = document.getElementById('quickConnectButton');
+      const closeButton = document.getElementById('closeConnectionButton');
+
+      // 移除连接状态类
+      serialContainer.classList.remove('connected');
+
+      // 隐藏串口界面
+      serialInterface.style.display = 'none';
+
+      // 更新按钮状态
+      connectButton.disabled = false;
+      quickConnectButton.disabled = false;
+      closeButton.disabled = true;
+
+      // 重置最大高度
+      serialContainer.style.maxHeight = '70px';
+
+      // 恢复初始布局
+      resetWindowLayouts();
+    }
+
+    // 处理UI状态变化的函数
+    function updateUIConnected()
+    {
+      // 更新串口容器的样式
+      const serialContainer = document.getElementById('serialContainer');
+      const serialInterface = document.getElementById('serialInterface');
+      const serialButtons = document.querySelector('.serial-buttons');
+
+      // 添加连接状态类
+      serialContainer.classList.add('connected');
+
+      // 显示串口界面，隐藏按钮区域
+      serialInterface.style.display = 'flex';
+      serialButtons.style.display = 'none';
+
+      // 清空串口输出区域
+      document.getElementById('serialOutput').textContent = '';
+
+      // 调整高度分隔线可见性
+      document.getElementById('h-divider').style.display = 'block';
+
+      // 调整窗口布局比例
+      const consoleWindow = document.getElementById('consoleWindow');
+      const height = window.innerHeight * 0.7; // 获取窗口高度的70%
+
+      // 分配合理的高度比例
+      const consoleHeight = height * 0.6; // 60%
+      const serialHeight = height * 0.4; // 40%
+
+      // 设置控制台高度
+      consoleWindow.style.height = consoleHeight + 'px';
+      serialContainer.style.height = serialHeight + 'px';
+      consoleWindow.style.flex = '0.6';
+      serialContainer.style.flex = '0.4';
+
+      // 确保串口输出区域不会超出容器
+      const serialOutput = document.getElementById('serialOutput');
+      serialOutput.style.maxHeight = (serialHeight - 60) + 'px'; // 减去标题和输入框的高度
+    }
+
+    function updateUIDisconnected()
+    {
+      // 更新串口容器的样式
+      const serialContainer = document.getElementById('serialContainer');
+      const serialInterface = document.getElementById('serialInterface');
+      const serialButtons = document.querySelector('.serial-buttons');
+
+      // 移除连接状态类
+      serialContainer.classList.remove('connected');
+
+      // 隐藏串口界面，显示按钮区域
+      serialInterface.style.display = 'none';
+      serialButtons.style.display = 'flex';
+
+      // 隐藏高度分隔线
+      document.getElementById('h-divider').style.display = 'none';
+
+      // 重置窗口大小
+      const consoleWindow = document.getElementById('consoleWindow');
+      consoleWindow.style.flex = '1';
+      serialContainer.style.flex = '0';
+      serialContainer.style.height = 'auto';
+      serialContainer.style.minHeight = '70px';
+      serialContainer.style.maxHeight = '70px';
+    }
+
+    // 窗口大小变化时更新布局
+    window.addEventListener('resize', function ()
+    {
+      const serialContainer = document.getElementById('serialContainer');
+
+      // 如果串口已连接，调整布局以避免内容溢出
+      if (serialContainer.classList.contains('connected'))
+      {
+        const consoleWindow = document.getElementById('consoleWindow');
+        const windowsContainer = document.querySelector('.windows-container');
+        const containerHeight = windowsContainer.offsetHeight;
+
+        // 确保控制台和串口区域的总高度不超过容器高度
+        const consoleHeight = Math.round(containerHeight * 0.6);
+        const serialHeight = Math.round(containerHeight * 0.4);
+
+        consoleWindow.style.height = consoleHeight + 'px';
+        serialContainer.style.height = serialHeight + 'px';
+
+        // 更新串口输出区域的最大高度
+        const serialOutput = document.getElementById('serialOutput');
+        serialOutput.style.maxHeight = (serialHeight - 60) + 'px';
+      }
+    });
   </script>
 </body>
 
