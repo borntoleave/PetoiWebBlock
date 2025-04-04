@@ -186,13 +186,14 @@
       max-width: 100%;
       user-select: text;
       /* 允许文本选择 */
-      outline: none;
-      /* 移除默认outline */
+      outline: none !important;
+      /* 强制移除默认outline */
     }
 
     .serial-output:focus {
-      outline: 1px solid #007bff;
-      /* 获得焦点时显示蓝色outline */
+      outline: none !important;
+      box-shadow: none !important;
+      /* 确保在所有浏览器中移除焦点时的所有视觉指示 */
     }
 
     .serial-output br {
@@ -398,8 +399,8 @@
       width: 100%;
       min-height: auto;
       /* 未连接时高度自适应内容 */
-      max-height: 60px;
-      /* 未连接时只显示按钮区高度 */
+      max-height: none;
+      /* 移除高度限制 */
       overflow: hidden;
     }
 
@@ -409,8 +410,6 @@
       /* 连接后占据适当比例 */
       min-height: 180px;
       /* 连接后确保有足够高度 */
-      max-height: none;
-      /* 移除高度限制 */
     }
 
     /* 串口输出容器 */
@@ -567,8 +566,8 @@
       width: 100%;
       min-height: auto;
       /* 未连接时高度自适应内容 */
-      max-height: 60px;
-      /* 未连接时只显示按钮区高度 */
+      max-height: none;
+      /* 移除高度限制 */
       overflow: hidden;
     }
 
@@ -578,23 +577,9 @@
       /* 连接后占据适当比例 */
       min-height: 180px;
       /* 连接后确保有足够高度 */
-      max-height: none;
-      /* 移除高度限制 */
     }
 
-    /* 串口按钮区域 */
-    .serial-buttons {
-      display: flex;
-      gap: 10px;
-      padding: 5px;
-      background-color: #f5f5f5;
-      /* 灰色背景，与页面背景一致 */
-      border: none;
-      margin-bottom: 5px;
-      justify-content: flex-end;
-      /* 使按钮靠右对齐 */
-    }
-
+    /* 串口按钮样式保留 */
     .serial-button {
       display: inline-flex;
       align-items: center;
@@ -609,7 +594,6 @@
       cursor: pointer;
       transition: all 0.3s;
       font-family: Arial, sans-serif;
-      /* 确保字体与标题一致 */
     }
 
     /* 水平分隔线样式 */
@@ -633,8 +617,7 @@
 
     /* 强制按钮右对齐 */
     #consoleWindow .area-header .button-group,
-    #serialInterface .area-header .button-group,
-    .serial-buttons {
+    #serialContainer .area-header .button-group {
       display: flex;
       justify-content: flex-end;
       margin-left: auto;
@@ -683,20 +666,18 @@
         <div class="horizontal-resizer" id="console-serial-divider"></div>
         <!-- 添加串口通信相关的HTML结构 -->
         <div id="serialContainer">
-          <div class="serial-buttons">
-            <button onclick="openSerialPort()" class="serial-button" id="openSerialBtn"
-              data-i18n="serialConnect">Connect Serial Port</button>
-            <button onclick="closeSerialPort()" class="serial-button" id="closeSerialBtn" style="display: none;"
-              data-i18n="closeSerial">Close Connection</button>
+          <div class="area-header">
+            <span class="area-title" id="serialOutputTitle" data-i18n="serialOutput">Serial Monitor</span>
+            <div class="button-group">
+              <button onclick="openSerialPort()" class="serial-button" id="openSerialBtn"
+                data-i18n="serialConnect">Connect Serial Port</button>
+              <button onclick="clearSerialOutput()" class="clear-button" id="clearSerialBtn" style="display: none;"
+                data-i18n="clearDisplay">Clear Display</button>
+              <button onclick="closeSerialPort()" class="serial-button" id="closeSerialBtn" style="display: none;"
+                data-i18n="closeSerial">Close Connection</button>
+            </div>
           </div>
           <div id="serialInterface" style="display: none;">
-            <div class="area-header">
-              <span class="area-title" id="serialOutputTitle" data-i18n="serialOutput">Serial Output</span>
-              <div class="button-group">
-                <button onclick="clearSerialOutput()" class="clear-button" data-i18n="clearDisplay">Clear
-                  Display</button>
-              </div>
-            </div>
             <div class="serial-output dark-scrollbar" id="serialOutput"></div>
             <div class="serial-input-container">
               <input type="text" id="serialInput" placeholder="Enter content to send"
@@ -1696,74 +1677,67 @@
         document.getElementById('enBtn').classList.toggle('active', true);
       });
 
-      // 加载默认语言积木
-      loadLanguage('en', function ()
+    });
+
+    // 添加控制台和串口输出区域的键盘复制功能
+    function setupCopyKeyboardShortcuts()
+    {
+      // 控制台区域复制功能
+      const consoleLogElement = document.getElementById('consoleLog');
+      // 设置tabindex，使元素可以接收键盘事件
+      consoleLogElement.setAttribute('tabindex', '0');
+
+      consoleLogElement.addEventListener('keydown', function (e)
       {
-        // 初始化工作区
-        initWorkspace();
-        // 翻译UI
-        updateUIText();
+        // 检测Ctrl+C或Command+C (Mac)
+        if ((e.ctrlKey || e.metaKey) && e.key === 'c')
+        {
+          const selectedText = window.getSelection().toString();
+          if (selectedText)
+          {
+            navigator.clipboard.writeText(selectedText)
+              .then(() => console.log(getText('textCopied')))
+              .catch(err => console.error('复制失败:', err));
+          }
+        }
       });
 
-      // 添加控制台和串口输出区域的键盘复制功能
-      function setupCopyKeyboardShortcuts()
+      // 使控制台区域可以通过点击获得焦点
+      consoleLogElement.addEventListener('click', function ()
       {
-        // 控制台区域复制功能
-        const consoleLogElement = document.getElementById('consoleLog');
-        // 设置tabindex，使元素可以接收键盘事件
-        consoleLogElement.setAttribute('tabindex', '0');
+        this.focus();
+      });
 
-        consoleLogElement.addEventListener('keydown', function (e)
+      // 串口输出区域复制功能
+      const serialOutputElement = document.getElementById('serialOutput');
+      // 设置tabindex，使元素可以接收键盘事件但不显示虚线框
+      serialOutputElement.setAttribute('tabindex', '-1');
+
+      serialOutputElement.addEventListener('keydown', function (e)
+      {
+        // 检测Ctrl+C或Command+C (Mac)
+        if ((e.ctrlKey || e.metaKey) && e.key === 'c')
         {
-          // 检测Ctrl+C或Command+C (Mac)
-          if ((e.ctrlKey || e.metaKey) && e.key === 'c')
+          const selectedText = window.getSelection().toString();
+          if (selectedText)
           {
-            const selectedText = window.getSelection().toString();
-            if (selectedText)
-            {
-              navigator.clipboard.writeText(selectedText)
-                .then(() => console.log(getText('textCopied')))
-                .catch(err => console.error('复制失败:', err));
-            }
+            navigator.clipboard.writeText(selectedText)
+              .then(() => console.log(getText('textCopied')))
+              .catch(err => console.error('复制失败:', err));
           }
-        });
+        }
+      });
 
-        // 使控制台区域可以通过点击获得焦点
-        consoleLogElement.addEventListener('click', function ()
-        {
-          this.focus();
-        });
+      // 使串口输出区域可以通过点击获得焦点，但不显示虚线框
+      serialOutputElement.addEventListener('click', function ()
+      {
+        // 不再调用focus方法
+        // this.focus();
+      });
+    }
 
-        // 串口输出区域复制功能
-        const serialOutputElement = document.getElementById('serialOutput');
-        // 设置tabindex，使元素可以接收键盘事件
-        serialOutputElement.setAttribute('tabindex', '0');
-
-        serialOutputElement.addEventListener('keydown', function (e)
-        {
-          // 检测Ctrl+C或Command+C (Mac)
-          if ((e.ctrlKey || e.metaKey) && e.key === 'c')
-          {
-            const selectedText = window.getSelection().toString();
-            if (selectedText)
-            {
-              navigator.clipboard.writeText(selectedText)
-                .then(() => console.log(getText('textCopied')))
-                .catch(err => console.error('复制失败:', err));
-            }
-          }
-        });
-
-        // 使串口输出区域可以通过点击获得焦点
-        serialOutputElement.addEventListener('click', function ()
-        {
-          this.focus();
-        });
-      }
-
-      // 初始化复制功能
-      setupCopyKeyboardShortcuts();
-    });
+    // 初始化复制功能
+    setupCopyKeyboardShortcuts();
 
     // 添加动态加载语言文件的辅助函数
     function loadLanguageFile(lang, callback)
@@ -2561,6 +2535,7 @@
         // 更新按钮状态
         document.getElementById('openSerialBtn').style.display = 'none'; // 隐藏连接按钮
         document.getElementById('closeSerialBtn').style.display = 'inline-flex'; // 显示关闭按钮
+        document.getElementById('clearSerialBtn').style.display = 'inline-flex'; // 显示清除按钮
         document.getElementById('quickConnectBtn').disabled = false; // 启用快速连接按钮
 
         // 强制重新调整工作区大小，确保布局不变
@@ -2631,15 +2606,26 @@
         const serialContainer = document.getElementById('serialContainer');
         serialContainer.classList.remove('connected');
 
+        // 调整控制台和串口区域的比例，控制台占据大部分空间
+        document.getElementById('consoleWindow').style.flex = '90';
+        serialContainer.style.flex = '10';
+
         // 隐藏分隔线
         document.getElementById('console-serial-divider').style.display = 'none';
         document.getElementById('openSerialBtn').style.display = 'inline-flex'; // 显示连接按钮
         document.getElementById('closeSerialBtn').style.display = 'none'; // 隐藏关闭按钮
+        document.getElementById('clearSerialBtn').style.display = 'none'; // 隐藏清除按钮
         document.getElementById('quickConnectBtn').disabled = true; // 禁用快速连接按钮
-
 
         // 重置Quick Connect按钮样式
         resetQuickConnectButton();
+
+        // 强制重新调整工作区大小
+        setTimeout(function ()
+        {
+          resizeBlocklyWorkspace();
+          repositionUndoRedoButtons();
+        }, 100);
 
         // 不要重置当前IP地址，保留上一次的连接信息
         // currentDeviceIP = '192.168.4.1'; // 重置为默认IP
@@ -3073,17 +3059,25 @@
     // 添加分隔线拖动功能
     document.addEventListener('DOMContentLoaded', function ()
     {
-      // 确保分隔线初始隐藏
+      // 获取所有需要的DOM元素
       const horizontalDivider = document.getElementById('console-serial-divider');
+      const divider = document.getElementById('divider');
+      const container = document.querySelector('.workspace-container');
+      const blocklyDiv = document.getElementById('blocklyDiv');
+      const windowsContainer = document.querySelector('.windows-container');
+      const consoleWindow = document.getElementById('consoleWindow');
+      const serialContainer = document.getElementById('serialContainer');
+
+      // 确保分隔线初始隐藏
       if (horizontalDivider)
       {
         horizontalDivider.style.display = 'none';
       }
 
-      const divider = document.getElementById('divider');
-      const container = document.querySelector('.workspace-container');
-      const blocklyDiv = document.getElementById('blocklyDiv');
-      const windowsContainer = document.querySelector('.windows-container');
+      // 设置初始的控制台和串口区域比例
+      // 控制台占据大部分空间，串口区域只占据底部一小部分
+      consoleWindow.style.flex = '90';
+      serialContainer.style.flex = '10';
 
       let isResizing = false;
       let initialX, initialWidth;
@@ -3169,9 +3163,6 @@
       });
 
       // 添加垂直分隔线拖动功能
-      const consoleWindow = document.getElementById('consoleWindow');
-      const serialContainer = document.getElementById('serialContainer');
-
       let isVerticalResizing = false;
       let initialY, initialConsoleHeight;
 
