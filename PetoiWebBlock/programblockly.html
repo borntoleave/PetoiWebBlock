@@ -69,6 +69,9 @@
 
     .button-group {
       margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      width: 100%;
     }
 
     .button-group button {
@@ -82,8 +85,27 @@
       font-size: 14px;
     }
 
+    .right-aligned-container {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+    }
+
     .button-group button:hover {
       background-color: #0056b3;
+    }
+
+    /* 连接成功状态下的Quick Connect按钮样式 */
+    #quickConnectBtn[data-connected="true"] {
+      background-color: #4CAF50 !important;
+      /* 绿色背景 */
+      color: white;
+      font-weight: bold;
+    }
+
+    #quickConnectBtn[data-connected="true"]:hover {
+      background-color: #45a049 !important;
+      /* 深绿色 */
     }
 
     .workspace-container {
@@ -203,6 +225,8 @@
       /* 灰色背景，与页面背景一致 */
       border: none;
       margin-bottom: 5px;
+      justify-content: flex-end;
+      /* 使按钮靠右对齐 */
     }
 
     .serial-button:disabled {
@@ -479,8 +503,10 @@
     .area-header .button-group {
       display: flex;
       gap: 8px;
-      align-items: baseline;
-      /* 使用baseline确保文字基线对齐 */
+      align-items: center;
+      /* 改为居中对齐 */
+      margin-left: auto;
+      /* 添加margin-left:auto使按钮组靠右对齐 */
     }
 
     /* 清除按钮和切换按钮的通用样式 */
@@ -557,6 +583,8 @@
       /* 灰色背景，与页面背景一致 */
       border: none;
       margin-bottom: 5px;
+      justify-content: flex-end;
+      /* 使按钮靠右对齐 */
     }
 
     .serial-button {
@@ -592,6 +620,15 @@
       background-color: #007bff;
       /* 蓝色 */
     }
+
+    /* 强制按钮右对齐 */
+    #consoleWindow .area-header .button-group,
+    #serialInterface .area-header .button-group,
+    .serial-buttons {
+      display: flex;
+      justify-content: flex-end;
+      margin-left: auto;
+    }
   </style>
 </head>
 
@@ -612,7 +649,9 @@
       <button onclick="clearWorkspace()" data-i18n="clearAll">Clear All</button>
       <input type="file" id="loadInput" accept=".json" onchange="loadWorkspace(this.files[0])">
       <span id="currentFileName" style="margin-left: 10px; color: #555; font-style: italic;"></span>
-      <span id="ipDisplay" style="margin-left: 10px; color: #007bff;"></span>
+      <div class="right-aligned-container">
+        <button onclick="quickConnect()" id="quickConnectBtn" disabled data-i18n="quickConnect">Quick Connect</button>
+      </div>
     </div>
 
     <div class="workspace-container">
@@ -637,8 +676,6 @@
           <div class="serial-buttons">
             <button onclick="openSerialPort()" class="serial-button" id="openSerialBtn"
               data-i18n="serialConnect">Connect Serial Port</button>
-            <button onclick="quickConnect()" class="serial-button" id="quickConnectBtn" disabled
-              data-i18n="quickConnect">Quick Connect</button>
             <button onclick="closeSerialPort()" class="serial-button" id="closeSerialBtn" style="display: none;"
               data-i18n="closeSerial">Close Connection</button>
           </div>
@@ -1585,19 +1622,6 @@
 
         // 更新撤销和重做按钮状态
         updateUndoRedoState();
-
-        // 更新IP显示文本
-        const ipDisplay = document.getElementById('ipDisplay');
-        if (ipDisplay && ipDisplay.textContent.trim() !== '')
-        {
-          // 从当前文本中提取IP地址
-          const ipMatch = ipDisplay.textContent.match(/[0-9.]+$/);
-          if (ipMatch)
-          {
-            const ip = ipMatch[0];
-            ipDisplay.textContent = `${getText("serialConfiguredIP")}${ip}`;
-          }
-        }
 
         // 更新UI文本
         updateUITranslations();
@@ -2565,6 +2589,8 @@
       } catch (error)
       {
         console.error(getText("serialConnectionError"), error);
+        // 连接失败时重置按钮样式
+        resetQuickConnectButton();
       }
     }
 
@@ -2600,7 +2626,10 @@
         document.getElementById('openSerialBtn').style.display = 'inline-flex'; // 显示连接按钮
         document.getElementById('closeSerialBtn').style.display = 'none'; // 隐藏关闭按钮
         document.getElementById('quickConnectBtn').disabled = true; // 禁用快速连接按钮
-        document.getElementById('ipDisplay').textContent = '';
+
+
+        // 重置Quick Connect按钮样式
+        resetQuickConnectButton();
 
         // 不要重置当前IP地址，保留上一次的连接信息
         // currentDeviceIP = '192.168.4.1'; // 重置为默认IP
@@ -2640,6 +2669,18 @@
       if (overlay) overlay.remove();
     }
 
+    // 重置Quick Connect按钮样式和文本为默认状态
+    function resetQuickConnectButton()
+    {
+      const quickConnectBtn = document.getElementById('quickConnectBtn');
+      if (quickConnectBtn)
+      {
+        quickConnectBtn.textContent = getText("quickConnect");
+        quickConnectBtn.style.backgroundColor = ''; // 恢复默认颜色
+        quickConnectBtn.removeAttribute('data-connected'); // 移除连接状态标记
+      }
+    }
+
     async function confirmWifiSettings()
     {
       const ssid = document.getElementById('ssidInput').value.trim();
@@ -2670,6 +2711,8 @@
       {
         console.error(getText("wifiCommandError"), error);
         alert(getText("wifiCommandFailed"));
+        // 连接失败时重置按钮
+        resetQuickConnectButton();
       }
     }
 
@@ -2789,7 +2832,15 @@
 
         // 保存设备IP到全局变量
         currentDeviceIP = ip;
-        document.getElementById('ipDisplay').textContent = `${getText("serialConfiguredIP")}${ip}`;
+
+        // 修改Quick Connect按钮样式和文本
+        const quickConnectBtn = document.getElementById('quickConnectBtn');
+        if (quickConnectBtn)
+        {
+          quickConnectBtn.textContent = ip;
+          quickConnectBtn.style.backgroundColor = '#4CAF50'; // 绿色背景
+          quickConnectBtn.setAttribute('data-connected', 'true'); // 标记连接状态
+        }
 
         // 查找工作区中的make_connection积木块并更新IP地址
         const makeConnectionBlocks = workspace.getBlocksByType('make_connection');
