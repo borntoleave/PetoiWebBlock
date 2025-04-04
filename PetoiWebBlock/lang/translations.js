@@ -34,6 +34,7 @@ const TRANSLATIONS = {
     "textCopied": "文本已复制到剪贴板",
     "serialPortBusy": "串口已被占用，请关闭其他正在使用此串口的程序",
     "taskEnded": "任务结束",
+    "showSentCommands": "显示发送指令",
 
     // 命令消息
     "sendingCommand": "发送命令: ",
@@ -177,6 +178,7 @@ const TRANSLATIONS = {
     "textCopied": "Text copied to clipboard",
     "serialPortBusy": "Serial port is busy, please close other programs using this serial port",
     "taskEnded": "Task ended",
+    "showSentCommands": "Show Sent Commands",
 
     // Command messages
     "sendingCommand": "Sending command: ",

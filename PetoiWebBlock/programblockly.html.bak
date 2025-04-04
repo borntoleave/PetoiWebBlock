@@ -150,7 +150,7 @@
       flex: 1;
       min-height: 0;
       margin: 0;
-      padding: 10px;
+      padding: 5px;
       overflow-y: auto;
       overflow-x: auto;
       /* 启用水平滚动条 */
@@ -182,7 +182,7 @@
     .serial-input-container {
       display: flex;
       gap: 5px;
-      padding: 10px;
+      padding: 5px;
       background-color: #1e1e1e;
       border-top: 1px solid #333;
     }
@@ -194,23 +194,19 @@
       border-radius: 4px;
     }
 
-    /* 串口按钮区域 */
+    /* 串口按钮区域 - 已移至标题栏，样式不再需要 */
+    /*
     .serial-buttons {
       display: flex;
       gap: 10px;
       padding: 5px;
       background-color: #f5f5f5;
       /* 灰色背景，与页面背景一致 */
-      border: none;
-      margin-bottom: 5px;
-    }
-
-    .serial-button:disabled {
-      background-color: #cccccc;
-      cursor: not-allowed;
-    }
-
+    border: none;
+    margin-bottom: 5px;
     .wifi-dialog {
+
+    */ .wifi-dialog {
       position: fixed;
       top: 50%;
       left: 50%;
@@ -374,9 +370,9 @@
       width: 100%;
       min-height: auto;
       /* 未连接时高度自适应内容 */
-      max-height: 60px;
-      /* 未连接时只显示按钮区高度 */
+      max-height: none;
       overflow: hidden;
+      flex: 1;
     }
 
     /* 串口连接后应用此样式 */
@@ -385,8 +381,6 @@
       /* 连接后占据适当比例 */
       min-height: 180px;
       /* 连接后确保有足够高度 */
-      max-height: none;
-      /* 移除高度限制 */
     }
 
     /* 串口输出容器 */
@@ -394,11 +388,11 @@
       display: none;
       flex-direction: column;
       overflow: hidden;
-      height: 100%;
       width: 100%;
       max-width: 100%;
       background-color: #1e1e1e;
       /* 黑色背景 */
+      flex: 1;
     }
 
     /* 修复积木块文字偏移问题 */
@@ -428,7 +422,7 @@
       overflow-y: auto;
       overflow-x: auto;
       /* 启用水平滚动条 */
-      padding: 10px;
+      padding: 5px;
       background-color: #1e1e1e;
       color: #fff;
       font-family: 'Consolas', monospace;
@@ -453,54 +447,52 @@
       margin: 0;
       display: flex;
       justify-content: space-between;
-      align-items: baseline;
-      /* 使用baseline对齐，确保文字基线对齐 */
+      align-items: center;
       background-color: #2d2d2d;
-      padding: 8px 10px;
+      padding: 4px 8px;
       border-radius: 0;
       position: sticky;
       top: 0;
       z-index: 10;
+      min-height: 26px;
+      box-sizing: border-box;
     }
 
     .area-title {
       font-weight: 600;
       color: #fff;
-      font-size: 14px;
+      font-size: 13px;
       letter-spacing: 0.5px;
-      line-height: 1.5;
-      /* 保持与按钮文字一致的行高 */
+      line-height: 16px;
       margin: 0;
-      padding: 4px 0;
-      /* 添加垂直内边距，使高度与按钮一致 */
+      display: inline-block;
+      vertical-align: middle;
     }
 
     /* 控制台按钮组 */
     .area-header .button-group {
       display: flex;
       gap: 8px;
-      align-items: baseline;
-      /* 使用baseline确保文字基线对齐 */
+      align-items: center;
     }
 
     /* 清除按钮和切换按钮的通用样式 */
     .clear-button,
     .toggle-button {
-      padding: 4px 8px;
+      padding: 2px 6px 3px 6px;
       cursor: pointer;
       background-color: #fff;
       border: none;
       border-radius: 3px;
       transition: all 0.2s;
-      font-size: 14px;
-      line-height: 1.5;
-      /* 与标题保持一致的行高 */
+      font-size: 13px;
+      line-height: 16px;
       display: inline-block;
-      /* 使用inline-block而非flex */
       text-align: center;
-      /* 确保文本居中 */
-      vertical-align: baseline;
-      /* 保持与标题文字的基线对齐 */
+      margin: 0;
+      vertical-align: middle;
+      box-sizing: border-box;
+      height: auto;
     }
 
     .clear-button:hover,
@@ -533,9 +525,9 @@
       width: 100%;
       min-height: auto;
       /* 未连接时高度自适应内容 */
-      max-height: 60px;
-      /* 未连接时只显示按钮区高度 */
+      max-height: none;
       overflow: hidden;
+      flex: 1;
     }
 
     /* 串口连接后应用此样式 */
@@ -544,8 +536,6 @@
       /* 连接后占据适当比例 */
       min-height: 180px;
       /* 连接后确保有足够高度 */
-      max-height: none;
-      /* 移除高度限制 */
     }
 
     /* 串口按钮区域 */
@@ -592,6 +582,11 @@
       background-color: #007bff;
       /* 蓝色 */
     }
+
+    .serial-button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 
@@ -634,22 +629,19 @@
         <div class="horizontal-resizer" id="console-serial-divider"></div>
         <!-- 添加串口通信相关的HTML结构 -->
         <div id="serialContainer">
-          <div class="serial-buttons">
-            <button onclick="openSerialPort()" class="serial-button" id="openSerialBtn"
-              data-i18n="serialConnect">Connect Serial Port</button>
-            <button onclick="quickConnect()" class="serial-button" id="quickConnectBtn" disabled
-              data-i18n="quickConnect">Quick Connect</button>
-            <button onclick="closeSerialPort()" class="serial-button" id="closeSerialBtn" style="display: none;"
-              data-i18n="closeSerial">Close Connection</button>
+          <div class="area-header">
+            <span class="area-title" id="serialOutputTitle" data-i18n="serialOutput">Serial Output</span>
+            <div class="button-group">
+              <button onclick="openSerialPort()" class="clear-button" id="openSerialBtn"
+                data-i18n="serialConnect">Connect Serial Port</button>
+              <button onclick="quickConnect()" class="clear-button" id="quickConnectBtn" disabled
+                data-i18n="quickConnect">Quick Connect</button>
+              <button onclick="closeSerialPort()" class="clear-button" id="closeSerialBtn" style="display: none;"
+                data-i18n="closeSerial">Close Connection</button>
+              <button onclick="clearSerialOutput()" class="clear-button" data-i18n="clearDisplay">Clear Display</button>
+            </div>
           </div>
           <div id="serialInterface" style="display: none;">
-            <div class="area-header">
-              <span class="area-title" id="serialOutputTitle" data-i18n="serialOutput">Serial Output</span>
-              <div class="button-group">
-                <button onclick="clearSerialOutput()" class="clear-button" data-i18n="clearDisplay">Clear
-                  Display</button>
-              </div>
-            </div>
             <div class="serial-output dark-scrollbar" id="serialOutput"></div>
             <div class="serial-input-container">
               <input type="text" id="serialInput" placeholder="Enter content to send"
