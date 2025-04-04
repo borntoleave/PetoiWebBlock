@@ -186,14 +186,13 @@
       max-width: 100%;
       user-select: text;
       /* 允许文本选择 */
-      outline: none !important;
-      /* 强制移除默认outline */
+      outline: none;
+      /* 移除默认outline */
     }
 
     .serial-output:focus {
-      outline: none !important;
-      box-shadow: none !important;
-      /* 确保在所有浏览器中移除焦点时的所有视觉指示 */
+      outline: 1px solid #007bff;
+      /* 获得焦点时显示蓝色outline */
     }
 
     .serial-output br {
@@ -525,15 +524,24 @@
       transition: all 0.2s;
       font-size: 14px;
       line-height: 1.5;
-      /* 与标题保持一致的行高 */
-      display: inline-block;
-      /* 使用inline-block而非flex */
+      display: inline-flex;
+      /* 改为inline-flex统一显示 */
+      align-items: center;
+      /* 垂直居中 */
+      justify-content: center;
+      /* 水平居中 */
       text-align: center;
-      /* 确保文本居中 */
-      vertical-align: baseline;
-      /* 保持与标题文字的基线对齐 */
+      min-height: 28px;
+      /* 设置最小高度确保一致性 */
       font-family: Arial, sans-serif;
-      /* 确保字体与标题一致 */
+      box-sizing: border-box;
+      /* 确保padding不影响整体尺寸 */
+      white-space: normal;
+      /* 允许文本自然换行 */
+      max-width: none;
+      /* 移除最大宽度限制 */
+      width: auto;
+      /* 宽度自适应内容 */
     }
 
     .clear-button:hover,
@@ -594,6 +602,12 @@
       cursor: pointer;
       transition: all 0.3s;
       font-family: Arial, sans-serif;
+      white-space: normal;
+      /* 允许文本自然换行 */
+      max-width: none;
+      /* 移除最大宽度限制 */
+      width: auto;
+      /* 宽度自适应内容 */
     }
 
     /* 水平分隔线样式 */
@@ -621,6 +635,50 @@
       display: flex;
       justify-content: flex-end;
       margin-left: auto;
+      align-items: center;
+      /* 确保按钮在同一行中垂直对齐 */
+      flex-wrap: nowrap;
+      /* 防止按钮换行，保持并排 */
+      max-width: 70%;
+      /* 适当增加宽度，容纳多个按钮 */
+    }
+
+    /* 按钮标题栏通用设置 */
+    .area-header .button-group button {
+      margin: 2px;
+      /* 统一间距 */
+      max-width: none;
+      /* 不限制最大宽度 */
+      white-space: normal;
+      /* 允许文本换行 */
+      word-wrap: break-word;
+      /* 允许长单词换行 */
+      line-height: 1.2;
+      /* 紧凑的行高 */
+      font-size: 13px;
+      /* 稍微小一点的字体 */
+      padding: 4px 6px;
+      /* 紧凑的内边距 */
+      text-align: center;
+      /* 文本居中 */
+      height: auto;
+      /* 自适应高度 */
+      min-height: 40px;
+      /* 确保足够高度容纳两行文字 */
+      width: auto;
+      /* 宽度自适应内容 */
+    }
+
+    /* 超小屏幕时进一步调整 */
+    @media screen and (max-width: 576px) {
+
+      .clear-button,
+      .toggle-button {
+        padding: 2px 5px;
+        font-size: 12px;
+        max-width: none;
+        /* 移除最大宽度限制 */
+      }
     }
   </style>
 </head>
@@ -673,7 +731,7 @@
                 data-i18n="serialConnect">Connect Serial Port</button>
               <button onclick="clearSerialOutput()" class="clear-button" id="clearSerialBtn" style="display: none;"
                 data-i18n="clearDisplay">Clear Display</button>
-              <button onclick="closeSerialPort()" class="serial-button" id="closeSerialBtn" style="display: none;"
+              <button onclick="closeSerialPort()" class="clear-button" id="closeSerialBtn" style="display: none;"
                 data-i18n="closeSerial">Close Connection</button>
             </div>
           </div>
@@ -1677,67 +1735,74 @@
         document.getElementById('enBtn').classList.toggle('active', true);
       });
 
+      // 加载默认语言积木
+      loadLanguage('en', function ()
+      {
+        // 初始化工作区
+        initWorkspace();
+        // 翻译UI
+        updateUIText();
+      });
+
+      // 添加控制台和串口输出区域的键盘复制功能
+      function setupCopyKeyboardShortcuts()
+      {
+        // 控制台区域复制功能
+        const consoleLogElement = document.getElementById('consoleLog');
+        // 设置tabindex，使元素可以接收键盘事件
+        consoleLogElement.setAttribute('tabindex', '0');
+
+        consoleLogElement.addEventListener('keydown', function (e)
+        {
+          // 检测Ctrl+C或Command+C (Mac)
+          if ((e.ctrlKey || e.metaKey) && e.key === 'c')
+          {
+            const selectedText = window.getSelection().toString();
+            if (selectedText)
+            {
+              navigator.clipboard.writeText(selectedText)
+                .then(() => console.log(getText('textCopied')))
+                .catch(err => console.error('复制失败:', err));
+            }
+          }
+        });
+
+        // 使控制台区域可以通过点击获得焦点
+        consoleLogElement.addEventListener('click', function ()
+        {
+          this.focus();
+        });
+
+        // 串口输出区域复制功能
+        const serialOutputElement = document.getElementById('serialOutput');
+        // 设置tabindex，使元素可以接收键盘事件
+        serialOutputElement.setAttribute('tabindex', '0');
+
+        serialOutputElement.addEventListener('keydown', function (e)
+        {
+          // 检测Ctrl+C或Command+C (Mac)
+          if ((e.ctrlKey || e.metaKey) && e.key === 'c')
+          {
+            const selectedText = window.getSelection().toString();
+            if (selectedText)
+            {
+              navigator.clipboard.writeText(selectedText)
+                .then(() => console.log(getText('textCopied')))
+                .catch(err => console.error('复制失败:', err));
+            }
+          }
+        });
+
+        // 使串口输出区域可以通过点击获得焦点
+        serialOutputElement.addEventListener('click', function ()
+        {
+          this.focus();
+        });
+      }
+
+      // 初始化复制功能
+      setupCopyKeyboardShortcuts();
     });
-
-    // 添加控制台和串口输出区域的键盘复制功能
-    function setupCopyKeyboardShortcuts()
-    {
-      // 控制台区域复制功能
-      const consoleLogElement = document.getElementById('consoleLog');
-      // 设置tabindex，使元素可以接收键盘事件
-      consoleLogElement.setAttribute('tabindex', '0');
-
-      consoleLogElement.addEventListener('keydown', function (e)
-      {
-        // 检测Ctrl+C或Command+C (Mac)
-        if ((e.ctrlKey || e.metaKey) && e.key === 'c')
-        {
-          const selectedText = window.getSelection().toString();
-          if (selectedText)
-          {
-            navigator.clipboard.writeText(selectedText)
-              .then(() => console.log(getText('textCopied')))
-              .catch(err => console.error('复制失败:', err));
-          }
-        }
-      });
-
-      // 使控制台区域可以通过点击获得焦点
-      consoleLogElement.addEventListener('click', function ()
-      {
-        this.focus();
-      });
-
-      // 串口输出区域复制功能
-      const serialOutputElement = document.getElementById('serialOutput');
-      // 设置tabindex，使元素可以接收键盘事件但不显示虚线框
-      serialOutputElement.setAttribute('tabindex', '-1');
-
-      serialOutputElement.addEventListener('keydown', function (e)
-      {
-        // 检测Ctrl+C或Command+C (Mac)
-        if ((e.ctrlKey || e.metaKey) && e.key === 'c')
-        {
-          const selectedText = window.getSelection().toString();
-          if (selectedText)
-          {
-            navigator.clipboard.writeText(selectedText)
-              .then(() => console.log(getText('textCopied')))
-              .catch(err => console.error('复制失败:', err));
-          }
-        }
-      });
-
-      // 使串口输出区域可以通过点击获得焦点，但不显示虚线框
-      serialOutputElement.addEventListener('click', function ()
-      {
-        // 不再调用focus方法
-        // this.focus();
-      });
-    }
-
-    // 初始化复制功能
-    setupCopyKeyboardShortcuts();
 
     // 添加动态加载语言文件的辅助函数
     function loadLanguageFile(lang, callback)
