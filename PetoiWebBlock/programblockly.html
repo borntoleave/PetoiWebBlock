@@ -349,6 +349,10 @@
       cursor: col-resize;
       transition: background-color 0.2s;
       user-select: none;
+      z-index: 10;
+      /* 添加z-index确保分隔线不被覆盖 */
+      position: relative;
+      /* 需要设置position才能使z-index生效 */
     }
 
     .resizer:hover,
@@ -2968,6 +2972,9 @@
         // 添加调整中的样式
         container.classList.add('resizing');
         divider.classList.add('active');
+
+        // 阻止默认行为，确保拖动正常工作
+        e.preventDefault();
       });
 
       document.addEventListener('mousemove', function (e)
@@ -2986,15 +2993,23 @@
         // 确保合理范围 (20% - 80%)
         newWidthPercent = Math.max(20, Math.min(80, newWidthPercent));
 
-        // 应用新宽度
+        // 应用新宽度 - 同时设置flexBasis和width属性
+        blocklyDiv.style.flexBasis = `${newWidthPercent}%`;
         blocklyDiv.style.width = `${newWidthPercent}%`;
-        windowsContainer.style.width = `${100 - newWidthPercent - 1}%`; // 减去分隔线宽度的百分比
+        windowsContainer.style.flexBasis = `${99 - newWidthPercent}%`;
+        windowsContainer.style.width = `${99 - newWidthPercent}%`;
 
         // 调整Blockly工作区大小以适应新尺寸
         if (workspace)
         {
           Blockly.svgResize(workspace);
         }
+
+        // 更新undo/redo按钮位置
+        repositionUndoRedoButtons();
+
+        // 阻止默认行为
+        e.preventDefault();
       });
 
       document.addEventListener('mouseup', function ()
@@ -3075,6 +3090,9 @@
           // 应用新高度比例
           consoleWindow.style.flex = `${newConsoleHeightPercent}`;
           serialContainer.style.flex = `${100 - newConsoleHeightPercent - 1}`;  // 减去分隔线高度
+
+          // 更新undo/redo按钮位置
+          repositionUndoRedoButtons();
 
           // 阻止事件继续传播和默认行为
           e.stopPropagation();
