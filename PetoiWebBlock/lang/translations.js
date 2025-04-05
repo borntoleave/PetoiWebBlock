@@ -1,6 +1,7 @@
 const TRANSLATIONS = {
   zh: {
     // 按钮和标题
+    "appTitle": "陪拓网页编程积木",
     "showCode": "显示代码",
     "runCode": "运行代码",
     "saveProgram": "保存程序",
@@ -11,7 +12,7 @@ const TRANSLATIONS = {
     "serialConnect": "连接串口",
     "quickConnect": "快速连接",
     "closeSerial": "关闭连接",
-    "clearDisplay": "清除显示",
+    "clearDisplay": "清除输出",
     "send": "发送",
     "serialOutput": "串口监视器",
     "serialInputPlaceholder": "输入要发送的内容",
@@ -35,6 +36,11 @@ const TRANSLATIONS = {
     "serialPortBusy": "串口已被占用，请关闭其他正在使用此串口的程序",
     "taskEnded": "任务结束",
     "showSentCommands": "显示发送指令",
+    "commandCompleted": "指令已完成",
+    "commandNoReturnWarning": "警告：未收到预期的返回值：",
+    "fileLoaded": "已加载：{filename}",
+    "loadFileFailed": "无法载入文件",
+    "currentFileLabel": "当前文件：",
 
     // 命令消息
     "sendingCommand": "发送命令: ",
@@ -145,6 +151,7 @@ const TRANSLATIONS = {
 
   en: {
     // Buttons and titles
+    "appTitle": "Petoi Web Coding Blocks",
     "showCode": "Show Code",
     "runCode": "Run Code",
     "saveProgram": "Save Program",
@@ -155,7 +162,7 @@ const TRANSLATIONS = {
     "serialConnect": "Connect Serial Port",
     "quickConnect": "Quick Connect",
     "closeSerial": "Close Serial",
-    "clearDisplay": "Clear Display",
+    "clearDisplay": "Clear Output",
     "send": "Send",
     "serialOutput": "Serial Monitor",
     "serialInputPlaceholder": "Enter content to send",
@@ -179,6 +186,11 @@ const TRANSLATIONS = {
     "serialPortBusy": "Serial port is busy, please close other programs using this serial port",
     "taskEnded": "Task ended",
     "showSentCommands": "Show Sent Commands",
+    "commandCompleted": "Command completed",
+    "commandNoReturnWarning": "Warning: Expected return value not received: ",
+    "fileLoaded": "Loaded: {filename}",
+    "loadFileFailed": "Failed to load file",
+    "currentFileLabel": "Current file:  ",
 
     // Command messages
     "sendingCommand": "Sending command: ",
@@ -317,12 +329,19 @@ function updateUITranslations()
   document.querySelectorAll('[data-i18n]').forEach(element =>
   {
     const key = element.getAttribute('data-i18n');
-    if (element.tagName === 'INPUT' && element.type === 'placeholder')
+    if (element.tagName.toLowerCase() === 'input')
     {
       element.placeholder = getText(key);
     } else
     {
-      element.textContent = getText(key);
+      // 特殊处理currentFileLabel，在英文模式下使用不间断空格
+      if (key === 'currentFileLabel' && currentLang === 'en')
+      {
+        element.innerHTML = 'Current file:&nbsp;&nbsp;';
+      } else
+      {
+        element.textContent = getText(key);
+      }
     }
   });
 } 

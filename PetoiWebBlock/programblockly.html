@@ -685,7 +685,7 @@
 
 <body>
   <div class="header">
-    <div class="title">Petoi Web Coding Blocks</div>
+    <div class="title" data-i18n="appTitle">Petoi Web Coding Blocks</div>
     <div class="language-switch">
       <button id="zhBtn" class="lang-btn" onclick="setLanguage('zh')">中文</button>
       <button id="enBtn" class="lang-btn active" onclick="setLanguage('en')">English</button>
@@ -699,7 +699,8 @@
       <button onclick="document.getElementById('loadInput').click()" data-i18n="loadProgram">Load Program</button>
       <button onclick="clearWorkspace()" data-i18n="clearAll">Clear All</button>
       <input type="file" id="loadInput" accept=".json" onchange="loadWorkspace(this.files[0])">
-      <span id="currentFileName" style="margin-left: 10px; color: #555; font-style: italic;"></span>
+      <span id="currentFileLabel" data-i18n="currentFileLabel" style="margin-left: 10px; color: #555;"></span>
+      <span id="currentFileName" style="color: #555; font-style: italic;"></span>
       <div class="right-aligned-container">
         <button onclick="quickConnect()" id="quickConnectBtn" disabled data-i18n="quickConnect">Quick Connect</button>
       </div>
@@ -1694,6 +1695,11 @@
         // 更新UI文本
         updateUIText();
 
+        if (typeof window.updateUITranslations === 'function')
+        {
+          window.updateUITranslations();
+        }
+
         // 添加窗口大小变化事件监听器
         window.addEventListener('resize', resizeBlocklyWorkspace);
 
@@ -1736,10 +1742,9 @@
       });
 
       // 加载默认语言积木
-      loadLanguage('en', function ()
+      loadLanguageFile('en', function ()
       {
-        // 初始化工作区
-        initWorkspace();
+        // 工作区已在DOMContentLoaded事件中初始化
         // 翻译UI
         updateUIText();
       });
@@ -1761,7 +1766,7 @@
             if (selectedText)
             {
               navigator.clipboard.writeText(selectedText)
-                .then(() => console.log(getText('textCopied')))
+                .then(() => {/* 移除复制成功消息 */ })
                 .catch(err => console.error('复制失败:', err));
             }
           }
@@ -1787,7 +1792,7 @@
             if (selectedText)
             {
               navigator.clipboard.writeText(selectedText)
-                .then(() => console.log(getText('textCopied')))
+                .then(() => {/* 移除复制成功消息 */ })
                 .catch(err => console.error('复制失败:', err));
             }
           }
@@ -1832,48 +1837,29 @@
     // 更新UI文本的函数
     function updateUIText()
     {
-      // 更新页面标题
-      document.querySelector('.title').textContent = 'Petoi Web Coding Blocks';
-
-      // 更新主要按钮
-      document.querySelector('button[onclick="showCode()"]').textContent = getText('showCode');
-      document.querySelector('button[onclick="runCode()"]').textContent = getText('runCode');
-      document.querySelector('button[onclick="saveWorkspace()"]').textContent = getText('saveProgram');
-      document.querySelector('button[onclick="document.getElementById(\'loadInput\').click()"]').textContent = getText('loadProgram');
-      document.querySelector('button[onclick="clearWorkspace()"]').textContent = getText('clearAll');
-
-      // 更新控制台区域文本
-      const consoleClearBtn = document.querySelector('button[onclick="clearConsole()"]');
-      if (consoleClearBtn) consoleClearBtn.textContent = getText('clearConsole');
-
-      // 更新串口区域文本
-      const serialClearBtn = document.querySelector('button[onclick="clearSerialOutput()"]');
-      if (serialClearBtn) serialClearBtn.textContent = getText('clearDisplay');
-
-      const openSerialBtn = document.getElementById('openSerialBtn');
-      if (openSerialBtn) openSerialBtn.textContent = getText('serialConnect');
-
-      const quickConnectBtn = document.getElementById('quickConnectBtn');
-      if (quickConnectBtn) quickConnectBtn.textContent = getText('quickConnect');
-
-      const closeSerialBtn = document.getElementById('closeSerialBtn');
-      if (closeSerialBtn) closeSerialBtn.textContent = getText('closeSerial');
-
-      const sendButton = document.querySelector('button[onclick="sendSerialData()"]');
-      if (sendButton) sendButton.textContent = getText('send');
-
-      const serialInput = document.getElementById('serialInput');
-      if (serialInput) serialInput.placeholder = getText('serialInputPlaceholder');
-
-      // 更新标题文本
-      const consoleTitles = document.querySelectorAll('.area-title');
-      if (consoleTitles.length > 0)
+      // 调用translations.js中的updateUITranslations函数
+      if (typeof window.updateUITranslations === 'function')
       {
-        consoleTitles[0].textContent = getText('consoleLog');
+        window.updateUITranslations();
       }
 
-      const serialTitle = document.getElementById('serialOutputTitle');
-      if (serialTitle) serialTitle.textContent = getText('serialOutput');
+      // 更新当前文件名显示
+      const currentFileNameSpan = document.getElementById('currentFileName');
+      const currentFileLabelSpan = document.getElementById('currentFileLabel');
+
+      if (currentFileLabelSpan)
+      {
+        // 只在有文件时显示标签
+        currentFileLabelSpan.style.display = currentFile ? 'inline' : 'none';
+      }
+
+      if (currentFileNameSpan && currentFile)
+      {
+        currentFileNameSpan.textContent = currentFile.name;
+      } else if (currentFileNameSpan)
+      {
+        currentFileNameSpan.textContent = '';
+      }
     }
 
     // 窗口大小变化时调整Blockly工作区
@@ -2329,12 +2315,8 @@
           lastModified: new Date().getTime()
         };
 
-        // 更新显示的文件名
-        const fileNameText = currentLang === 'zh' ?
-          `当前文件: ${finalName}` :
-          `Current file: ${finalName}`;
-
-        document.getElementById('currentFileName').textContent = fileNameText;
+        // 更新显示的文件名和标签
+        updateUIText();
       }
     }
 
@@ -2397,20 +2379,15 @@
           // 保存当前文件信息
           currentFile = file;
 
-          // 显示当前文件名
-          const fileNameText = currentLang === 'zh' ?
-            `当前文件: ${file.name}` :
-            `Current file: ${file.name}`;
-          document.getElementById('currentFileName').textContent = fileNameText;
+          // 更新文件名和标签显示
+          updateUIText();
 
-          // 成功消息
-          const successMsg = currentLang === 'zh' ?
-            `成功加载: ${file.name}` :
-            `Loaded: ${file.name}`;
-          console.log(successMsg);
+          // 不使用alert，而是在控制台显示加载成功信息
+          const successMsg = getText('fileLoaded').replace('{filename}', file.name);
+          addConsoleMessage([successMsg]);
         } catch (err)
         {
-          alert('无法载入文件: ' + err.message);
+          alert(getText('loadFileFailed'));
         }
       };
       reader.readAsText(file);
@@ -3283,22 +3260,6 @@
       });
     });
 
-    function updateUITranslations()
-    {
-      // 更新UI元素的文本
-      document.querySelectorAll('[data-i18n]').forEach(element =>
-      {
-        const key = element.getAttribute('data-i18n');
-        if (element.tagName.toLowerCase() === 'input')
-        {
-          // 输入框特殊处理
-          element.placeholder = getText(key);
-        } else
-        {
-          element.textContent = getText(key);
-        }
-      });
-    }
   </script>
 </body>
 
