@@ -6,21 +6,21 @@
 Blockly.JavaScript.forBlock['direction_action'] = function (block)
 {
   const code = block.getFieldValue('COMMAND');
-  return `httpRequest(deviceIP, "${code}");\n`;
+  return `console.log(httpRequest(deviceIP, "${code}", true));\n`;
 };
 
 // 代码生成:发送原地动作命令
 Blockly.JavaScript.forBlock['local_action'] = function (block)
 {
   const code = block.getFieldValue('COMMAND');
-  return `httpRequest(deviceIP, "${code}");\n`;
+  return `console.log(httpRequest(deviceIP, "${code}", true));\n`;
 };
 
 // 代码生成:发送高难度特技动作命令
 Blockly.JavaScript.forBlock['high_difficulty_action'] = function (block)
 {
   const code = block.getFieldValue('COMMAND');
-  return `httpRequest(deviceIP, "${code}");\n`;
+  return `console.log(httpRequest(deviceIP, "${code}", true));\n`;
 };
 
 // 代码生成:设置马达角度代码生成器
