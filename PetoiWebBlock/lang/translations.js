@@ -89,7 +89,7 @@ const TRANSLATIONS = {
     "acrobaticWithDelay": "杂技动作(小心使用) %1 后延时 %2 秒",
 
     // 积木文本 - 控制
-    "delayMs": "延时 %1 毫秒",
+    "delayMs": "延时 %1 秒",
 
     // 积木文本 - 传感器
     "gyroControl": "陀螺仪 %1",
@@ -259,7 +259,7 @@ const TRANSLATIONS = {
     "acrobaticWithDelay": "Acrobatic Moves (Use with Caution) %1 then delay %2 sec",
 
     // Block text - Control
-    "delayMs": "Delay %1 milliseconds",
+    "delayMs": "Delay %1 seconds",
 
     // Block text - Sensors
     "gyroControl": "Gyroscope %1",

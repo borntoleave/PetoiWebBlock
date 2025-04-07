@@ -73,7 +73,8 @@ Blockly.JavaScript.forBlock['get_all_joint_angles'] = function (block)
 Blockly.JavaScript.forBlock['delay_ms'] = function (block)
 {
   const delay = block.getFieldValue('DELAY');
-  return `console.log("延时 ${delay} 毫秒 - 由于技术限制，实际执行时不会暂停");\n`;
+  const delayMs = Math.round(delay * 1000); // 将秒转换为毫秒
+  return `console.log("延时 ${delay} 秒...");\nawait new Promise(resolve => setTimeout(resolve, ${delayMs}));\n`;
 };
 
 // 代码生成:陀螺仪控制代码生成器
