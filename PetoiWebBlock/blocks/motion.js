@@ -1,8 +1,8 @@
-// 发送方向动作
+// 发送步态动作
 Blockly.defineBlocksWithJsonArray([
   {
-    type: 'direction_action',
-    message0: "方向动作 %1",
+    type: 'gait',
+    message0: "步态 %1",
     args0: [
       {
         type: "field_dropdown",
@@ -23,23 +23,23 @@ Blockly.defineBlocksWithJsonArray([
     previousStatement: null,
     nextStatement: null,
     colour: 230,
-    tooltip: "方向动作",
+    tooltip: "步态动作",
     helpUrl: ""
   },
 ]);
 
-// 代码生成:发送方向动作命令
-javascript.javascriptGenerator.forBlock['direction_action'] = function (block)
+// 代码生成:发送步态动作命令
+javascript.javascriptGenerator.forBlock['gait'] = function (block)
 {
   const code = block.getFieldValue('COMMAND');
   return `httpRequest(deviceIP, "${code}");\n`;
 };
 
-// 发送原地动作
+// 发送姿势动作
 Blockly.defineBlocksWithJsonArray([
   {
-    type: 'local_action',
-    message0: "原地动作 %1",
+    type: 'posture',
+    message0: "姿势 %1",
     args0: [
       {
         type: "field_dropdown",
@@ -55,23 +55,23 @@ Blockly.defineBlocksWithJsonArray([
     previousStatement: null,
     nextStatement: null,
     colour: 230,
-    tooltip: "Send HTTP request with command parameter",
+    tooltip: "姿势动作",
     helpUrl: ""
   },
 ]);
 
-// 代码生成:发送原地动作命令
-javascript.javascriptGenerator.forBlock['local_action'] = function (block)
+// 代码生成:发送姿势动作命令
+javascript.javascriptGenerator.forBlock['posture'] = function (block)
 {
   const code = block.getFieldValue('COMMAND');
   return `httpRequest(deviceIP, "${code}");\n`;
 };
 
-// 发送高难度特技动作
+// 发送杂技动作
 Blockly.defineBlocksWithJsonArray([
   {
-    type: 'high_difficulty_action',
-    message0: "高难度特技动作(小心使用) %1",
+    type: 'acrobatic_moves',
+    message0: "杂技动作(小心使用) %1",
     args0: [
       {
         type: "field_dropdown",
@@ -85,13 +85,13 @@ Blockly.defineBlocksWithJsonArray([
     previousStatement: null,
     nextStatement: null,
     colour: 230,
-    tooltip: "Send HTTP request with command parameter",
+    tooltip: "杂技动作",
     helpUrl: ""
   },
 ]);
 
-// 代码生成:发送高难度特技动作命令
-javascript.javascriptGenerator.forBlock['high_difficulty_action'] = function (block)
+// 代码生成:发送杂技动作命令
+javascript.javascriptGenerator.forBlock['acrobatic_moves'] = function (block)
 {
   const code = block.getFieldValue('COMMAND');
   return `httpRequest(deviceIP, "${code}");\n`;

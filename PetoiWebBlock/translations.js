@@ -78,9 +78,9 @@ const TRANSLATIONS = {
         "setMotorAngle": "设置关节 %1 角度为 %2",
         "getJointAngle": "获取关节 %1 的角度",
         "getAllJointAngles": "获取所有关节角度",
-        "directionAction": "运动方向 %1",
-        "localAction": "原地动作 %1",
-        "highDifficultyAction": "高难度特技动作(小心使用) %1",
+        "gait": "步态 %1",
+        "posture": "姿势 %1",
+        "acrobatic_moves": "杂技动作(小心使用) %1",
 
         // 积木文本 - 控制
         "delayMs": "延时 %1 毫秒",
@@ -229,9 +229,9 @@ const TRANSLATIONS = {
         "setMotorAngle": "Set Joint %1 Angle to %2",
         "getJointAngle": "Get Joint %1 Angle",
         "getAllJointAngles": "Get All Joint Angles",
-        "directionAction": "Move Direction %1",
-        "localAction": "Static Action %1",
-        "highDifficultyAction": "High Difficulty Action (Use with Caution) %1",
+        "gait": "Gait %1",
+        "posture": "Posture %1",
+        "acrobatic_moves": "Acrobatic Moves (Use with Caution) %1",
 
         // Block text - Control
         "delayMs": "Delay %1 milliseconds",

@@ -864,9 +864,9 @@
           name: 'Motion',
           categorystyle: 'motion_category',
           contents: [
-            { kind: 'block', type: 'direction_action' },
-            { kind: 'block', type: 'local_action' },
-            { kind: 'block', type: 'high_difficulty_action' },
+            { kind: 'block', type: 'gait' },
+            { kind: 'block', type: 'posture' },
+            { kind: 'block', type: 'acrobatic_moves' },
             { kind: 'block', type: 'set_motor_angle' },
             { kind: 'block', type: 'get_joint_angle' },
             { kind: 'block', type: 'get_all_joint_angles' }
@@ -970,9 +970,9 @@
           block.type === 'set_analog_output' ||
           block.type === 'send_custom_command' ||
           block.type === 'delay_ms' ||
-          block.type === 'local_action' ||
-          block.type === 'direction_action' ||
-          block.type === 'high_difficulty_action' ||
+          block.type === 'posture' ||
+          block.type === 'gait' ||
+          block.type === 'acrobatic_moves' ||
           block.type === 'set_motor_angle' ||
           block.type === 'get_joint_angle' ||
           block.type === 'get_all_joint_angles' ||
@@ -1556,6 +1556,106 @@
             "nextStatement": null,
             "colour": '#9C27B0', // 控制台积木：紫色
             "tooltip": ""
+          });
+        };
+      }
+
+      // 步态动作积木
+      if (Blockly.Blocks['gait'])
+      {
+        Blockly.Blocks['gait'].init = function ()
+        {
+          this.jsonInit({
+            "type": "gait",
+            "message0": getText("gait"),
+            "args0": [
+              {
+                "type": "field_dropdown",
+                "name": "COMMAND",
+                "options": [
+                  [getText("step"), "kvtF"],
+                  [getText("rotateLeft"), "kvtL"],
+                  [getText("rotateRight"), "kvtR"],
+                  [getText("walkForward"), "kwkF"],
+                  [getText("walkLeft"), "kwkL"],
+                  [getText("walkRight"), "kwkR"],
+                  [getText("walkBackward"), "kbkF"],
+                  [getText("backLeft"), "kbkL"],
+                  [getText("backRight"), "kbkR"],
+                  [getText("trotForward"), "ktrF"],
+                  [getText("trotLeft"), "ktrL"],
+                  [getText("trotRight"), "ktrR"],
+                  [getText("crawlForward"), "kcrF"],
+                  [getText("crawlLeft"), "kcrL"],
+                  [getText("crawlRight"), "kcrR"],
+                  [getText("gapForward"), "kgpF"],
+                  [getText("gapLeft"), "kgpL"],
+                  [getText("gapRight"), "kgpR"],
+                  [getText("moonwalk"), "kmw"]
+                ]
+              }
+            ],
+            "previousStatement": null,
+            "nextStatement": null,
+            "colour": '#4361EE', // 动作积木：蓝色
+            "tooltip": getText("gait")
+          });
+        };
+      }
+
+      // 姿势动作积木
+      if (Blockly.Blocks['posture'])
+      {
+        Blockly.Blocks['posture'].init = function ()
+        {
+          this.jsonInit({
+            "type": "posture",
+            "message0": getText("posture"),
+            "args0": [
+              {
+                "type": "field_dropdown",
+                "name": "COMMAND",
+                "options": [
+                  [getText("stand"), "kup"],
+                  [getText("sit"), "ksit"],
+                  [getText("rest"), "d"],
+                  [getText("pee"), "kpee"]
+                ]
+              }
+            ],
+            "previousStatement": null,
+            "nextStatement": null,
+            "colour": '#4361EE', // 动作积木：蓝色
+            "tooltip": getText("posture")
+          });
+        };
+      }
+
+      // 杂技动作积木
+      if (Blockly.Blocks['acrobatic_moves'])
+      {
+        Blockly.Blocks['acrobatic_moves'].init = function ()
+        {
+          this.jsonInit({
+            "type": "acrobatic_moves",
+            "message0": getText("acrobatic_moves"),
+            "args0": [
+              {
+                "type": "field_dropdown",
+                "name": "COMMAND",
+                "options": [
+                  [getText("handstand"), "khds"],
+                  [getText("boxing"), "kbx"],
+                  [getText("backflip"), "kflipB"],
+                  [getText("frontflip"), "kflipF"],
+                  [getText("jump"), "kjmp"]
+                ]
+              }
+            ],
+            "previousStatement": null,
+            "nextStatement": null,
+            "colour": '#4361EE', // 动作积木：蓝色
+            "tooltip": getText("acrobatic_moves")
           });
         };
       }

@@ -2,22 +2,22 @@
  * JavaScript代码生成器 - 为所有自定义积木生成JavaScript代码
  */
 
-// 代码生成:发送方向动作命令
-Blockly.JavaScript.forBlock['direction_action'] = function (block)
+// 代码生成:发送步态动作命令
+Blockly.JavaScript.forBlock['gait'] = function (block)
 {
   const code = block.getFieldValue('COMMAND');
   return `console.log(httpRequest(deviceIP, "${code}", true));\n`;
 };
 
-// 代码生成:发送原地动作命令
-Blockly.JavaScript.forBlock['local_action'] = function (block)
+// 代码生成:发送姿势动作命令
+Blockly.JavaScript.forBlock['posture'] = function (block)
 {
   const code = block.getFieldValue('COMMAND');
   return `console.log(httpRequest(deviceIP, "${code}", true));\n`;
 };
 
-// 代码生成:发送高难度特技动作命令
-Blockly.JavaScript.forBlock['high_difficulty_action'] = function (block)
+// 代码生成:发送杂技动作命令
+Blockly.JavaScript.forBlock['acrobatic_moves'] = function (block)
 {
   const code = block.getFieldValue('COMMAND');
   return `console.log(httpRequest(deviceIP, "${code}", true));\n`;
