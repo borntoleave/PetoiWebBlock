@@ -83,6 +83,10 @@ const TRANSLATIONS = {
     "directionAction": "运动方向 %1",
     "localAction": "原地动作 %1",
     "highDifficultyAction": "高难度特技动作(小心使用) %1",
+    "setMotorAngleWithDelay": "设置关节 %1 角度为 %2 后延时 %3 秒",
+    "gaitWithDelay": "步态 %1 后延时 %2 秒",
+    "postureWithDelay": "姿势 %1 后延时 %2 秒",
+    "acrobaticWithDelay": "杂技动作(小心使用) %1 后延时 %2 秒",
 
     // 积木文本 - 控制
     "delayMs": "延时 %1 毫秒",
@@ -154,6 +158,8 @@ const TRANSLATIONS = {
     "asyncSendingCommand": "异步发送命令: ",
     "asyncReceivedResponse": "异步收到响应: ",
     "networkRequestError": "网络请求错误",
+    "programEndingRestCommand": "程序结束，自动发送休息指令...",
+    "restCommandFailed": "发送休息指令失败: ",
 
     // 代码生成器注释
     "connectingIPAddress": "连接IP地址",
@@ -247,6 +253,10 @@ const TRANSLATIONS = {
     "directionAction": "Move Direction %1",
     "localAction": "Static Action %1",
     "highDifficultyAction": "High Difficulty Action (Use with Caution) %1",
+    "setMotorAngleWithDelay": "Set Joint %1 Angle to %2 then delay %3 sec",
+    "gaitWithDelay": "Gait %1 then delay %2 sec",
+    "postureWithDelay": "Posture %1 then delay %2 sec",
+    "acrobaticWithDelay": "Acrobatic Moves (Use with Caution) %1 then delay %2 sec",
 
     // Block text - Control
     "delayMs": "Delay %1 milliseconds",
@@ -301,9 +311,9 @@ const TRANSLATIONS = {
     "connectingDevice": "Connecting to device: ",
     "deviceResponseInfo": "Device response info: ",
     "deviceModelInfo": "Device model: ",
-    "errorMockData": "Error: Mock data used instead of real request!",
+    "errorMockData": "Error: Using mock data instead of real request!",
     "connectionFailedMock": "Connection failed: System used mock data instead of real network request. Please check network settings.",
-    "connectionFailedCheck": "Robot connection failed! Please verify IP address is correct and the device is powered on.",
+    "connectionFailedCheck": "Failed to connect to the robot! Please verify the IP address is correct and the device is powered on.",
     "connectionError": "Connection error: ",
     "connectionTimeout": "Connection timeout: Unable to connect to {ip}, please check if the device is on and in the same network.",
     "networkError": "Network error: Unable to connect to {ip}, please check your network connection.",
@@ -318,6 +328,8 @@ const TRANSLATIONS = {
     "asyncSendingCommand": "Async sending command: ",
     "asyncReceivedResponse": "Async received response: ",
     "networkRequestError": "Network request error",
+    "programEndingRestCommand": "Program ended, sending rest command...",
+    "restCommandFailed": "Failed to send rest command: ",
 
     // Code generator comments
     "connectingIPAddress": "Connecting to IP address",

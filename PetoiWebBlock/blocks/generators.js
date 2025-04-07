@@ -6,21 +6,30 @@
 Blockly.JavaScript.forBlock['gait'] = function (block)
 {
   const code = block.getFieldValue('COMMAND');
-  return `console.log(httpRequest(deviceIP, "${code}", true));\n`;
+  const delay = block.getFieldValue('DELAY');
+  const delayMs = Math.round(delay * 1000);
+  return `console.log(httpRequest(deviceIP, "${code}", true));\n` +
+    `await new Promise(resolve => setTimeout(resolve, ${delayMs}));\n`;
 };
 
 // 代码生成:发送姿势动作命令
 Blockly.JavaScript.forBlock['posture'] = function (block)
 {
   const code = block.getFieldValue('COMMAND');
-  return `console.log(httpRequest(deviceIP, "${code}", true));\n`;
+  const delay = block.getFieldValue('DELAY');
+  const delayMs = Math.round(delay * 1000);
+  return `console.log(httpRequest(deviceIP, "${code}", true));\n` +
+    `await new Promise(resolve => setTimeout(resolve, ${delayMs}));\n`;
 };
 
 // 代码生成:发送杂技动作命令
 Blockly.JavaScript.forBlock['acrobatic_moves'] = function (block)
 {
   const code = block.getFieldValue('COMMAND');
-  return `console.log(httpRequest(deviceIP, "${code}", true));\n`;
+  const delay = block.getFieldValue('DELAY');
+  const delayMs = Math.round(delay * 1000);
+  return `console.log(httpRequest(deviceIP, "${code}", true));\n` +
+    `await new Promise(resolve => setTimeout(resolve, ${delayMs}));\n`;
 };
 
 // 代码生成:设置马达角度代码生成器
@@ -28,11 +37,14 @@ Blockly.JavaScript.forBlock['set_motor_angle'] = function (block)
 {
   const motorId = block.getFieldValue('MOTOR');
   const angle = block.getFieldValue('ANGLE');
+  const delay = block.getFieldValue('DELAY');
+  const delayMs = Math.round(delay * 1000);
   // 生成唯一的随机后缀，防止变量名冲突
   const uniqueSuffix = Math.floor(Math.random() * 10000);
 
   return `// 设置关节角度并获取响应
-console.log(httpRequest(deviceIP, "m ${motorId} " + Math.min(125, Math.max(-125, ${angle})), true));\n`;
+console.log(httpRequest(deviceIP, "m ${motorId} " + Math.min(125, Math.max(-125, ${angle})), true));\n` +
+    `await new Promise(resolve => setTimeout(resolve, ${delayMs}));\n`;
 };
 
 // 代码生成:获取关节角度的代码生成器
