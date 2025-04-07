@@ -28,7 +28,11 @@ Blockly.JavaScript.forBlock['set_motor_angle'] = function (block)
 {
   const motorId = block.getFieldValue('MOTOR');
   const angle = block.getFieldValue('ANGLE');
-  return `httpRequest(deviceIP, "m ${motorId} " + Math.min(125, Math.max(-125, ${angle})));\n`;
+  // 生成唯一的随机后缀，防止变量名冲突
+  const uniqueSuffix = Math.floor(Math.random() * 10000);
+
+  return `// 设置关节角度并获取响应
+console.log(httpRequest(deviceIP, "m ${motorId} " + Math.min(125, Math.max(-125, ${angle})), true));\n`;
 };
 
 // 代码生成:获取关节角度的代码生成器
@@ -57,14 +61,14 @@ Blockly.JavaScript.forBlock['get_all_joint_angles'] = function (block)
 Blockly.JavaScript.forBlock['delay_ms'] = function (block)
 {
   const delay = block.getFieldValue('DELAY');
-  return `await new Promise(resolve => setTimeout(resolve, ${delay}));\n`;
+  return `console.log("延时 ${delay} 毫秒 - 由于技术限制，实际执行时不会暂停");\n`;
 };
 
 // 代码生成:陀螺仪控制代码生成器
 Blockly.JavaScript.forBlock['gyro_control'] = function (block)
 {
   const state = block.getFieldValue('STATE');
-  return `httpRequest(deviceIP, "g ${state}");\n`;
+  return `console.log(httpRequest(deviceIP, "g ${state}", true));\n`;
 };
 
 // 代码生成:连接代码生成器
@@ -108,7 +112,7 @@ Blockly.JavaScript.forBlock['set_digital_output'] = function (block)
 {
   const pin = block.getFieldValue('PIN');
   const state = block.getFieldValue('STATE');
-  return `httpRequest(deviceIP, "o ${pin} d ${state}");\n`;
+  return `console.log(httpRequest(deviceIP, "o ${pin} d ${state}", true));\n`;
 };
 
 // 代码生成:设置模拟输出代码生成器
@@ -116,14 +120,14 @@ Blockly.JavaScript.forBlock['set_analog_output'] = function (block)
 {
   const pin = block.getFieldValue('PIN');
   const value = block.getFieldValue('VALUE');
-  return `httpRequest(deviceIP, "o ${pin} a ${value}");\n`;
+  return `console.log(httpRequest(deviceIP, "o ${pin} a ${value}", true));\n`;
 };
 
 // 代码生成:发送自定义命令代码生成器
 Blockly.JavaScript.forBlock['send_custom_command'] = function (block)
 {
   const command = block.getFieldValue('COMMAND');
-  return `httpRequest(deviceIP, "${command}");\n`;
+  return `console.log(httpRequest(deviceIP, "${command}", true));\n`;
 };
 
 // 代码生成:控制台输出变量代码生成器
