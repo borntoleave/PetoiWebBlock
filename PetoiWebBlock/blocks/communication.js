@@ -35,7 +35,7 @@ Blockly.defineBlocksWithJsonArray([
       {
         type: "field_input",
         name: "IP_ADDRESS",
-        text: "x.x.x.x"
+        text: "192.168.4.1"
       }
     ],
     nextStatement: null,
@@ -45,18 +45,52 @@ Blockly.defineBlocksWithJsonArray([
   },
 ]);
 
-// 连接机器人函数实现
-function makeConnection(ip)
+// 连接机器人函数实现 - 异步版本
+async function makeConnection(ip, timeout = 2000)
 {
-  const model = httpRequest(ip, '?', true);
-  if (model && model.length > 0)
+  try
   {
-    setDeviceIP(ip);
-    setDeviceModel(model);
-    console.log("Model:\n" + model);
-  } else
+    // 连接设备：使用IP发送问号命令
+    // console.log(getText("connectingDevice") + ip);
+
+    // 使用异步HTTP请求函数发送问号命令
+    const model = await httpRequestAsync(ip, '?', timeout, true);
+    // console.log(getText("deviceResponseInfo") + model);
+
+    // 更严格地检查响应内容，特别识别模拟数据
+    if (model && model.length > 0 && model.trim() !== '?' && model.trim() !== '' && model.trim() !== 'PetoiModel-v1.0')
+    {
+      setDeviceIP(ip);
+      setDeviceModel(model);
+      // console.log(getText("deviceModelInfo") + model);
+      return true;
+    } else
+    {
+      if (model.trim() === 'PetoiModel-v1.0')
+      {
+        // console.error(getText("errorMockData"));
+        alert(getText("connectionFailedMock") + '\n\n' + getText("programExecutionStopped"));
+      } else
+      {
+        alert(getText("connectionFailedCheck") + '\n\n' + getText("programExecutionStopped"));
+      }
+      return false;
+    }
+  } catch (err)
   {
-    alert('连接机器人失败！');
+    // console.error(getText("connectionError") + err.message);
+    // 显示友好的错误信息，并明确说明程序已中断
+    if (err.message.includes('timeout') || err.message.includes('超时'))
+    {
+      alert(getText("connectionTimeout").replace("{ip}", ip) + '\n\n' + getText("programExecutionStopped"));
+    } else if (err.message.includes('Network Error') || err.message.includes('网络'))
+    {
+      alert(getText("networkError").replace("{ip}", ip) + '\n\n' + getText("programExecutionStopped"));
+    } else
+    {
+      alert(getText("connectionErrorDetails").replace("{error}", err.message) + '\n\n' + getText("programExecutionStopped"));
+    }
+    return false;
   }
 }
 
@@ -65,7 +99,17 @@ javascript.javascriptGenerator.forBlock['make_connection'] = function (block)
 {
   const ip = block.getFieldValue('IP_ADDRESS');
 
-  return `makeConnection("${ip}");`;
+  return `try {
+  const connectionResult = await makeConnection("${ip}");
+  if(connectionResult) {
+    deviceIP = "${ip}";
+    console.log(getText("connectedToDevice") + deviceIP);
+  } else {
+    console.log("连接失败，后续操作可能无法正常执行");
+  }
+} catch (error) {
+  console.error("连接错误:", error.message);
+}`;
 };
 
 // 数字输入积木
@@ -78,14 +122,21 @@ Blockly.defineBlocksWithJsonArray([
         type: "field_dropdown",
         name: "PIN",
         options: [
-          ["D1", "D1"],
-          ["D2", "D2"],
-          ["D3", "D3"],
-          ["D4", "D4"],
-          ["D5", "D5"],
-          ["D6", "D6"],
-          ["D7", "D7"],
-          ["D8", "D8"]
+          ["34", "34"],
+          ["35", "35"],
+          ["36", "36"],
+          ["39", "39"],
+          ["BackTouch(38)", "38"],
+          ["Rx2(9)", "9"],
+          ["Tx2(10)", "10"],
+          // ["D1", "D1"],
+          // ["D2", "D2"],
+          // ["D3", "D3"],
+          // ["D4", "D4"],
+          // ["D5", "D5"],
+          // ["D6", "D6"],
+          // ["D7", "D7"],
+          // ["D8", "D8"]
         ]
       }
     ],
@@ -102,7 +153,7 @@ javascript.javascriptGenerator.forBlock['get_digital_input'] = function (block)
 {
   var pin = block.getFieldValue('PIN');
   var code = `(function() { 
-    const result = httpRequest(deviceIP, "Rd"+'${String.fromCharCode(pin)}'+"\\n", true); 
+    const result = httpRequest(deviceIP, "Rd"+'\\${String.fromCharCode(pin)}'+"\\n", true); 
     // 尝试解析结果中的数字
     if (result) {
       const lines = result.split('\\n');
@@ -130,7 +181,11 @@ Blockly.defineBlocksWithJsonArray([
         options: [
           ["34", "34"],
           ["35", "35"],
-          ["38", "38"],
+          ["36", "36"],
+          ["39", "39"],
+          ["BackTouch(38)", "38"],
+          ["Rx2(9)", "9"],
+          ["Tx2(10)", "10"],
           //          ["A1", "A1"],
           //          ["A2", "A2"],
           //          ["A3", "A3"],
@@ -155,7 +210,7 @@ javascript.javascriptGenerator.forBlock['get_analog_input'] = function (block)
 {
   var pin = block.getFieldValue('PIN');
   var code = `(function() { 
-    const result = httpRequest(deviceIP, "Ra"+'${String.fromCharCode(pin)}'+"\\n", true); 
+    const result = httpRequest(deviceIP, "Ra"+'\\${String.fromCharCode(pin)}'+"\\n", true); 
     // 尝试解析结果中的数字
     if (result) {
       const lines = result.split('\\n');
@@ -314,28 +369,103 @@ const value = httpRequest('192.168.1.100', 'query', true);
 */
 function httpRequest(ip, cmd, needResponse = true)
 {
+  // 确保deviceIP已设置
+  if (!ip && deviceIP)
+  {
+    ip = deviceIP;
+  }
+
+  // 检查IP是否有效
+  if (!ip || typeof ip !== 'string' || !ip.match(/^\d+\.\d+\.\d+\.\d+$/))
+  {
+    // console.error(getText("errorInvalidIP"), ip);
+    return needResponse ? '' : false;
+  }
+
+  // 统一使用URL编码构造请求地址
   const url = `http://${ip}/?cmd=${encodeURIComponent(cmd)}`;
+  // console.log(getText("sendingCommand") + url);
 
   try
   {
     const xhr = new XMLHttpRequest();
     xhr.open('GET', url, false);  // false for synchronous request
-    xhr.withCredentials = false
+    xhr.withCredentials = false;
     xhr.send();
 
     if (xhr.status === 200)
     {
       const value = xhr.responseText.trim();
+      // console.log(getText("receivedResponse") + value);
       return needResponse ? value : true;
     } else
     {
-      throw new Error(`Request failed with status ${xhr.status}`);
+      throw new Error(getText("requestFailedStatusCode").replace("{status}", xhr.status));
     }
   } catch (error)
   {
-    console.error('Request error:', error);
+    // console.error(getText("requestError") + error.message);
     return needResponse ? '' : false;
   }
+}
+
+// 异步版本的HTTP请求函数，带超时控制
+function httpRequestAsync(ip, cmd, timeout = 2000, needResponse = true)
+{
+  return new Promise((resolve, reject) =>
+  {
+    // 检查IP是否有效
+    if (!ip || typeof ip !== 'string' || !ip.match(/^\d+\.\d+\.\d+\.\d+$/))
+    {
+      reject(new Error(getText("invalidIPAddress")));
+      return;
+    }
+
+    // 创建超时控制
+    const timeoutId = setTimeout(() =>
+    {
+      reject(new Error(getText("requestTimeout")));
+    }, timeout);
+
+    try
+    {
+      const xhr = new XMLHttpRequest();
+      const url = `http://${ip}/?cmd=${encodeURIComponent(cmd)}`;
+      // console.log(getText("asyncSendingCommand") + url);
+
+      xhr.onreadystatechange = function ()
+      {
+        if (xhr.readyState === 4)
+        {
+          clearTimeout(timeoutId);
+
+          if (xhr.status === 200)
+          {
+            const value = xhr.responseText.trim();
+            // console.log(getText("asyncReceivedResponse") + value);
+            resolve(needResponse ? value : true);
+          } else
+          {
+            reject(new Error(getText("requestFailedStatusCode").replace("{status}", xhr.status)));
+          }
+        }
+      };
+
+      xhr.onerror = function ()
+      {
+        clearTimeout(timeoutId);
+        reject(new Error(getText("networkRequestError")));
+      };
+
+      xhr.open('GET', url, true);
+      xhr.withCredentials = false;
+      xhr.send();
+    } catch (error)
+    {
+      clearTimeout(timeoutId);
+      reject(error);
+    }
+  });
 }
 
 
