@@ -63,6 +63,7 @@ const TRANSLATIONS = {
     "categoryHardware": "设备",
     "categoryControl": "控制",
     "categoryConsole": "控制台",
+    "categoryMusic": "音乐",
 
     // 积木文本 - 通信
     "connectWithIP": "连接IP地址 %1",
@@ -90,12 +91,16 @@ const TRANSLATIONS = {
 
     // 积木文本 - 控制
     "delayMs": "延时 %1 秒",
+    "delayMessage": "延时 {delay} 秒...",
 
     // 积木文本 - 传感器
     "gyroControl": "陀螺仪 %1",
 
     // 积木文本 - 控制台
     "consoleLogVariable": "在控制台输出变量 %1",
+
+    // 积木文本 - 音乐
+    "playNote": "播放音符 %1 时长 %2 拍",
 
     // 动作选项
     "stand": "站立",
@@ -233,6 +238,7 @@ const TRANSLATIONS = {
     "categoryHardware": "Hardware",
     "categoryControl": "Control",
     "categoryConsole": "Console",
+    "categoryMusic": "Music",
 
     // Block text - Communication
     "connectWithIP": "Connect with IP %1",
@@ -260,12 +266,16 @@ const TRANSLATIONS = {
 
     // Block text - Control
     "delayMs": "Delay %1 seconds",
+    "delayMessage": "Delay {delay} seconds...",
 
     // Block text - Sensors
     "gyroControl": "Gyroscope %1",
 
     // Block text - Console
     "consoleLogVariable": "Log variable to console %1",
+
+    // Block text - Music
+    "playNote": "Play note %1 for %2 beat",
 
     // Action options
     "sit": "Sit",

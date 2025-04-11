@@ -74,7 +74,7 @@ Blockly.JavaScript.forBlock['delay_ms'] = function (block)
 {
   const delay = block.getFieldValue('DELAY');
   const delayMs = Math.round(delay * 1000); // 将秒转换为毫秒
-  return `console.log("延时 ${delay} 秒...");\nawait new Promise(resolve => setTimeout(resolve, ${delayMs}));\n`;
+  return `console.log(getText("delayMessage").replace("{delay}", ${delay}));\nawait new Promise(resolve => setTimeout(resolve, ${delayMs}));\n`;
 };
 
 // 代码生成:陀螺仪控制代码生成器
@@ -148,6 +148,14 @@ Blockly.JavaScript.forBlock['console_log_variable'] = function (block)
 {
   const variable = Blockly.JavaScript.valueToCode(block, 'VARIABLE', Blockly.JavaScript.ORDER_NONE) || '""';
   return `console.log(${variable});\n`;
+};
+
+// 代码生成:播放音符代码生成器
+Blockly.JavaScript.forBlock['play_note'] = function (block)
+{
+  const note = block.getFieldValue('NOTE');
+  const duration = block.getFieldValue('DURATION');
+  return `console.log(httpRequest(deviceIP, "b ${note} ${duration}", true));\n`;
 };
 
 // HTTP请求函数，用于在生成的代码中使用 - 仅供模拟测试
