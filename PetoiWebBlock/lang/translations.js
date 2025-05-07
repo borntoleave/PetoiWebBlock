@@ -89,6 +89,39 @@ const TRANSLATIONS = {
     "postureWithDelay": "姿势 %1 后延时 %2 秒",
     "acrobaticWithDelay": "杂技动作(小心使用) %1 后延时 %2 秒",
 
+    // 关节名称
+    "jointHeadPanning": "头偏转角",
+    "jointHeadTiltingNybble": "头俯仰角(狸宝)",
+    "jointTailPanningNybble": "尾巴(狸宝)",
+    "jointLFArm": "左前臂",
+    "jointRFArm": "右前臂",
+    "jointRBArm": "右后臂",
+    "jointLBArm": "左后臂",
+    "jointLFKnee": "左前膝",
+    "jointRFKnee": "右前膝",
+    "jointRBKnee": "右后膝",
+    "jointLBKnee": "左后膝",
+
+    // 音符积木标签
+    "noteLabel": "播放音符",
+    "durationLabel": "时长",
+    "beatLabel": "拍",
+
+    // 步态积木标签
+    "gaitLabel": "步态",
+    "delayLabel": "后延时",
+    "unitLabel": "秒",
+
+    // 杂技动作积木标签
+    "moveLabel": "杂技动作(小心使用)",
+
+    // 姿势动作积木标签
+    "postureLabel": "姿势",
+
+    // 设置关节积木标签
+    "setJointLabel": "设置关节",
+    "angleLabel": "角度为",
+
     // 积木文本 - 控制
     "delayMs": "延时 %1 秒",
     "delayMessage": "延时 {delay} 秒...",
@@ -172,6 +205,11 @@ const TRANSLATIONS = {
     "executionStoppedComment": "直接返回，中断后续代码执行",
     "mockRequest": "模拟请求: ",
     "usingMockHttpRequest": "注意：使用了模拟HTTP请求，返回的是假设备型号",
+
+    // 错误消息
+    "programExecutionError": "程序执行错误",
+    "operationTimeout": "操作超时，已自动跳过",
+    "httpRequestFailed": "HTTP请求失败，已自动跳过",
   },
 
   en: {
@@ -264,6 +302,39 @@ const TRANSLATIONS = {
     "postureWithDelay": "Posture %1 then delay %2 sec",
     "acrobaticWithDelay": "Acrobatic Moves (Use with Caution) %1 then delay %2 sec",
 
+    // Joint names
+    "jointHeadPanning": "Head Panning Angle",
+    "jointHeadTiltingNybble": "Head Tilt Angle (Nybble)",
+    "jointTailPanningNybble": "Tail (Nybble)",
+    "jointLFArm": "Left Front Arm",
+    "jointRFArm": "Right Front Arm",
+    "jointRBArm": "Right Back Arm",
+    "jointLBArm": "Left Back Arm",
+    "jointLFKnee": "Left Front Knee",
+    "jointRFKnee": "Right Front Knee",
+    "jointRBKnee": "Right Back Knee",
+    "jointLBKnee": "Left Back Knee",
+
+    // 音符积木标签
+    "noteLabel": "Play note",
+    "durationLabel": "Duration",
+    "beatLabel": "Beat",
+
+    // 步态积木标签
+    "gaitLabel": "Gait",
+    "delayLabel": "Delay",
+    "unitLabel": "sec",
+
+    // 杂技动作积木标签
+    "moveLabel": "Acrobatic Moves (Use with Caution)",
+
+    // 姿势动作积木标签
+    "postureLabel": "Posture",
+
+    // 设置关节积木标签
+    "setJointLabel": "Set Joint",
+    "angleLabel": "Angle to",
+
     // Block text - Control
     "delayMs": "Delay %1 seconds",
     "delayMessage": "Delay {delay} seconds...",
@@ -347,6 +418,11 @@ const TRANSLATIONS = {
     "executionStoppedComment": "Return directly to stop subsequent code execution",
     "mockRequest": "Mock request: ",
     "usingMockHttpRequest": "Note: Using mock HTTP request, returning fake device model",
+
+    // 错误消息
+    "programExecutionError": "Program execution error",
+    "operationTimeout": "操作超时，已自动跳过",
+    "httpRequestFailed": "HTTP请求失败，已自动跳过",
   }
 };
 

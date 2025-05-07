@@ -1402,26 +1402,25 @@
       Blockly.Blocks['set_motor_angle'] = {
         init: function ()
         {
-          var jointLabel = currentLang === 'zh' ? "设置关节" : "Set Joint";
-          var angleLabel = currentLang === 'zh' ? "角度为" : "Angle to";
-          var delayLabel = currentLang === 'zh' ? "后延时" : "then delay";
-          var unitLabel = currentLang === 'zh' ? "秒" : "sec";
+          var jointLabel = getText("setJointLabel");
+          var angleLabel = getText("angleLabel");
+          var delayLabel = getText("delayLabel");
+          var unitLabel = getText("unitLabel");
 
           this.appendDummyInput()
             .appendField(jointLabel)
             .appendField(new Blockly.FieldDropdown([
-              ["0", "0"],
-              ["1", "1"],
-              ["2", "2"],
-              ["3", "3"],
-              ["4", "4"],
-              ["5", "5"],
-              ["6", "6"],
-              ["7", "7"],
-              ["8", "8"],
-              ["9", "9"],
-              ["10", "10"],
-              ["11", "11"]
+              [getText("jointHeadPanning"), "0"],
+              [getText("jointHeadTiltingNybble"), "1"],
+              [getText("jointTailPanningNybble"), "2"],
+              [getText("jointLFArm"), "8"],
+              [getText("jointRFArm"), "9"],
+              [getText("jointRBArm"), "10"],
+              [getText("jointLBArm"), "11"],
+              [getText("jointLFKnee"), "12"],
+              [getText("jointRFKnee"), "13"],
+              [getText("jointRBKnee"), "14"],
+              [getText("jointLBKnee"), "15"]
             ]), "MOTOR")
             .appendField(angleLabel)
             .appendField(new Blockly.FieldNumber(0, -125, 125), "ANGLE");
@@ -1449,18 +1448,17 @@
                 "type": "field_dropdown",
                 "name": "JOINT",
                 "options": [
-                  ["0", "0"],
-                  ["1", "1"],
-                  ["2", "2"],
-                  ["3", "3"],
-                  ["4", "4"],
-                  ["5", "5"],
-                  ["6", "6"],
-                  ["7", "7"],
-                  ["8", "8"],
-                  ["9", "9"],
-                  ["10", "10"],
-                  ["11", "11"]
+                  [getText("jointHeadPanning"), "0"],
+                  [getText("jointHeadTiltingNybble"), "1"],
+                  [getText("jointTailPanningNybble"), "2"],
+                  [getText("jointLFArm"), "8"],
+                  [getText("jointRFArm"), "9"],
+                  [getText("jointRBArm"), "10"],
+                  [getText("jointLBArm"), "11"],
+                  [getText("jointLFKnee"), "12"],
+                  [getText("jointRFKnee"), "13"],
+                  [getText("jointRBKnee"), "14"],
+                  [getText("jointLBKnee"), "15"]
                 ]
               }
             ],
@@ -1569,9 +1567,9 @@
       Blockly.Blocks['play_note'] = {
         init: function ()
         {
-          var noteLabel = currentLang === 'zh' ? "播放音符" : "Play note";
-          var durationLabel = currentLang === 'zh' ? "时长" : "for";
-          var beatLabel = currentLang === 'zh' ? "拍" : "beat";
+          var noteLabel = getText("noteLabel");
+          var durationLabel = getText("durationLabel");
+          var beatLabel = getText("beatLabel");
 
           var noteOptions = [];
           if (currentLang === 'zh')
@@ -1666,9 +1664,9 @@
       Blockly.Blocks['gait'] = {
         init: function ()
         {
-          var gaitLabel = currentLang === 'zh' ? "步态" : "Gait";
-          var delayLabel = currentLang === 'zh' ? "后延时" : "then delay";
-          var unitLabel = currentLang === 'zh' ? "秒" : "sec";
+          var gaitLabel = getText("gaitLabel");
+          var delayLabel = getText("delayLabel");
+          var unitLabel = getText("unitLabel");
           var options = [];
 
           if (currentLang === 'zh')
@@ -1742,9 +1740,9 @@
       Blockly.Blocks['posture'] = {
         init: function ()
         {
-          var postureLabel = currentLang === 'zh' ? "姿势" : "Posture";
-          var delayLabel = currentLang === 'zh' ? "后延时" : "then delay";
-          var unitLabel = currentLang === 'zh' ? "秒" : "sec";
+          var postureLabel = getText("postureLabel");
+          var delayLabel = getText("delayLabel");
+          var unitLabel = getText("unitLabel");
           var options = [];
 
           if (currentLang === 'zh')
@@ -1788,9 +1786,9 @@
       Blockly.Blocks['acrobatic_moves'] = {
         init: function ()
         {
-          var moveLabel = currentLang === 'zh' ? "杂技动作(小心使用)" : "Acrobatic Moves (Use with Caution)";
-          var delayLabel = currentLang === 'zh' ? "后延时" : "then delay";
-          var unitLabel = currentLang === 'zh' ? "秒" : "sec";
+          var moveLabel = getText("moveLabel");
+          var delayLabel = getText("delayLabel");
+          var unitLabel = getText("unitLabel");
           var options = [];
 
           if (currentLang === 'zh')
@@ -2389,7 +2387,7 @@
             });
           }
 
-        // HTTP请求函数 - 发送命令到设备 (同步版本)
+        // HTTP请求函数 - 发送命令到设备 (改为异步请求+阻塞等待响应)
         function httpRequest(ip, command, returnResult = false) {
           // 构造请求URL
           const url = "http://" + ip + "/?cmd=" + encodeURIComponent(command);
@@ -2399,56 +2397,91 @@
             console.log(getText("sendingCommand") + command);
           }
           
-          try {
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', url, false); // false表示同步请求
-            xhr.withCredentials = false;
-            xhr.send();
-            
-            if (xhr.status === 200) {
-              const result = xhr.responseText.trim();
+          // 创建一个同步"循环等待"来模拟原始函数的行为，但添加超时保护
+          let xhrResult = null;
+          let xhrError = null;
+          let isCompleted = false;
+          
+          // 设置超时
+          const timeoutId = setTimeout(() => {
+            if (!isCompleted) {
+              isCompleted = true;
+              xhrError = new Error("请求超时");
+              console.error("命令执行超时:", command);
+            }
+          }, 1000); // 1秒超时
+          
+          // 创建和发送XHR请求
+          const xhr = new XMLHttpRequest();
+          xhr.open('GET', url, true); // 使用异步请求
+          xhr.withCredentials = false;
+          
+          xhr.onload = function() {
+            if (!isCompleted) {
+              clearTimeout(timeoutId);
+              isCompleted = true;
               
-              if (returnResult) {
-                // 特别检查是否是连接测试命令并返回了模拟数据
-                if (command === '?' && result === 'PetoiModel-v1.0') {
-                  console.error("警告：返回了模拟数据而非真实设备信息");
-                }
-                
-                // 检查命令是否为读取模拟、数字输入或传感器的命令
-                const isReadCommand = command.startsWith("Ra") || 
-                                     command.startsWith("Rd") || 
-                                     command.startsWith("i ") ||
-                                     command === '?' ||
-                                     command.includes(" ?");
-                
-                if (isReadCommand) {
-                  // 对于连接测试命令，直接返回响应
-                  if (command === '?') {
-                    console.log("设备型号信息: " + result);
-                    return result;
-                  }
-                  
-                  // 从结果中提取等号后面的数字，如果有的话
-                  const match = result.match(/=\\s*(-?\\d+)/);
-                  if (match && match[1]) {
-                    return match[1]; // 返回等号后的数字（字符串格式）
-                  }
-                }
-                return result; // 对于其他命令或未找到匹配，返回原始结果
+              if (xhr.status === 200) {
+                xhrResult = xhr.responseText.trim();
+              } else {
+                xhrError = new Error("HTTP错误: " + xhr.status);
               }
-              return true;
-            } else {
-              throw new Error("HTTP错误: " + xhr.status);
             }
-          } catch (error) {
-            console.error("命令执行失败:", error.message);
-            if (returnResult) {
-              return "";
+          };
+          
+          xhr.onerror = function() {
+            if (!isCompleted) {
+              clearTimeout(timeoutId);
+              isCompleted = true;
+              xhrError = new Error("网络错误");
             }
-            return false;
+          };
+          
+          xhr.send();
+          
+          // 阻塞等待响应或超时
+          const startTime = Date.now();
+          while (!isCompleted && (Date.now() - startTime) < 1000) {
+            // 紧凑循环等待，最多1秒
           }
+          
+          // 处理结果
+          if (xhrError) {
+            console.error("命令执行失败:", xhrError.message);
+            return returnResult ? "" : false;
           }
-        `;
+          
+          if (returnResult) {
+            // 特别检查是否是连接测试命令并返回了模拟数据
+            if (command === '?' && xhrResult === 'PetoiModel-v1.0') {
+              console.error("警告：返回了模拟数据而非真实设备信息");
+            }
+            
+            // 检查命令是否为读取模拟、数字输入或传感器的命令
+            const isReadCommand = command.startsWith("Ra") || 
+                                 command.startsWith("Rd") || 
+                                 command.startsWith("i ") ||
+                                 command === '?' ||
+                                 command.includes(" ?");
+            
+            if (isReadCommand) {
+              // 对于连接测试命令，直接返回响应
+              if (command === '?') {
+                console.log("设备型号信息: " + xhrResult);
+                return xhrResult;
+              }
+              
+              // 从结果中提取等号后面的数字，如果有的话
+              const match = xhrResult.match(/=\\s*(-?\\d+)/);
+              if (match && match[1]) {
+                return match[1]; // 返回等号后的数字（字符串格式）
+              }
+            }
+            return xhrResult; // 对于其他命令或未找到匹配，返回原始结果
+          }
+          return true;
+        }
+      `;
 
       // 将普通的console.log替换为使用asyncLog的形式
       code = code.replace(/console\.log\((.*?)\);/g, 'await asyncLog($1);');
@@ -2456,16 +2489,15 @@
       // 包装整个代码到一个异步函数中
       code = asyncHelper + "\n(async function() {\n" + code + "\n" +
         "try {\n" +
-        "  // 程序结束时自动发送休息指令'd'\n" +
+        "  // 程序结束\n" +
         "  if(currentDeviceIP) {\n" +
-        "    await asyncLog(getText('programEndingRestCommand'));\n" +
-        "    httpRequest(currentDeviceIP, 'd', true);\n" +
+        "    await asyncLog(getText('programEndingMessage'));\n" +
         "  }\n" +
         "} catch(e) {\n" +
-        "  console.error(getText('restCommandFailed') + e.message);\n" +
+        "  console.error(getText('programExecutionError'));\n" +
         "}\n" +
         "console.log(getText('taskEnded'));" + // 添加任务结束消息
-        "\n})().catch(e => { console.error('程序执行出错:', e.message); alert('程序执行出错: ' + e.message); });";
+        "\n})().catch(e => { console.error(getText('programExecutionError')); });";
 
       try
       {
