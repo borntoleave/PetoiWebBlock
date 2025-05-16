@@ -669,6 +669,33 @@
       /* 宽度自适应内容 */
     }
 
+    /* 防止工具箱中的积木块随工作区缩放 */
+    .blocklyToolboxDiv .blocklyFlyout,
+    .blocklyFlyout.blocklyFlyoutWithToolbox {
+      transform: none !important;
+    }
+
+    .blocklyToolboxDiv .blocklyFlyout *,
+    .blocklyFlyout.blocklyFlyoutWithToolbox * {
+      transform: none !important;
+    }
+
+    .blocklyToolboxDiv .blocklyFlyoutBackground {
+      transform: none !important;
+    }
+
+    .blocklyToolboxDiv .blocklyFlyoutBlockBackground {
+      transform: none !important;
+    }
+
+    .blocklyToolboxDiv .blocklyFlyoutBlock {
+      transform: none !important;
+    }
+
+    .blocklyToolboxContents .blocklyFlyoutContent {
+      transform: none !important;
+    }
+
     /* 超小屏幕时进一步调整 */
     @media screen and (max-width: 576px) {
 
@@ -761,7 +788,7 @@
           'colour': '#4361EE', // 蓝色
         },
         'control_category': {
-          'colour': '#06D6A0', // 绿色
+          'colour': '#FFB703', // 改为橙色，与gyroscope积木块一致
         },
         'sensor_category': {
           'colour': '#FFB703', // 黄色
@@ -875,7 +902,7 @@
         {
           kind: 'category',
           name: getText("categoryControl"),
-          colour: '#06D6A0',
+          colour: '#FFB703', // 将颜色改为与gyroscope积木块相同的橙色
           contents: [
             { kind: 'block', type: 'gyro_control' }
           ]
@@ -916,7 +943,16 @@
         startScale: 1.0,
         maxScale: 3,
         minScale: 0.3,
-        scaleSpeed: 1.2
+        scaleSpeed: 1.2,
+        pinch: true
+      },
+      move: {
+        scrollbars: true,
+        drag: true,
+        wheel: false  // 禁用滚轮平移，只用于缩放
+      },
+      toolboxOptions: {
+        zoom: false // 禁止工具箱缩放
       },
       trashcan: true
     });
@@ -1523,8 +1559,8 @@
                 "type": "field_dropdown",
                 "name": "STATE",
                 "options": [
-                  [getText("gyroEnable"), "1"],
-                  [getText("gyroDisable"), "0"]
+                  [getText("gyroEnable"), "enable"],
+                  [getText("gyroDisable"), "disable"]
                 ]
               }
             ],
@@ -1831,6 +1867,26 @@
     {
       return Blockly.serialization.workspaces.save(workspace);
     }
+    
+    // 添加清空工作区的函数
+    function clearWorkspace()
+    {
+      workspace.clear();
+      // 清空后自动添加默认连接积木
+      addDefaultConnectionBlock();
+      
+      // 清空工作区后，应该没有撤销历史
+      // 重置撤销堆栈（可能需要根据Blockly版本调整）
+      if (workspace.undoStack_) {
+        workspace.undoStack_.length = 0;
+      }
+      if (workspace.redoStack_) {
+        workspace.redoStack_.length = 0;
+      }
+      
+      // 更新撤销按钮状态
+      updateUndoRedoState();
+    }
 
     // 恢复工作区积木
     function restoreWorkspace(state)
@@ -1854,6 +1910,10 @@
       // 加载相应语言文件
       loadLanguageFile(lang, function ()
       {
+        // 备份当前工作区的撤销/重做方法，以便在新工作区中重新设置
+        const originalUndo = workspace.undo;
+        const originalRedo = workspace.undo;
+        
         // 设置当前语言
         currentLang = lang;
 
@@ -1910,6 +1970,9 @@
           }
         }
 
+        // 重新注入工作区前禁用事件
+        Blockly.Events.disable();
+
         // 重新注入工作区
         workspace.dispose();
         workspace = Blockly.inject('blocklyDiv', {
@@ -1928,22 +1991,116 @@
             startScale: 1.0,
             maxScale: 3,
             minScale: 0.3,
-            scaleSpeed: 1.2
+            scaleSpeed: 1.2,
+            pinch: true
+          },
+          move: {
+            scrollbars: true,
+            drag: true,
+            wheel: false  // 禁用滚轮平移，只用于缩放
+          },
+          toolboxOptions: {
+            zoom: false // 禁止工具箱缩放
           },
           trashcan: true
         });
 
+        // 恢复工作区状态前先禁用事件
+        try {
         // 恢复工作区状态
         restoreWorkspace(workspaceState);
 
         // 再次更新自定义积木
         updateCustomBlockDefinitions();
+        } finally {
+          // 重新启用事件
+          Blockly.Events.enable();
+        }
+
+        // 重新添加工作区变化监听器
+        workspace.addChangeListener(function (event)
+        {
+          // 当工作区被清空时，添加默认积木块
+          if (event.type === Blockly.Events.FINISHED_LOADING ||
+            (event.type === Blockly.Events.DELETE && workspace.getAllBlocks().length === 0))
+          {
+            addDefaultConnectionBlock();
+            
+            // 在添加默认积木块后，确保撤销堆栈为空
+            if (workspace.undoStack_) {
+              workspace.undoStack_ = [];
+            }
+            if (workspace.redoStack_) {
+              workspace.redoStack_ = [];
+            }
+            window.canUndo = false;
+            window.canRedo = false;
+            updateUndoRedoState();
+            return;
+          }
+          
+          // 特殊处理：检查是否只有默认连接和陀螺仪积木块
+          const blocks = workspace.getAllBlocks();
+          
+          // 如果只有2个积木块，一个是连接积木块，一个是陀螺仪积木块，
+          // 并且它们连在一起，并且陀螺仪设置为disable，则认为是默认状态，不应有撤销历史
+          if (blocks.length === 2) {
+            const connectBlock = blocks.find(b => b.type === 'make_connection');
+            const gyroBlock = blocks.find(b => b.type === 'gyro_control');
+            
+            if (connectBlock && gyroBlock) {
+              const isConnected = connectBlock.nextConnection && 
+                                 connectBlock.nextConnection.isConnected() && 
+                                 connectBlock.nextConnection.targetConnection === gyroBlock.previousConnection;
+              
+              const isGyroDisabled = gyroBlock.getFieldValue("STATE") === "0";
+              
+              // 如果是默认状态，清空撤销堆栈
+              if (isConnected && isGyroDisabled && workspace.undoStack_ && workspace.undoStack_.length > 0) {
+                workspace.undoStack_ = [];
+                window.canUndo = false;
+              }
+            }
+          }
+          
+          // 特殊处理：当只有默认积木块时，清空撤销堆栈
+          const hasOnlyDefaultBlock = blocks.length === 1 && blocks[0].type === 'make_connection';
+          if (hasOnlyDefaultBlock && workspace.undoStack_ && workspace.undoStack_.length > 0) {
+            workspace.undoStack_ = [];
+            window.canUndo = false;
+          }
+
+          // 更新撤销和重做按钮状态
+          updateUndoRedoState();
+        });
 
         // 更新撤销和重做按钮状态
         updateUndoRedoState();
 
         // 更新UI文本
         updateUITranslations();
+
+        // 确保撤销和重做按钮的点击事件仍然有效
+        const undoButton = document.getElementById('undoButton');
+        const redoButton = document.getElementById('redoButton');
+        
+        if (undoButton) {
+          undoButton.onclick = function () {
+            if (window.canUndo && workspace) {
+              workspace.undo(false);
+              updateUndoRedoState();
+            }
+          };
+        }
+        
+        if (redoButton) {
+          redoButton.onclick = function () {
+            if (window.canRedo && workspace) {
+              workspace.undo(true);
+              updateUndoRedoState();
+            }
+          };
+        }
 
         isChangingLanguage = false;
       });
@@ -1952,6 +2109,23 @@
     // 初始化时设置默认语言为英文
     window.addEventListener('DOMContentLoaded', function ()
     {
+      // 初始化全局撤销/重做状态
+      window.canUndo = false;
+      window.canRedo = false;
+      
+      // 重写Blockly的clearUndo方法，确保彻底清空撤销堆栈
+      if (Blockly.WorkspaceSvg && Blockly.WorkspaceSvg.prototype) {
+        const originalClearUndo = Blockly.WorkspaceSvg.prototype.clearUndo;
+        Blockly.WorkspaceSvg.prototype.clearUndo = function() {
+          if (originalClearUndo) originalClearUndo.call(this);
+          this.undoStack_ = [];
+          this.redoStack_ = [];
+          window.canUndo = false;
+          window.canRedo = false;
+          updateUndoRedoState();
+        };
+      }
+      
       // 确保先动态加载英文语言文件，再进行其他初始化
       loadLanguageFile('en', function ()
       {
@@ -1985,8 +2159,36 @@
         // 初始调整工作区大小
         resizeBlocklyWorkspace();
 
+        // 暂停事件记录，防止初始添加操作被记录
+        Blockly.Events.disable();
+        
+        try {
         // 添加默认的connect with IP积木块
         addDefaultConnectionBlock();
+          
+          // 确保初始状态下没有撤销历史
+          if (workspace.undoStack_) {
+            workspace.undoStack_ = [];
+          }
+          if (workspace.redoStack_) {
+            workspace.redoStack_ = [];
+          }
+          
+          // 确保全局撤销变量为false
+          window.canUndo = false;
+          window.canRedo = false;
+        } finally {
+          // 恢复事件记录
+          Blockly.Events.enable();
+          
+          // 最后一次调用清除，确保没有任何撤销记录
+          if (workspace.undoStack_) {
+            workspace.undoStack_ = [];
+          }
+          
+          // 更新撤销按钮状态
+          updateUndoRedoState();
+        }
 
         // 监听工作区变化事件
         workspace.addChangeListener(function (event)
@@ -1996,19 +2198,76 @@
             (event.type === Blockly.Events.DELETE && workspace.getAllBlocks().length === 0))
           {
             addDefaultConnectionBlock();
+            
+            // 在添加默认积木块后，确保撤销堆栈为空
+            if (workspace.undoStack_) {
+              workspace.undoStack_ = [];
+            }
+            if (workspace.redoStack_) {
+              workspace.redoStack_ = [];
+            }
+            window.canUndo = false;
+            window.canRedo = false;
+            updateUndoRedoState();
+            return;
+          }
+          
+          // 特殊处理：检查是否只有默认连接和陀螺仪积木块
+          const blocks = workspace.getAllBlocks();
+          
+          // 如果只有2个积木块，一个是连接积木块，一个是陀螺仪积木块，
+          // 并且它们连在一起，并且陀螺仪设置为disable，则认为是默认状态，不应有撤销历史
+          if (blocks.length === 2) {
+            const connectBlock = blocks.find(b => b.type === 'make_connection');
+            const gyroBlock = blocks.find(b => b.type === 'gyro_control');
+            
+            if (connectBlock && gyroBlock) {
+              const isConnected = connectBlock.nextConnection && 
+                                 connectBlock.nextConnection.isConnected() && 
+                                 connectBlock.nextConnection.targetConnection === gyroBlock.previousConnection;
+              
+              const isGyroDisabled = gyroBlock.getFieldValue("STATE") === "0";
+              
+              // 如果是默认状态，清空撤销堆栈
+              if (isConnected && isGyroDisabled && workspace.undoStack_ && workspace.undoStack_.length > 0) {
+                workspace.undoStack_ = [];
+                window.canUndo = false;
+              }
+            }
+          }
+          
+          // 特殊处理：当只有默认积木块时，清空撤销堆栈
+          const hasOnlyDefaultBlock = blocks.length === 1 && blocks[0].type === 'make_connection';
+          if (hasOnlyDefaultBlock && workspace.undoStack_ && workspace.undoStack_.length > 0) {
+            workspace.undoStack_ = [];
+            window.canUndo = false;
           }
 
           // 更新撤销和重做按钮状态
           updateUndoRedoState();
         });
-
-        // 添加撤销和重做按钮
-        addUndoRedoButtons();
-
-        // 更新按钮状态
-        document.getElementById('zhBtn').classList.toggle('active', false);
-        document.getElementById('enBtn').classList.toggle('active', true);
       });
+
+      // 为了确保连接测试指令能正常工作，添加初始化函数
+      function initConnectionTestCommand() {
+        // 记录支持的连接测试指令
+        window.supportedTestCommands = ['?'];
+
+        // 当使用串口连接时，自动尝试发送测试指令进行验证
+        document.getElementById('openSerialBtn').addEventListener('click', function() {
+          // 在成功连接后，会自动启用快速连接按钮
+          // 然后我们可以在按下快速连接按钮时使用测试指令
+          if (port && writer) {
+            setTimeout(async function() {
+              // 尝试所有支持的测试指令
+              for (const cmd of window.supportedTestCommands) {
+                await writer.write(new TextEncoder().encode(cmd + '\n'));
+                await new Promise(resolve => setTimeout(resolve, 500));
+              }
+            }, 1000);
+          }
+        });
+      }
 
       // 加载默认语言积木
       loadLanguageFile('en', function ()
@@ -2076,6 +2335,12 @@
 
       // 初始化复制功能
       setupCopyKeyboardShortcuts();
+
+      // 更新撤销按钮状态
+      updateUndoRedoState();
+
+      // 检查连接测试指令
+      initConnectionTestCommand();
     });
 
     // 添加动态加载语言文件的辅助函数
@@ -2187,6 +2452,10 @@
       // 只有当工作区为空时才添加默认积木
       if (workspace.getAllBlocks().length === 0)
       {
+        // 禁用事件，防止添加积木块被记录到撤销堆栈
+        Blockly.Events.disable();
+        
+        try {
         // 创建make_connection积木块
         var connectionBlock = workspace.newBlock('make_connection');
         // 设置IP地址为当前设备IP
@@ -2197,551 +2466,41 @@
         connectionBlock.render();
         // 将积木块移动到合适的位置
         connectionBlock.moveBy(50, 50);
-      }
-    }
+          
+          // 创建陀螺仪控制积木块
+          var gyroBlock = workspace.newBlock('gyro_control');
+          // 设置为disable选项
+          gyroBlock.setFieldValue("0", "STATE");
+          // 初始化积木块
+          gyroBlock.initSvg();
+          // 渲染积木块
+          gyroBlock.render();
 
-    // 添加清空工作区的函数
-    function clearWorkspace()
-    {
-      workspace.clear();
-      // 清空后自动添加默认连接积木
-      addDefaultConnectionBlock();
-    }
-
-    function showCode()
-    {
-      Blockly.JavaScript.INFINITE_LOOP_TRAP = null;
-      var code = Blockly.JavaScript.workspaceToCode(workspace);
-
-      // 创建蒙版背景
-      var overlay = document.createElement('div');
-      overlay.style.position = 'fixed';
-      overlay.style.top = '0';
-      overlay.style.left = '0';
-      overlay.style.width = '100%';
-      overlay.style.height = '100%';
-      overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-      overlay.style.zIndex = '1200';  // 提高z-index值，高于控件
-      overlay.style.display = 'flex';
-      overlay.style.justifyContent = 'center';
-      overlay.style.alignItems = 'center';
-
-      // 点击蒙版时关闭对话框
-      overlay.addEventListener('click', function (event)
-      {
-        if (event.target === overlay)
-        {
-          document.body.removeChild(overlay);
-        }
-      });
-
-      // 创建一个包含代码的对话框
-      var codeDialog = document.createElement('div');
-      codeDialog.className = 'code-dialog';
-      codeDialog.style.position = 'relative';
-      codeDialog.style.backgroundColor = '#282c34';
-      codeDialog.style.color = '#abb2bf';
-      codeDialog.style.padding = '20px';
-      codeDialog.style.borderRadius = '8px';
-      codeDialog.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.5)';
-      codeDialog.style.zIndex = '1201';  // 比overlay高1
-      codeDialog.style.maxWidth = '90%';
-      codeDialog.style.maxHeight = '80%';
-      codeDialog.style.overflow = 'auto';
-      codeDialog.style.fontFamily = '"Consolas", "Monaco", "Microsoft YaHei", "PingFang SC", "SimHei", sans-serif';
-
-      // 标题
-      var titleBar = document.createElement('div');
-      titleBar.style.display = 'flex';
-      titleBar.style.justifyContent = 'space-between';
-      titleBar.style.alignItems = 'center';
-      titleBar.style.marginBottom = '15px';
-
-      var title = document.createElement('h3');
-      // 直接使用字符串而不是文本节点，避免字符编码问题
-      if (currentLang === 'zh')
-      {
-        title.innerHTML = '生成的JavaScript代码';
-      } else
-      {
-        title.innerHTML = 'Generated JavaScript Code';
-      }
-      title.style.margin = '0';
-      title.style.color = '#e6e6e6';
-      title.style.fontFamily = '"Microsoft YaHei", "PingFang SC", "SimHei", "Arial", sans-serif';
-
-      var closeButton = document.createElement('button');
-      closeButton.textContent = '×';
-      closeButton.style.background = 'none';
-      closeButton.style.border = 'none';
-      closeButton.style.color = '#e6e6e6';
-      closeButton.style.fontSize = '24px';
-      closeButton.style.cursor = 'pointer';
-      closeButton.onclick = function ()
-      {
-        document.body.removeChild(overlay);
-      };
-
-      titleBar.appendChild(title);
-      titleBar.appendChild(closeButton);
-      codeDialog.appendChild(titleBar);
-
-      // 格式化代码
-      // 1. 分割每行
-      var codeLines = code.split('\n');
-
-      // 2. 创建代码显示区域
-      var codeContainer = document.createElement('pre');
-      codeContainer.style.margin = '0';
-      codeContainer.style.overflow = 'auto';
-      codeContainer.style.backgroundColor = '#282c34';
-      codeContainer.style.padding = '10px';
-      codeContainer.style.borderRadius = '4px';
-      codeContainer.style.lineHeight = '1.5';
-      codeContainer.style.maxHeight = '60vh';
-      codeContainer.style.fontSize = '14px';
-      codeContainer.style.color = '#e6e6e6'; // 设置代码文本颜色
-
-      // 添加自定义滚动条样式
-      codeContainer.style.scrollbarWidth = 'thin';
-      codeContainer.style.scrollbarColor = '#4d4d4d #282c34';
-
-      // 添加整个代码块的文本，而不是逐行添加
-      codeContainer.textContent = code;
-
-      codeDialog.appendChild(codeContainer);
-
-      // 添加复制按钮
-      var copyButton = document.createElement('button');
-      if (currentLang === 'zh')
-      {
-        copyButton.innerHTML = '复制代码';
-      } else
-      {
-        copyButton.innerHTML = 'Copy Code';
-      }
-      copyButton.style.marginTop = '15px';
-      copyButton.style.padding = '6px 12px';
-      copyButton.style.backgroundColor = '#4d78cc';
-      copyButton.style.color = 'white';
-      copyButton.style.border = 'none';
-      copyButton.style.borderRadius = '4px';
-      copyButton.style.cursor = 'pointer';
-      copyButton.style.fontFamily = '"Microsoft YaHei", "PingFang SC", "SimHei", "Arial", sans-serif';
-      copyButton.onclick = function ()
-      {
-        navigator.clipboard.writeText(code).then(function ()
-        {
-          if (currentLang === 'zh')
-          {
-            copyButton.innerHTML = '复制成功！';
-          } else
-          {
-            copyButton.innerHTML = 'Copied!';
+          // 连接两个积木块
+          if (connectionBlock.nextConnection && gyroBlock.previousConnection) {
+            connectionBlock.nextConnection.connect(gyroBlock.previousConnection);
           }
-          setTimeout(function ()
-          {
-            if (currentLang === 'zh')
-            {
-              copyButton.innerHTML = '复制代码';
-            } else
-            {
-              copyButton.innerHTML = 'Copy Code';
-            }
-          }, 2000);
-        });
-      };
-
-      codeDialog.appendChild(copyButton);
-      overlay.appendChild(codeDialog);
-      document.body.appendChild(overlay);
-
-      // 添加ESC键监听
-      function handleEscKey(event)
-      {
-        if (event.key === 'Escape')
-        {
-          document.body.removeChild(overlay);
-          document.removeEventListener('keydown', handleEscKey);
-        }
-      }
-      document.addEventListener('keydown', handleEscKey);
-    }
-
-    function runCode()
-    {
-      window.LoopTrap = 1000;
-      Blockly.JavaScript.INFINITE_LOOP_TRAP =
-        'if (--window.LoopTrap < 0) throw "无限循环";\n';
-      var code = Blockly.JavaScript.workspaceToCode(workspace);
-      Blockly.JavaScript.INFINITE_LOOP_TRAP = null;
-
-      // 添加辅助函数确保异步操作按顺序执行
-      const asyncHelper = `
-          // 辅助函数，确保异步打印能够立即执行
-          function asyncLog(message) {
-            return new Promise((resolve) => {
-              console.log(message);
-              // 强制浏览器更新DOM
-              setTimeout(resolve, 0);
-            });
-          }
-
-        // HTTP请求函数 - 发送命令到设备 (改为异步请求+阻塞等待响应)
-        function httpRequest(ip, command, returnResult = false) {
-          // 构造请求URL
-          const url = "http://" + ip + "/?cmd=" + encodeURIComponent(command);
-          
-          // 根据开关决定是否显示发送的命令
-          if (showSentCommands) {
-            console.log(getText("sendingCommand") + command);
-          }
-          
-          // 创建一个同步"循环等待"来模拟原始函数的行为，但添加超时保护
-          let xhrResult = null;
-          let xhrError = null;
-          let isCompleted = false;
-          
-          // 设置超时
-          const timeoutId = setTimeout(() => {
-            if (!isCompleted) {
-              isCompleted = true;
-              xhrError = new Error("请求超时");
-              console.error("命令执行超时:", command);
-            }
-          }, 1000); // 1秒超时
-          
-          // 创建和发送XHR请求
-          const xhr = new XMLHttpRequest();
-          xhr.open('GET', url, true); // 使用异步请求
-          xhr.withCredentials = false;
-          
-          xhr.onload = function() {
-            if (!isCompleted) {
-              clearTimeout(timeoutId);
-              isCompleted = true;
-              
-              if (xhr.status === 200) {
-                xhrResult = xhr.responseText.trim();
-              } else {
-                xhrError = new Error("HTTP错误: " + xhr.status);
-              }
-            }
-          };
-          
-          xhr.onerror = function() {
-            if (!isCompleted) {
-              clearTimeout(timeoutId);
-              isCompleted = true;
-              xhrError = new Error("网络错误");
-            }
-          };
-          
-          xhr.send();
-          
-          // 阻塞等待响应或超时
-          const startTime = Date.now();
-          while (!isCompleted && (Date.now() - startTime) < 1000) {
-            // 紧凑循环等待，最多1秒
-          }
-          
-          // 处理结果
-          if (xhrError) {
-            console.error("命令执行失败:", xhrError.message);
-            return returnResult ? "" : false;
-          }
-          
-          if (returnResult) {
-            // 特别检查是否是连接测试命令并返回了模拟数据
-            if (command === '?' && xhrResult === 'PetoiModel-v1.0') {
-              console.error("警告：返回了模拟数据而非真实设备信息");
-            }
-            
-            // 检查命令是否为读取模拟、数字输入或传感器的命令
-            const isReadCommand = command.startsWith("Ra") || 
-                                 command.startsWith("Rd") || 
-                                 command.startsWith("i ") ||
-                                 command === '?' ||
-                                 command.includes(" ?");
-            
-            if (isReadCommand) {
-              // 对于连接测试命令，直接返回响应
-              if (command === '?') {
-                console.log("设备型号信息: " + xhrResult);
-                return xhrResult;
+        } finally {
+          // 重新启用事件
+          Blockly.Events.enable();
               }
               
-              // 从结果中提取等号后面的数字，如果有的话
-              const match = xhrResult.match(/=\\s*(-?\\d+)/);
-              if (match && match[1]) {
-                return match[1]; // 返回等号后的数字（字符串格式）
-              }
-            }
-            return xhrResult; // 对于其他命令或未找到匹配，返回原始结果
-          }
-          return true;
+        // 清空撤销和重做堆栈
+        if (workspace.undoStack_) {
+          workspace.undoStack_ = [];
+    }
+        if (workspace.redoStack_) {
+          workspace.redoStack_ = [];
         }
-      `;
+        
+        // 确保初始状态下不可撤销
+        window.canUndo = false;
+        window.canRedo = false;
 
-      // 将普通的console.log替换为使用asyncLog的形式
-      code = code.replace(/console\.log\((.*?)\);/g, 'await asyncLog($1);');
-
-      // 包装整个代码到一个异步函数中
-      code = asyncHelper + "\n(async function() {\n" + code + "\n" +
-        "try {\n" +
-        "  // 程序结束\n" +
-        "  if(currentDeviceIP) {\n" +
-        "    await asyncLog(getText('programEndingMessage'));\n" +
-        "  }\n" +
-        "} catch(e) {\n" +
-        "  console.error(getText('programExecutionError'));\n" +
-        "}\n" +
-        "console.log(getText('taskEnded'));" + // 添加任务结束消息
-        "\n})().catch(e => { console.error(getText('programExecutionError')); });";
-
-      try
-      {
-        eval(code);
-      } catch (e)
-      {
-        console.error("代码执行出错:", e.message);
-        alert('程序执行出错: ' + e.message);
-      }
-    }
-
-    function saveWorkspace()
-    {
-      // 显示保存对话框，提供保存和另存为选项
-      promptSaveOptions();
-    }
-
-    function promptSaveOptions()
-    {
-      // 创建蒙版背景
-      var overlay = document.createElement('div');
-      overlay.className = 'overlay';
-
-      // 创建对话框
-      var dialog = document.createElement('div');
-      dialog.className = 'wifi-dialog';
-      dialog.style.maxWidth = '400px';
-
-      // 根据当前语言选择文本
-      const title = currentLang === 'zh' ? '保存程序' : 'Save Program';
-      let message = '';
-
-      if (currentFile)
-      {
-        message = currentLang === 'zh' ?
-          `当前文件: "${currentFile.name}"` :
-          `Current file: "${currentFile.name}"`;
-      } else
-      {
-        message = currentLang === 'zh' ?
-          '尚未保存文件' :
-          'No file saved yet';
-      }
-
-      const saveText = currentLang === 'zh' ? '保存' : 'Save';
-      const saveAsText = currentLang === 'zh' ? '另存为' : 'Save As';
-      const cancelText = currentLang === 'zh' ? '取消' : 'Cancel';
-
-      const warningText = currentLang === 'zh' ?
-        '注意：如果下载文件夹中已有同名文件，浏览器会自动添加数字后缀。' :
-        'Note: If a file with the same name exists, the browser will add a number suffix.';
-
-      dialog.innerHTML = `
-        <h3>${title}</h3>
-        <p>${message}</p>
-        <p style="color: #999; font-size: 12px;">${warningText}</p>
-        <div style="text-align: center; margin: 20px 0;">
-          ${currentFile ?
-          `<button onclick="saveFile('${currentFile.name}'); closeSaveOptionsDialog();" class="confirm" style="margin-right: 10px;">
-              ${saveText}
-            </button>` : ''}
-          <button onclick="saveFileWithPrompt(); closeSaveOptionsDialog();" class="confirm" style="margin-right: 10px;">
-            ${saveAsText}
-          </button>
-          <button onclick="closeSaveOptionsDialog()" class="cancel">
-            ${cancelText}
-          </button>
-        </div>
-      `;
-
-      document.body.appendChild(overlay);
-      document.body.appendChild(dialog);
-    }
-
-    function closeSaveOptionsDialog()
-    {
-      const dialog = document.querySelector('.wifi-dialog');
-      const overlay = document.querySelector('.overlay');
-      if (dialog) dialog.remove();
-      if (overlay) overlay.remove();
-    }
-
-    function saveFile(filename)
-    {
-      var json = Blockly.serialization.workspaces.save(workspace);
-      var blob = new Blob([JSON.stringify(json, null, 2)], { type: 'application/json' });
-
-      var a = document.createElement('a');
-      a.download = filename;
-      a.href = URL.createObjectURL(blob);
-      a.click();
-
-      // 显示保存成功消息
-      showSaveSuccessDialog(filename);
-    }
-
-    function saveFileWithPrompt()
-    {
-      // 显示默认文件名
-      let defaultName = 'program.json';
-      if (currentFile)
-      {
-        defaultName = currentFile.name;
-      }
-
-      // 提示用户输入文件名
-      const fileName = prompt(
-        currentLang === 'zh' ? '请输入文件名:' : 'Enter file name:',
-        defaultName
-      );
-
-      if (fileName)
-      {
-        // 添加.json扩展名（如果用户没有输入）
-        let finalName = fileName;
-        if (!finalName.toLowerCase().endsWith('.json'))
-        {
-          finalName += '.json';
-        }
-
-        // 保存文件
-        saveFile(finalName);
-
-        // 更新当前文件名
-        currentFile = {
-          name: finalName,
-          lastModified: new Date().getTime()
-        };
-
-        // 更新显示的文件名和标签
-        updateUIText();
-      }
-    }
-
-    function showSaveSuccessDialog(fileName)
-    {
-      // 创建蒙版背景
-      var overlay = document.createElement('div');
-      overlay.className = 'overlay';
-
-      // 创建对话框
-      var dialog = document.createElement('div');
-      dialog.className = 'wifi-dialog';
-      dialog.style.maxWidth = '450px';
-
-      // 根据当前语言选择文本
-      const title = currentLang === 'zh' ? '保存成功' : 'Save Successful';
-      const message = currentLang === 'zh' ?
-        `文件已保存到您的"下载"文件夹。` :
-        `File has been saved to your Downloads folder.`;
-
-      const fileNameNote = currentLang === 'zh' ?
-        `文件名: "${fileName}" (如下载文件夹中已有同名文件，浏览器可能自动添加数字后缀)` :
-        `Filename: "${fileName}" (If a file with the same name exists, the browser may add a number suffix)`;
-
-      const closeText = currentLang === 'zh' ? '关闭' : 'Close';
-
-      dialog.innerHTML = `
-        <h3 style="color: #4CAF50;">${title}</h3>
-        <p>${message}</p>
-        <p style="margin-top: 10px; font-size: 14px;">${fileNameNote}</p>
-        <div style="text-align: center; margin: 20px 0;">
-          <button onclick="closeSuccessDialog()" class="confirm">
-            ${closeText}
-          </button>
-        </div>
-      `;
-
-      document.body.appendChild(overlay);
-      document.body.appendChild(dialog);
-    }
-
-    function closeSuccessDialog()
-    {
-      const dialog = document.querySelector('.wifi-dialog');
-      const overlay = document.querySelector('.overlay');
-      if (dialog) dialog.remove();
-      if (overlay) overlay.remove();
-    }
-
-    function loadWorkspace(file)
-    {
-      var reader = new FileReader();
-      reader.onload = function (e)
-      {
-        try
-        {
-          var json = JSON.parse(e.target.result);
-          Blockly.serialization.workspaces.load(json, workspace);
-
-          // 保存当前文件信息
-          currentFile = file;
-
-          // 更新文件名和标签显示
-          updateUIText();
-
-          // 不使用alert，而是在控制台显示加载成功信息
-          const successMsg = getText('fileLoaded').replace('{filename}', file.name);
-          addConsoleMessage([successMsg]);
-        } catch (err)
-        {
-          alert(getText('loadFileFailed'));
-        }
-      };
-      reader.readAsText(file);
-    }
-
-    document.addEventListener('keydown', function (event)
-    {
-      if ((event.ctrlKey || event.metaKey) && event.key === 's')
-      {
-        event.preventDefault();
-        saveWorkspace();
-      }
-      if ((event.ctrlKey || event.metaKey) && event.key === 'o')
-      {
-        event.preventDefault();
-        document.getElementById('loadInput').click();
-      }
-      // 添加撤销快捷键(Ctrl+Z)
-      if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key.toLowerCase() === 'z')
-      {
-        event.preventDefault();
-        // 使用undoStack_属性检查是否可以撤销
-        if (workspace.undoStack_ && workspace.undoStack_.length > 0)
-        {
-          workspace.undo(false);
+        // 更新按钮状态
           updateUndoRedoState();
         }
       }
-      // 添加重做快捷键(Ctrl+Y 或 Ctrl+Shift+Z)
-      if ((event.ctrlKey || event.metaKey) &&
-        ((event.key.toLowerCase() === 'y') ||
-          (event.shiftKey && event.key.toLowerCase() === 'z')))
-      {
-        event.preventDefault();
-        // 使用redoStack_属性检查是否可以重做
-        if (workspace.redoStack_ && workspace.redoStack_.length > 0)
-        {
-          workspace.undo(true);
-          updateUndoRedoState();
-        }
-      }
-    });
 
     function addConsoleMessage(args)
     {
@@ -3018,6 +2777,202 @@
       if (dialog) dialog.remove();
       if (overlay) overlay.remove();
     }
+    
+    function saveWorkspace()
+    {
+      // 显示保存对话框，提供保存和另存为选项
+      promptSaveOptions();
+    }
+
+    function promptSaveOptions()
+    {
+      // 创建蒙版背景
+      var overlay = document.createElement('div');
+      overlay.className = 'overlay';
+
+      // 创建对话框
+      var dialog = document.createElement('div');
+      dialog.className = 'wifi-dialog';
+      dialog.style.maxWidth = '400px';
+
+      // 根据当前语言选择文本
+      const title = currentLang === 'zh' ? '保存程序' : 'Save Program';
+      let message = '';
+
+      if (currentFile)
+      {
+        message = currentLang === 'zh' ?
+          `当前文件: "${currentFile.name}"` :
+          `Current file: "${currentFile.name}"`;
+      } else
+      {
+        message = currentLang === 'zh' ?
+          '尚未保存文件' :
+          'No file saved yet';
+      }
+
+      const saveText = currentLang === 'zh' ? '保存' : 'Save';
+      const saveAsText = currentLang === 'zh' ? '另存为' : 'Save As';
+      const cancelText = currentLang === 'zh' ? '取消' : 'Cancel';
+
+      const warningText = currentLang === 'zh' ?
+        '注意：如果下载文件夹中已有同名文件，浏览器会自动添加数字后缀。' :
+        'Note: If a file with the same name exists, the browser will add a number suffix.';
+
+      dialog.innerHTML = `
+        <h3>${title}</h3>
+        <p>${message}</p>
+        <p style="color: #999; font-size: 12px;">${warningText}</p>
+        <div style="text-align: center; margin: 20px 0;">
+          ${currentFile ?
+          `<button onclick="saveFile('${currentFile.name}'); closeSaveOptionsDialog();" class="confirm" style="margin-right: 10px;">
+              ${saveText}
+            </button>` : ''}
+          <button onclick="saveFileWithPrompt(); closeSaveOptionsDialog();" class="confirm" style="margin-right: 10px;">
+            ${saveAsText}
+          </button>
+          <button onclick="closeSaveOptionsDialog()" class="cancel">
+            ${cancelText}
+          </button>
+        </div>
+      `;
+
+      document.body.appendChild(overlay);
+      document.body.appendChild(dialog);
+    }
+
+    function closeSaveOptionsDialog()
+    {
+      const dialog = document.querySelector('.wifi-dialog');
+      const overlay = document.querySelector('.overlay');
+      if (dialog) dialog.remove();
+      if (overlay) overlay.remove();
+    }
+
+    function saveFile(filename)
+    {
+      var json = Blockly.serialization.workspaces.save(workspace);
+      var blob = new Blob([JSON.stringify(json, null, 2)], { type: 'application/json' });
+
+      var a = document.createElement('a');
+      a.download = filename;
+      a.href = URL.createObjectURL(blob);
+      a.click();
+
+      // 显示保存成功消息
+      showSaveSuccessDialog(filename);
+    }
+
+    function saveFileWithPrompt()
+    {
+      // 显示默认文件名
+      let defaultName = 'program.json';
+      if (currentFile)
+      {
+        defaultName = currentFile.name;
+      }
+
+      // 提示用户输入文件名
+      const fileName = prompt(
+        currentLang === 'zh' ? '请输入文件名:' : 'Enter file name:',
+        defaultName
+      );
+
+      if (fileName)
+      {
+        // 添加.json扩展名（如果用户没有输入）
+        let finalName = fileName;
+        if (!finalName.toLowerCase().endsWith('.json'))
+        {
+          finalName += '.json';
+        }
+
+        // 保存文件
+        saveFile(finalName);
+
+        // 更新当前文件名
+        currentFile = {
+          name: finalName,
+          lastModified: new Date().getTime()
+        };
+
+        // 更新显示的文件名和标签
+        updateUIText();
+      }
+    }
+
+    function showSaveSuccessDialog(fileName)
+    {
+      // 创建蒙版背景
+      var overlay = document.createElement('div');
+      overlay.className = 'overlay';
+
+      // 创建对话框
+      var dialog = document.createElement('div');
+      dialog.className = 'wifi-dialog';
+      dialog.style.maxWidth = '450px';
+
+      // 根据当前语言选择文本
+      const title = currentLang === 'zh' ? '保存成功' : 'Save Successful';
+      const message = currentLang === 'zh' ?
+        `文件已保存到您的"下载"文件夹。` :
+        `File has been saved to your Downloads folder.`;
+
+      const fileNameNote = currentLang === 'zh' ?
+        `文件名: "${fileName}" (如下载文件夹中已有同名文件，浏览器可能自动添加数字后缀)` :
+        `Filename: "${fileName}" (If a file with the same name exists, the browser may add a number suffix)`;
+
+      const closeText = currentLang === 'zh' ? '关闭' : 'Close';
+
+      dialog.innerHTML = `
+        <h3 style="color: #4CAF50;">${title}</h3>
+        <p>${message}</p>
+        <p style="margin-top: 10px; font-size: 14px;">${fileNameNote}</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <button onclick="closeSuccessDialog()" class="confirm">
+            ${closeText}
+          </button>
+        </div>
+      `;
+
+      document.body.appendChild(overlay);
+      document.body.appendChild(dialog);
+    }
+
+    function closeSuccessDialog()
+    {
+      const dialog = document.querySelector('.wifi-dialog');
+      const overlay = document.querySelector('.overlay');
+      if (dialog) dialog.remove();
+      if (overlay) overlay.remove();
+    }
+    
+    function loadWorkspace(file)
+    {
+      var reader = new FileReader();
+      reader.onload = function (e)
+      {
+        try
+        {
+          var json = JSON.parse(e.target.result);
+          Blockly.serialization.workspaces.load(json, workspace);
+
+          // 保存当前文件信息
+          currentFile = file;
+
+          // 更新文件名和标签显示
+          updateUIText();
+
+          // 不使用alert，而是在控制台显示加载成功信息
+          const successMsg = getText('fileLoaded').replace('{filename}', file.name);
+          addConsoleMessage([successMsg]);
+        } catch (err)
+        {
+          alert(getText('loadFileFailed'));
+        }
+      };
+      reader.readAsText(file);
+    }
 
     // 重置Quick Connect按钮样式和文本为默认状态
     function resetQuickConnectButton()
@@ -3183,7 +3138,10 @@
         // 检查是否为新的IP地址
         if (currentDeviceIP !== ip)
         {
-          console.log(`检测到新的IP地址: ${ip}，更新自当前IP: ${currentDeviceIP}`);
+          const updateMessage = currentLang === 'zh' ? 
+            `检测到新的IP地址: ${ip}，更新自当前IP: ${currentDeviceIP}` : 
+            `Detected new IP address: ${ip}, updated from current IP: ${currentDeviceIP}`;
+          console.log(updateMessage);
 
           // 保存设备IP到全局变量
           currentDeviceIP = ip;
@@ -3347,9 +3305,12 @@
       `;
       undoButton.onclick = function ()
       {
-        if (workspace.undoStack_ && workspace.undoStack_.length > 0)
+        // 使用全局变量检查是否可以撤销
+        if (window.canUndo)
         {
+          // 只执行一个撤销操作
           workspace.undo(false);
+          // 更新按钮状态
           updateUndoRedoState();
         }
       };
@@ -3367,7 +3328,8 @@
       `;
       redoButton.onclick = function ()
       {
-        if (workspace.redoStack_ && workspace.redoStack_.length > 0)
+        // 使用全局变量检查是否可以重做
+        if (window.canRedo)
         {
           workspace.undo(true);
           updateUndoRedoState();
@@ -3403,12 +3365,59 @@
 
       if (undoButton && redoButton)
       {
-        // 修复hasUndo和hasRedo方法调用，改用undoStack_和redoStack_属性判断
-        const canUndo = workspace.undoStack_ && workspace.undoStack_.length > 0;
-        const canRedo = workspace.redoStack_ && workspace.redoStack_.length > 0;
-
-        undoButton.disabled = !canUndo;
-        redoButton.disabled = !canRedo;
+        // 获取当前工作区的所有积木块
+        const blocks = workspace.getAllBlocks();
+        
+        // 检查默认状态场景：
+        // 1. 只有一个连接积木块的情况
+        const hasOnlyConnectBlock = blocks.length === 1 && blocks[0].type === 'make_connection';
+        
+        // 2. 有连接积木块和陀螺仪积木块，且陀螺仪设为disable的情况
+        let isDefaultSetup = false;
+        if (blocks.length === 2) {
+          const connectBlock = blocks.find(b => b.type === 'make_connection');
+          const gyroBlock = blocks.find(b => b.type === 'gyro_control');
+          
+          if (connectBlock && gyroBlock) {
+            const isConnected = connectBlock.nextConnection && 
+                              connectBlock.nextConnection.isConnected() && 
+                              connectBlock.nextConnection.targetConnection === gyroBlock.previousConnection;
+            
+            const isGyroDisabled = gyroBlock.getFieldValue("STATE") === "0";
+            
+            isDefaultSetup = isConnected && isGyroDisabled;
+          }
+        }
+        
+        // 如果是默认状态，强制清空撤销堆栈并禁用撤销
+        if (hasOnlyConnectBlock || isDefaultSetup) {
+          if (workspace.undoStack_ && workspace.undoStack_.length > 0) {
+            workspace.undoStack_ = [];
+          }
+          window.canUndo = false;
+          undoButton.disabled = true;
+        } else {
+          // 检查撤销堆栈
+          let hasRealUndoEvents = false;
+          if (workspace.undoStack_ && workspace.undoStack_.length > 0) {
+            // 简单检查是否有撤销事件
+            hasRealUndoEvents = true;
+          }
+          
+          // 更新全局变量和按钮状态
+          window.canUndo = hasRealUndoEvents;
+          undoButton.disabled = !hasRealUndoEvents;
+        }
+        
+        // 检查重做堆栈
+        let hasRealRedoEvents = false;
+        if (workspace.redoStack_ && workspace.redoStack_.length > 0) {
+          hasRealRedoEvents = true;
+        }
+        
+        // 更新重做按钮状态
+        window.canRedo = hasRealRedoEvents;
+        redoButton.disabled = !hasRealRedoEvents;
 
         // 更新按钮标题语言
         undoButton.title = currentLang === 'zh' ? '撤销' : 'Undo';
@@ -3578,6 +3587,541 @@
       });
     });
 
+    // 添加撤销和重做按钮
+    addUndoRedoButtons();
+
+    // 更新按钮状态
+    document.getElementById('zhBtn').classList.toggle('active', false);
+    document.getElementById('enBtn').classList.toggle('active', true);
+
+    // 异步版本的HTTP请求函数，带超时控制
+    async function httpRequestAsync(ip, cmd, timeout = 2000, needResponse = true)
+    {
+      return new Promise((resolve, reject) =>
+      {
+        // 检查IP是否有效
+        if (!ip || typeof ip !== 'string' || !ip.match(/^\d+\.\d+\.\d+\.\d+$/))
+        {
+          reject(new Error("无效的IP地址"));
+          return;
+        }
+
+        // 创建超时控制
+        const timeoutId = setTimeout(() =>
+        {
+          reject(new Error("请求超时"));
+        }, timeout);
+
+        try
+        {
+          const xhr = new XMLHttpRequest();
+          const url = `http://${ip}/?cmd=${encodeURIComponent(cmd)}`;
+          // 不打印发送命令信息
+
+          xhr.onreadystatechange = function ()
+          {
+            if (xhr.readyState === 4)
+            {
+              clearTimeout(timeoutId);
+
+              if (xhr.status === 200)
+              {
+                const value = xhr.responseText.trim();
+                // 不打印接收响应信息
+                resolve(needResponse ? value : true);
+              } else
+              {
+                reject(new Error("请求失败，状态码: " + xhr.status));
+              }
+            }
+          };
+
+          xhr.onerror = function ()
+          {
+            clearTimeout(timeoutId);
+            reject(new Error("网络请求错误"));
+          };
+
+          xhr.open('GET', url, true);
+          xhr.withCredentials = false;
+          xhr.send();
+        } catch (error)
+        {
+          clearTimeout(timeoutId);
+          reject(error);
+        }
+      });
+    }
+
+    // 连接机器人函数实现 - 异步版本
+    async function makeConnection(ip, timeout = 2000)
+    {
+      try
+      {
+        // 尝试使用?命令连接
+        try {
+          const model = await httpRequestAsync(ip, '?', timeout, true);
+          if (model && model.length > 0 && model !== '?') {
+            // 成功连接但不打印信息
+            return true;
+          }
+        } catch (e) {
+          // 不打印连接命令失败信息
+        }
+        
+        console.error("连接失败：设备未返回有效响应");
+        return false;
+      } catch (err)
+      {
+        console.error("连接错误: " + err.message);
+        return false;
+      }
+    }
+
+    // 为了确保连接测试指令能正常工作，添加初始化函数
+    function initConnectionTestCommand() {
+      // 记录支持的连接测试指令
+      window.supportedTestCommands = ['?'];
+      
+      // 当使用串口连接时，自动尝试发送测试指令进行验证
+      document.getElementById('openSerialBtn').addEventListener('click', function() {
+        // 在成功连接后，会自动启用快速连接按钮
+        // 然后我们可以在按下快速连接按钮时使用测试指令
+        if (port && writer) {
+          setTimeout(async function() {
+            // 尝试所有支持的测试指令
+            for (const cmd of window.supportedTestCommands) {
+              await writer.write(new TextEncoder().encode(cmd + '\n'));
+              await new Promise(resolve => setTimeout(resolve, 500));
+            }
+          }, 1000);
+        }
+      });
+    }
+
+    // 防止工具箱随工作区缩放
+    document.addEventListener('DOMContentLoaded', function() {
+      // 用于修复工具箱缩放的函数
+      function fixToolboxZoom() {
+        setTimeout(function() {
+          // 一旦Blockly完全加载，重写getFlyoutScale方法
+          if (Blockly.Flyout && Blockly.Flyout.prototype) {
+            Blockly.Flyout.prototype.originalGetFlyoutScale = Blockly.Flyout.prototype.getFlyoutScale;
+            Blockly.Flyout.prototype.getFlyoutScale = function() {
+              return 1; // 始终返回1，防止工具箱缩放
+            };
+          }
+        }, 1000); // 延迟1秒执行，确保Blockly已完全加载
+      }
+      
+      // 初始化时修复工具箱缩放
+      fixToolboxZoom();
+      
+      // 在语言切换后也修复工具箱缩放
+      const originalSetLanguage = window.setLanguage;
+      window.setLanguage = function(lang) {
+        originalSetLanguage(lang);
+        // 在语言切换完成后，再次修复工具箱缩放
+        setTimeout(fixToolboxZoom, 1500);
+      };
+    });
+
+    function showCode()
+    {
+      // 查找连接积木块
+      var connectionBlocks = workspace.getBlocksByType('make_connection');
+      
+      // 如果没有找到连接积木块，提示用户
+      if (!connectionBlocks || connectionBlocks.length === 0) {
+        alert(currentLang === 'zh' ? 
+          '请先添加"连接IP地址"积木块！' : 
+          'Please add a "Connect with IP" block first!');
+        return;
+      }
+      
+      // 使用第一个连接积木块作为主块
+      var mainBlock = connectionBlocks[0];
+      
+      // 设置代码生成器
+      Blockly.JavaScript.INFINITE_LOOP_TRAP = null;
+      
+      // 初始化代码生成器
+      if (typeof initJavaScriptGenerator === 'function') {
+        initJavaScriptGenerator();
+      } else {
+        if (!Blockly.JavaScript.nameDB_) {
+          Blockly.JavaScript.init();
+          Blockly.JavaScript.initNameDB();
+        }
+      }
+      
+      // 只生成主块及其子块的代码
+      var code = '';
+      try {
+        code = Blockly.JavaScript.blockToCode(mainBlock);
+        if (Array.isArray(code)) {
+          code = code[0];
+        }
+      } catch (e) {
+        console.error('代码生成错误:', e);
+        code = '// 代码生成出错: ' + e.message;
+      }
+
+      // 创建蒙版背景
+      var overlay = document.createElement('div');
+      overlay.style.position = 'fixed';
+      overlay.style.top = '0';
+      overlay.style.left = '0';
+      overlay.style.width = '100%';
+      overlay.style.height = '100%';
+      overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+      overlay.style.zIndex = '1200';  // 提高z-index值，高于控件
+      overlay.style.display = 'flex';
+      overlay.style.justifyContent = 'center';
+      overlay.style.alignItems = 'center';
+
+      // 点击蒙版时关闭对话框
+      overlay.addEventListener('click', function (event)
+      {
+        if (event.target === overlay)
+        {
+          document.body.removeChild(overlay);
+        }
+      });
+
+      // 创建一个包含代码的对话框
+      var codeDialog = document.createElement('div');
+      codeDialog.className = 'code-dialog';
+      codeDialog.style.position = 'relative';
+      codeDialog.style.backgroundColor = '#282c34';
+      codeDialog.style.color = '#abb2bf';
+      codeDialog.style.padding = '20px';
+      codeDialog.style.borderRadius = '8px';
+      codeDialog.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.5)';
+      codeDialog.style.zIndex = '1201';  // 比overlay高1
+      codeDialog.style.maxWidth = '90%';
+      codeDialog.style.maxHeight = '80%';
+      codeDialog.style.overflow = 'auto';
+      codeDialog.style.fontFamily = '"Consolas", "Monaco", "Microsoft YaHei", "PingFang SC", "SimHei", sans-serif';
+
+      // 标题
+      var titleBar = document.createElement('div');
+      titleBar.style.display = 'flex';
+      titleBar.style.justifyContent = 'space-between';
+      titleBar.style.alignItems = 'center';
+      titleBar.style.marginBottom = '15px';
+
+      var title = document.createElement('h3');
+      // 直接使用字符串而不是文本节点，避免字符编码问题
+      if (currentLang === 'zh')
+      {
+        title.innerHTML = '生成的JavaScript代码';
+      } else
+      {
+        title.innerHTML = 'Generated JavaScript Code';
+      }
+      title.style.margin = '0';
+      title.style.color = '#e6e6e6';
+      title.style.fontFamily = '"Microsoft YaHei", "PingFang SC", "SimHei", "Arial", sans-serif';
+
+      var closeButton = document.createElement('button');
+      closeButton.textContent = '×';
+      closeButton.style.background = 'none';
+      closeButton.style.border = 'none';
+      closeButton.style.color = '#e6e6e6';
+      closeButton.style.fontSize = '24px';
+      closeButton.style.cursor = 'pointer';
+      closeButton.onclick = function ()
+      {
+        document.body.removeChild(overlay);
+      };
+
+      titleBar.appendChild(title);
+      titleBar.appendChild(closeButton);
+      codeDialog.appendChild(titleBar);
+
+      // 格式化代码
+      // 1. 分割每行
+      var codeLines = code.split('\n');
+
+      // 2. 创建代码显示区域
+      var codeContainer = document.createElement('pre');
+      codeContainer.style.margin = '0';
+      codeContainer.style.overflow = 'auto';
+      codeContainer.style.backgroundColor = '#282c34';
+      codeContainer.style.padding = '10px';
+      codeContainer.style.borderRadius = '4px';
+      codeContainer.style.lineHeight = '1.5';
+      codeContainer.style.maxHeight = '60vh';
+      codeContainer.style.fontSize = '14px';
+      codeContainer.style.color = '#e6e6e6'; // 设置代码文本颜色
+
+      // 添加自定义滚动条样式
+      codeContainer.style.scrollbarWidth = 'thin';
+      codeContainer.style.scrollbarColor = '#4d4d4d #282c34';
+
+      // 添加整个代码块的文本，而不是逐行添加
+      codeContainer.textContent = code;
+
+      codeDialog.appendChild(codeContainer);
+
+      // 添加复制按钮
+      var copyButton = document.createElement('button');
+      if (currentLang === 'zh')
+      {
+        copyButton.innerHTML = '复制代码';
+      } else
+      {
+        copyButton.innerHTML = 'Copy Code';
+      }
+      copyButton.style.marginTop = '15px';
+      copyButton.style.padding = '6px 12px';
+      copyButton.style.backgroundColor = '#4d78cc';
+      copyButton.style.color = 'white';
+      copyButton.style.border = 'none';
+      copyButton.style.borderRadius = '4px';
+      copyButton.style.cursor = 'pointer';
+      copyButton.style.fontFamily = '"Microsoft YaHei", "PingFang SC", "SimHei", "Arial", sans-serif';
+      copyButton.onclick = function ()
+      {
+        navigator.clipboard.writeText(code).then(function ()
+        {
+          if (currentLang === 'zh')
+          {
+            copyButton.innerHTML = '复制成功！';
+          } else
+          {
+            copyButton.innerHTML = 'Copied!';
+          }
+          setTimeout(function ()
+          {
+            if (currentLang === 'zh')
+            {
+              copyButton.innerHTML = '复制代码';
+            } else
+          {
+              copyButton.innerHTML = 'Copy Code';
+            }
+          }, 2000);
+        });
+      };
+
+      codeDialog.appendChild(copyButton);
+      overlay.appendChild(codeDialog);
+      document.body.appendChild(overlay);
+
+      // 添加ESC键监听
+      function handleEscKey(event)
+      {
+        if (event.key === 'Escape')
+        {
+          document.body.removeChild(overlay);
+          document.removeEventListener('keydown', handleEscKey);
+        }
+      }
+      document.addEventListener('keydown', handleEscKey);
+    }
+
+    function runCode()
+    {
+      // 查找连接积木块
+      var connectionBlocks = workspace.getBlocksByType('make_connection');
+      
+      // 如果没有找到连接积木块，提示用户
+      if (!connectionBlocks || connectionBlocks.length === 0) {
+        alert(currentLang === 'zh' ? 
+          '请先添加"连接IP地址"积木块！' : 
+          'Please add a "Connect with IP" block first!');
+        return;
+      }
+      
+      // 使用第一个连接积木块作为主块
+      var mainBlock = connectionBlocks[0];
+      
+      // 初始化JavaScript生成器的名称数据库
+      if (typeof initJavaScriptGenerator === 'function') {
+        initJavaScriptGenerator();
+      } else {
+        // 直接定义初始化函数（以防generators.js中的函数未加载）
+        if (!Blockly.JavaScript.nameDB_) {
+          Blockly.JavaScript.init();
+          Blockly.JavaScript.initNameDB();
+        }
+      }
+      
+      window.LoopTrap = 1000;
+      Blockly.JavaScript.INFINITE_LOOP_TRAP =
+        'if (--window.LoopTrap < 0) throw "无限循环";\n';
+      
+      // 只生成主块及其子块的代码
+      var code = '';
+      try {
+        code = Blockly.JavaScript.blockToCode(mainBlock);
+        if (Array.isArray(code)) {
+          code = code[0];
+        }
+      } catch (e) {
+        console.error('代码生成错误:', e);
+        alert('程序执行出错: ' + e.message);
+        return;
+      }
+      
+      Blockly.JavaScript.INFINITE_LOOP_TRAP = null;
+
+      // 添加辅助函数确保异步操作按顺序执行
+      const asyncHelper = `
+          // 辅助函数，确保异步打印能够立即执行
+          function asyncLog(message) {
+            return new Promise((resolve) => {
+              console.log(message);
+              // 强制浏览器更新DOM
+              setTimeout(resolve, 0);
+            });
+          }
+
+        // HTTP请求函数 - 发送命令到设备 (改为异步请求+阻塞等待响应)
+        function httpRequest(ip, command, returnResult = false) {
+          // 构造请求URL
+          const url = "http://" + ip + "/?cmd=" + encodeURIComponent(command);
+          
+          // 根据开关决定是否显示发送的命令
+          if (showSentCommands) {
+            console.log(getText("sendingCommand") + command);
+          }
+          
+          // 创建一个同步"循环等待"来模拟原始函数的行为，但添加超时保护
+          let xhrResult = null;
+          let xhrError = null;
+          let isCompleted = false;
+          
+          // 设置超时
+          const timeoutId = setTimeout(() => {
+            if (!isCompleted) {
+              isCompleted = true;
+              xhrError = new Error("请求超时");
+              console.error("命令执行超时:", command);
+            }
+          }, 1000); // 1秒超时
+          
+          // 创建和发送XHR请求
+          const xhr = new XMLHttpRequest();
+          xhr.open('GET', url, true); // 使用异步请求
+          xhr.withCredentials = false;
+          
+          xhr.onload = function() {
+            if (!isCompleted) {
+              clearTimeout(timeoutId);
+              isCompleted = true;
+              
+              if (xhr.status === 200) {
+                xhrResult = xhr.responseText.trim();
+              } else {
+                xhrError = new Error("HTTP错误: " + xhr.status);
+              }
+            }
+          };
+          
+          xhr.onerror = function() {
+            if (!isCompleted) {
+              clearTimeout(timeoutId);
+              isCompleted = true;
+              xhrError = new Error("网络错误");
+            }
+          };
+          
+          xhr.send();
+          
+          // 阻塞等待响应或超时
+          const startTime = Date.now();
+          while (!isCompleted && (Date.now() - startTime) < 1000) {
+            // 紧凑循环等待，最多1秒
+          }
+          
+          // 处理结果
+          if (xhrError) {
+            console.error("命令执行失败:", xhrError.message);
+            return returnResult ? "" : false;
+          }
+          
+          if (returnResult) {
+            // 检查是否是连接测试命令
+            const isTestCommand = command === '?';
+            
+            // 对于连接测试命令，直接返回响应而不进行后续处理
+            if (isTestCommand) {
+              if (xhrResult && xhrResult.length > 0) {
+                // 不打印设备信息
+                return xhrResult;
+              }
+              return "";
+            }
+            
+            // 检查命令是否为读取模拟、数字输入或传感器的命令
+            const isReadCommand = command.startsWith("Ra") || 
+                                 command.startsWith("Rd") || 
+                                 command.startsWith("i ") ||
+                                 command.includes(" ?");
+            
+            if (isReadCommand) {
+              // 从结果中提取等号后面的数字，如果有的话
+              const match = xhrResult.match(/=\\s*(-?\\d+)/);
+              if (match && match[1]) {
+                return match[1]; // 返回等号后的数字（字符串格式）
+              }
+            }
+            
+            return xhrResult; // 对于其他命令或未找到匹配，返回原始结果
+          }
+          return true;
+        }
+      `;
+
+      // 添加辅助函数onlyPrintNonEmpty，确保空响应不被打印
+      const onlyPrintNonEmptyHelper = `
+        // 辅助函数，只打印非空响应
+        function onlyPrintNonEmpty(response) {
+          if (response && response.trim() !== '') {
+            return response;
+          }
+          return '';
+        }
+      `;
+
+      // 包装整个代码到一个异步函数中，并在开始时添加关闭陀螺仪的命令
+      code = asyncHelper + "\n" + onlyPrintNonEmptyHelper + "\n(async function() {\n" +
+        // 添加关闭陀螺仪的代码
+        "try {\n" +
+        "  // 开始运行前先关闭陀螺仪\n" + 
+        "  if(deviceIP) {\n" +
+        "    // 开始前默认关闭陀螺仪\n" +
+        "    await httpRequest(deviceIP, 'gb', true);\n" +
+        "    await asyncLog(getText('gyroDisabled'));\n" +
+        "  }\n" +
+        "} catch(e) {\n" +
+        "  console.error(getText('gyroDisableError'));\n" +
+        "}\n" +
+        code + "\n" +
+        "try {\n" +
+        "  // 程序结束\n" +
+        "  // 不打印programEndingMessage\n" +
+        "} catch(e) {\n" +
+        "  console.error(getText('programExecutionError'));\n" +
+        "}\n" +
+        "console.log(getText('taskEnded'));" + // 添加任务结束消息
+        "\n})().catch(e => { console.error(getText('programExecutionError')); });";
+
+      try
+      {
+        eval(code);
+      } catch (e)
+      {
+        console.error("代码执行出错:", e.message);
+        alert('程序执行出错: ' + e.message);
+      }
+    }
+
+    // 为了确保连接测试指令能正常工作，添加初始化函数
+    initConnectionTestCommand();
   </script>
 </body>
 

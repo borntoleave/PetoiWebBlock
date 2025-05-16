@@ -50,36 +50,23 @@ async function makeConnection(ip, timeout = 2000)
 {
   try
   {
-    // 连接设备：使用IP发送问号命令
-    // console.log(getText("connectingDevice") + ip);
-
-    // 使用异步HTTP请求函数发送问号命令
+    // 使用?命令测试连接
     const model = await httpRequestAsync(ip, '?', timeout, true);
-    // console.log(getText("deviceResponseInfo") + model);
-
-    // 更严格地检查响应内容，特别识别模拟数据
-    if (model && model.length > 0 && model.trim() !== '?' && model.trim() !== '' && model.trim() !== 'PetoiModel-v1.0')
+    
+    // 检查响应内容
+    if (model && model.length > 0)
     {
       setDeviceIP(ip);
       setDeviceModel(model);
-      // console.log(getText("deviceModelInfo") + model);
       return true;
     } else
     {
-      if (model.trim() === 'PetoiModel-v1.0')
-      {
-        // console.error(getText("errorMockData"));
-        alert(getText("connectionFailedMock") + '\n\n' + getText("programExecutionStopped"));
-      } else
-      {
-        alert(getText("connectionFailedCheck") + '\n\n' + getText("programExecutionStopped"));
-      }
+      alert(getText("connectionFailedCheck") + '\n\n' + getText("programExecutionStopped"));
       return false;
     }
   } catch (err)
   {
-    // console.error(getText("connectionError") + err.message);
-    // 显示友好的错误信息，并明确说明程序已中断
+    // 显示友好的错误信息
     if (err.message.includes('timeout') || err.message.includes('超时'))
     {
       alert(getText("connectionTimeout").replace("{ip}", ip) + '\n\n' + getText("programExecutionStopped"));
