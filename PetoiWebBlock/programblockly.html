@@ -1410,17 +1410,17 @@
           this.appendDummyInput()
             .appendField(jointLabel)
             .appendField(new Blockly.FieldDropdown([
-              ["0", "0"],
-              ["1", "1"],
-              ["2", "2"],
-              ["3", "3"],
-              ["4", "4"],
-              ["5", "5"],
-              ["6", "6"],
-              ["7", "7"],
-              ["8", "8"],
-              ["9", "9"],
-              ["10", "10"],
+              [currentLang === 'zh' ? "头偏转角" : "Head Panning", "0"],
+              [currentLang === 'zh' ? "头俯仰角(狸宝)" : "Head Tilting (Nybble)", "1"],
+              [currentLang === 'zh' ? "尾巴(狸宝)" : "Tail (Nybble)", "2"],
+              [currentLang === 'zh' ? "左前臂" : "Left Front Arm", "3"],
+              [currentLang === 'zh' ? "右前臂" : "Right Front Arm", "4"],
+              [currentLang === 'zh' ? "右后臂" : "Right Back Arm", "5"],
+              [currentLang === 'zh' ? "左后臂" : "Left Back Arm", "6"],
+              [currentLang === 'zh' ? "左前膝" : "Left Front Knee", "7"],
+              [currentLang === 'zh' ? "右前膝" : "Right Front Knee", "8"],
+              [currentLang === 'zh' ? "右后膝" : "Right Back Knee", "9"],
+              [currentLang === 'zh' ? "左后膝" : "Left Back Knee", "10"],
               ["11", "11"]
             ]), "MOTOR")
             .appendField(angleLabel)
@@ -1449,17 +1449,17 @@
                 "type": "field_dropdown",
                 "name": "JOINT",
                 "options": [
-                  ["0", "0"],
-                  ["1", "1"],
-                  ["2", "2"],
-                  ["3", "3"],
-                  ["4", "4"],
-                  ["5", "5"],
-                  ["6", "6"],
-                  ["7", "7"],
-                  ["8", "8"],
-                  ["9", "9"],
-                  ["10", "10"],
+                  [currentLang === 'zh' ? "头偏转角" : "Head Panning", "0"],
+                  [currentLang === 'zh' ? "头俯仰角(狸宝)" : "Head Tilting (Nybble)", "1"],
+                  [currentLang === 'zh' ? "尾巴(狸宝)" : "Tail (Nybble)", "2"],
+                  [currentLang === 'zh' ? "左前臂" : "Left Front Arm", "3"],
+                  [currentLang === 'zh' ? "右前臂" : "Right Front Arm", "4"],
+                  [currentLang === 'zh' ? "右后臂" : "Right Back Arm", "5"],
+                  [currentLang === 'zh' ? "左后臂" : "Left Back Arm", "6"],
+                  [currentLang === 'zh' ? "左前膝" : "Left Front Knee", "7"],
+                  [currentLang === 'zh' ? "右前膝" : "Right Front Knee", "8"],
+                  [currentLang === 'zh' ? "右后膝" : "Right Back Knee", "9"],
+                  [currentLang === 'zh' ? "左后膝" : "Left Back Knee", "10"],
                   ["11", "11"]
                 ]
               }
