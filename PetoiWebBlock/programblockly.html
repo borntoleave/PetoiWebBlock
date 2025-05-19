@@ -689,6 +689,7 @@
     <div class="language-switch">
       <button id="zhBtn" class="lang-btn" onclick="setLanguage('zh')">中文</button>
       <button id="enBtn" class="lang-btn active" onclick="setLanguage('en')">English</button>
+      <button id="jaBtn" class="lang-btn" onclick="setLanguage('ja')">日本語</button>
     </div>
   </div>
   <div class="container">
@@ -772,162 +773,140 @@
       }
     });
 
-    var toolbox = {
-      kind: 'categoryToolbox',
-      contents: [
-        {
-          kind: 'category',
-          name: 'Logic',
-          categorystyle: 'logic_category',
-          contents: [
-            { kind: 'block', type: 'controls_if' },
-            { kind: 'block', type: 'logic_compare' },
-            { kind: 'block', type: 'logic_operation' },
-            { kind: 'block', type: 'logic_negate' },
-            { kind: 'block', type: 'logic_boolean' },
-            { kind: 'block', type: 'logic_null' },
-            { kind: 'block', type: 'logic_ternary' }
-          ]
-        },
-        {
-          kind: 'category',
-          name: 'Loops',
-          categorystyle: 'loop_category',
-          contents: [
-            { kind: 'block', type: 'controls_repeat_ext' },
-            { kind: 'block', type: 'controls_whileUntil' },
-            { kind: 'block', type: 'controls_for' },
-            { kind: 'block', type: 'controls_forEach' },
-            { kind: 'block', type: 'controls_flow_statements' }
-          ]
-        },
-        {
-          kind: 'category',
-          name: 'Math',
-          categorystyle: 'math_category',
-          contents: [
-            { kind: 'block', type: 'math_number' },
-            { kind: 'block', type: 'math_arithmetic' },
-            { kind: 'block', type: 'math_single' },
-            { kind: 'block', type: 'math_trig' },
-            { kind: 'block', type: 'math_constant' },
-            { kind: 'block', type: 'math_number_property' },
-            { kind: 'block', type: 'math_round' },
-            { kind: 'block', type: 'math_modulo' }
-          ]
-        },
-        {
-          kind: 'category',
-          name: 'Text',
-          categorystyle: 'text_category',
-          contents: [
-            { kind: 'block', type: 'text' },
-            { kind: 'block', type: 'text_join' },
-            { kind: 'block', type: 'text_append' },
-            { kind: 'block', type: 'text_length' },
-            { kind: 'block', type: 'text_isEmpty' },
-            { kind: 'block', type: 'text_indexOf' },
-            { kind: 'block', type: 'text_charAt' },
-            { kind: 'block', type: 'text_getSubstring' },
-            { kind: 'block', type: 'text_changeCase' },
-            { kind: 'block', type: 'text_trim' },
-            { kind: 'block', type: 'text_print' }
-          ]
-        },
-        {
-          kind: 'category',
-          name: 'Variables',
-          categorystyle: 'variable_category',
-          custom: 'VARIABLE'
-        },
-        {
-          kind: 'category',
-          name: 'Functions',
-          categorystyle: 'procedure_category',
-          custom: 'PROCEDURE'
-        },
-        {
-          kind: 'category',
-          name: 'Communication',
-          categorystyle: 'communication_category',
-          contents: [
-            { kind: 'block', type: 'make_connection' },
-            { kind: 'block', type: 'get_digital_input' },
-            { kind: 'block', type: 'get_analog_input' },
-            { kind: 'block', type: 'set_digital_output' },
-            { kind: 'block', type: 'set_analog_output' },
-            { kind: 'block', type: 'send_custom_command' }
-          ]
-        },
-        {
-          kind: 'category',
-          name: 'Motion',
-          categorystyle: 'motion_category',
-          contents: [
-            { kind: 'block', type: 'gait' },
-            { kind: 'block', type: 'posture' },
-            { kind: 'block', type: 'acrobatic_moves' },
-            { kind: 'block', type: 'set_motor_angle' },
-            { kind: 'block', type: 'get_joint_angle' },
-            { kind: 'block', type: 'get_all_joint_angles' }
-          ]
-        },
-        {
-          kind: 'category',
-          name: getText("categoryControl"),
-          colour: '#06D6A0',
-          contents: [
-            { kind: 'block', type: 'gyro_control' }
-          ]
-        },
-        {
-          kind: 'category',
-          name: getText("categoryConsole"),
-          colour: '#9C27B0',
-          contents: [
-            { kind: 'block', type: 'console_log_variable' },
-            { kind: 'block', type: 'delay_ms' }
-          ]
-        },
-        {
-          kind: 'category',
-          name: getText("categoryMusic"),
-          colour: '#FF6B6B',
-          contents: [
-            { kind: 'block', type: 'play_note' }
-          ]
-        }
-      ]
-    };
+    // 动态创建工具箱配置
+    function createToolbox()
+    {
+      return {
+        kind: 'categoryToolbox',
+        contents: [
+          {
+            kind: 'category',
+            name: getText('categoryLogic'),
+            categorystyle: 'logic_category',
+            contents: [
+              { kind: 'block', type: 'controls_if' },
+              { kind: 'block', type: 'logic_compare' },
+              { kind: 'block', type: 'logic_operation' },
+              { kind: 'block', type: 'logic_negate' },
+              { kind: 'block', type: 'logic_boolean' },
+              { kind: 'block', type: 'logic_null' },
+              { kind: 'block', type: 'logic_ternary' }
+            ]
+          },
+          {
+            kind: 'category',
+            name: getText('categoryLoops'),
+            categorystyle: 'loop_category',
+            contents: [
+              { kind: 'block', type: 'controls_repeat_ext' },
+              { kind: 'block', type: 'controls_whileUntil' },
+              { kind: 'block', type: 'controls_for' },
+              { kind: 'block', type: 'controls_forEach' },
+              { kind: 'block', type: 'controls_flow_statements' }
+            ]
+          },
+          {
+            kind: 'category',
+            name: getText('categoryMath'),
+            categorystyle: 'math_category',
+            contents: [
+              { kind: 'block', type: 'math_number' },
+              { kind: 'block', type: 'math_arithmetic' },
+              { kind: 'block', type: 'math_single' },
+              { kind: 'block', type: 'math_trig' },
+              { kind: 'block', type: 'math_constant' },
+              { kind: 'block', type: 'math_number_property' },
+              { kind: 'block', type: 'math_round' },
+              { kind: 'block', type: 'math_modulo' }
+            ]
+          },
+          {
+            kind: 'category',
+            name: getText('categoryText'),
+            categorystyle: 'text_category',
+            contents: [
+              { kind: 'block', type: 'text' },
+              { kind: 'block', type: 'text_join' },
+              { kind: 'block', type: 'text_append' },
+              { kind: 'block', type: 'text_length' },
+              { kind: 'block', type: 'text_isEmpty' },
+              { kind: 'block', type: 'text_indexOf' },
+              { kind: 'block', type: 'text_charAt' },
+              { kind: 'block', type: 'text_getSubstring' },
+              { kind: 'block', type: 'text_changeCase' },
+              { kind: 'block', type: 'text_trim' },
+              { kind: 'block', type: 'text_print' }
+            ]
+          },
+          {
+            kind: 'category',
+            name: getText('categoryVariables'),
+            categorystyle: 'variable_category',
+            custom: 'VARIABLE'
+          },
+          {
+            kind: 'category',
+            name: getText('categoryFunctions'),
+            categorystyle: 'procedure_category',
+            custom: 'PROCEDURE'
+          },
+          {
+            kind: 'category',
+            name: getText('categoryCommunication'),
+            categorystyle: 'communication_category',
+            contents: [
+              { kind: 'block', type: 'make_connection' },
+              { kind: 'block', type: 'get_digital_input' },
+              { kind: 'block', type: 'get_analog_input' },
+              { kind: 'block', type: 'set_digital_output' },
+              { kind: 'block', type: 'set_analog_output' },
+              { kind: 'block', type: 'send_custom_command' }
+            ]
+          },
+          {
+            kind: 'category',
+            name: getText('categoryMotion'),
+            categorystyle: 'motion_category',
+            contents: [
+              { kind: 'block', type: 'gait' },
+              { kind: 'block', type: 'posture' },
+              { kind: 'block', type: 'acrobatic_moves' },
+              { kind: 'block', type: 'set_motor_angle' },
+              { kind: 'block', type: 'get_joint_angle' },
+              { kind: 'block', type: 'get_all_joint_angles' }
+            ]
+          },
+          {
+            kind: 'category',
+            name: getText("categoryControl"),
+            colour: '#06D6A0',
+            contents: [
+              { kind: 'block', type: 'gyro_control' }
+            ]
+          },
+          {
+            kind: 'category',
+            name: getText("categoryConsole"),
+            colour: '#9C27B0',
+            contents: [
+              { kind: 'block', type: 'console_log_variable' },
+              { kind: 'block', type: 'delay_ms' }
+            ]
+          },
+          {
+            kind: 'category',
+            name: getText("categoryMusic"),
+            colour: '#FF6B6B',
+            contents: [
+              { kind: 'block', type: 'play_note' }
+            ]
+          }
+        ]
+      };
+    }
 
-    var workspace = Blockly.inject('blocklyDiv', {
-      media: './node_modules/blockly/media/',
-      toolbox: toolbox,
-      theme: customTheme,
-      grid: {
-        spacing: 20,
-        length: 3,
-        colour: '#ccc',
-        snap: true
-      },
-      zoom: {
-        controls: true,
-        wheel: true,
-        startScale: 1.0,
-        maxScale: 3,
-        minScale: 0.3,
-        scaleSpeed: 1.2
-      },
-      trashcan: true
-    });
-
-    // 添加开始积木块
-    var startBlocks = {
-
-    };
-
-    // 保存原始的工具箱配置（英文）
-    const originalToolboxContents = JSON.parse(JSON.stringify(toolbox.contents));
+    // 初始化变量
+    var workspace;
 
     // 保存不同语言的消息对象
     const zhMessages = {};
@@ -1304,38 +1283,7 @@
         };
       }
 
-      // 方向动作积木
-      if (Blockly.Blocks['direction_action'])
-      {
-        Blockly.Blocks['direction_action'].init = function ()
-        {
-          this.jsonInit({
-            "type": "direction_action",
-            "message0": getText("directionAction"),
-            "args0": [
-              {
-                "type": "field_dropdown",
-                "name": "COMMAND",
-                "options": [
-                  [getText("forward"), "kwkF"],
-                  [getText("backward"), "kbkF"],
-                  [getText("left"), "kvtL"],
-                  [getText("right"), "kvtR"],
-                  [getText("leftForward"), "klf"],
-                  [getText("leftBackward"), "klb"],
-                  [getText("rightForward"), "krf"],
-                  [getText("rightBackward"), "krb"],
-                  [getText("stop"), "kstop"]
-                ]
-              }
-            ],
-            "previousStatement": null,
-            "nextStatement": null,
-            "colour": '#4361EE', // 动作积木：蓝色
-            "tooltip": ""
-          });
-        };
-      }
+
 
       // 本地动作积木
       if (Blockly.Blocks['local_action'])
@@ -1413,15 +1361,15 @@
               [getText("jointHeadPanning"), "0"],
               [getText("jointHeadTiltingNybble"), "1"],
               [getText("jointTailNybble"), "2"],
-              [getText("jointLFArm"), "3"],
-              [getText("jointRFArm"), "4"],
-              [getText("jointRBArm"), "5"],
-              [getText("jointLBArm"), "6"],
-              [getText("jointLFKnee"), "7"],
-              [getText("jointRFKnee"), "8"],
-              [getText("jointRBKnee"), "9"],
-              [getText("jointLBKnee"), "10"],
-              [getText("jointReserved"), "11"]
+              [getText("jointReserved"), "3"],
+              [getText("jointLFArm"), "8"],
+              [getText("jointRFArm"), "9"],
+              [getText("jointRBArm"), "10"],
+              [getText("jointLBArm"), "11"],
+              [getText("jointLFKnee"), "12"],
+              [getText("jointRFKnee"), "13"],
+              [getText("jointRBKnee"), "14"],
+              [getText("jointLBKnee"), "15"],
             ]), "MOTOR")
             .appendField(angleLabel)
             .appendField(new Blockly.FieldNumber(0, -125, 125), "ANGLE");
@@ -1452,15 +1400,15 @@
                   [getText("jointHeadPanning"), "0"],
                   [getText("jointHeadTiltingNybble"), "1"],
                   [getText("jointTailNybble"), "2"],
-                  [getText("jointLFArm"), "3"],
-                  [getText("jointRFArm"), "4"],
-                  [getText("jointRBArm"), "5"],
-                  [getText("jointLBArm"), "6"],
-                  [getText("jointLFKnee"), "7"],
-                  [getText("jointRFKnee"), "8"],
-                  [getText("jointRBKnee"), "9"],
-                  [getText("jointLBKnee"), "10"],
-                  [getText("jointReserved"), "11"]
+                  [getText("jointReserved"), "3"],
+                  [getText("jointLFArm"), "8"],
+                  [getText("jointRFArm"), "9"],
+                  [getText("jointRBArm"), "10"],
+                  [getText("jointLBArm"), "11"],
+                  [getText("jointLFKnee"), "12"],
+                  [getText("jointRFKnee"), "13"],
+                  [getText("jointRBKnee"), "14"],
+                  [getText("jointLBKnee"), "15"],
                 ]
               }
             ],
@@ -1760,6 +1708,7 @@
       // 更新按钮样式
       document.getElementById('zhBtn').classList.toggle('active', lang === 'zh');
       document.getElementById('enBtn').classList.toggle('active', lang === 'en');
+      document.getElementById('jaBtn').classList.toggle('active', lang === 'ja');
 
       // 保存当前工作区状态
       const workspaceState = saveCurrentWorkspace();
@@ -1773,55 +1722,8 @@
         // 更新自定义积木的定义
         updateCustomBlockDefinitions();
 
-        // 创建新的工具箱配置并更新类别名称
-        const categoryMap = {
-          zh: {
-            'Logic': '逻辑',
-            'Loops': '循环',
-            'Math': '数学',
-            'Text': '文本',
-            'Variables': '变量',
-            'Functions': '函数',
-            'Communication': '通信',
-            'Motion': '动作',
-            'Control': '控制',
-            'Sensors': '传感器',
-            'Console': '控制台',
-            'categoryConsole': '控制台',
-            'categoryMusic': '音乐'
-          },
-          en: {
-            '逻辑': 'Logic',
-            '循环': 'Loops',
-            '数学': 'Math',
-            '文本': 'Text',
-            'Text': 'Text',
-            '变量': 'Variables',
-            '函数': 'Functions',
-            '通信': 'Communication',
-            '动作': 'Motion',
-            '控制': 'Control',
-            '传感器': 'Sensors',
-            '控制台': 'Console',
-            'categoryConsole': 'Console',
-            'categoryMusic': 'Music'
-          }
-        };
-
-        // 复制原始工具箱并翻译类别名称
-        const newToolbox = JSON.parse(JSON.stringify(toolbox));
-        for (let i = 0; i < newToolbox.contents.length; i++)
-        {
-          const category = newToolbox.contents[i];
-          if (category.name)
-          {
-            const translatedName = categoryMap[lang][category.name];
-            if (translatedName)
-            {
-              category.name = translatedName;
-            }
-          }
-        }
+        // 创建新的工具箱配置，确保使用新语言
+        const newToolbox = createToolbox();
 
         // 重新注入工作区
         workspace.dispose();
@@ -1874,6 +1776,28 @@
         // 初始化自定义积木
         updateCustomBlockDefinitions();
 
+        // 使用带有翻译的工具箱初始化工作区
+        workspace = Blockly.inject('blocklyDiv', {
+          media: './node_modules/blockly/media/',
+          toolbox: createToolbox(),
+          theme: customTheme,
+          grid: {
+            spacing: 20,
+            length: 3,
+            colour: '#ccc',
+            snap: true
+          },
+          zoom: {
+            controls: true,
+            wheel: true,
+            startScale: 1.0,
+            maxScale: 3,
+            minScale: 0.3,
+            scaleSpeed: 1.2
+          },
+          trashcan: true
+        });
+
         // 更新UI文本
         updateUIText();
 
@@ -1921,6 +1845,7 @@
         // 更新按钮状态
         document.getElementById('zhBtn').classList.toggle('active', false);
         document.getElementById('enBtn').classList.toggle('active', true);
+        document.getElementById('jaBtn').classList.toggle('active', false);
       });
 
       // 加载默认语言积木
@@ -2006,7 +1931,8 @@
       // 根据语言选择对应的Blockly语言文件
       const langMap = {
         'zh': './node_modules/blockly/msg/zh-hans.js',
-        'en': './node_modules/blockly/msg/en.js'
+        'en': './node_modules/blockly/msg/en.js',
+        'ja': './node_modules/blockly/msg/ja.js'
         // 可以在这里添加更多语言
       };
       script.src = langMap[lang] || langMap['en']; // 默认使用英文

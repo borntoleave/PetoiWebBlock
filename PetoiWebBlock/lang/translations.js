@@ -59,8 +59,8 @@ const TRANSLATIONS = {
     "categoryText": "文本",
     "categoryVariables": "变量",
     "categoryFunctions": "函数",
-    "categoryNetwork": "网络",
-    "categoryHardware": "设备",
+    "categoryCommunication": "通信",
+    "categoryMotion": "动作",
     "categoryControl": "控制",
     "categoryConsole": "控制台",
     "categoryMusic": "音乐",
@@ -81,7 +81,6 @@ const TRANSLATIONS = {
     "gait": "步态 %1",
     "posture": "姿势 %1",
     "acrobatic_moves": "杂技动作(小心使用) %1",
-    "directionAction": "运动方向 %1",
     "localAction": "原地动作 %1",
     "highDifficultyAction": "高难度特技动作(小心使用) %1",
     "setMotorAngleWithDelay": "设置关节 %1 角度为 %2 后延时 %3 秒",
@@ -354,8 +353,8 @@ const TRANSLATIONS = {
     "categoryText": "Text",
     "categoryVariables": "Variables",
     "categoryFunctions": "Functions",
-    "categoryNetwork": "Network",
-    "categoryHardware": "Hardware",
+    "categoryCommunication": "Communication",
+    "categoryMotion": "Motion",
     "categoryControl": "Control",
     "categoryConsole": "Console",
     "categoryMusic": "Music",
@@ -376,7 +375,6 @@ const TRANSLATIONS = {
     "gait": "Gait %1",
     "posture": "Posture %1",
     "acrobatic_moves": "Acrobatic Moves (Use with Caution) %1",
-    "directionAction": "Move Direction %1",
     "localAction": "Static Action %1",
     "highDifficultyAction": "High Difficulty Action (Use with Caution) %1",
     "setMotorAngleWithDelay": "Set Joint %1 Angle to %2 then delay %3 sec",
@@ -587,6 +585,306 @@ const TRANSLATIONS = {
     // Undo/Redo buttons
     "undo": "Undo",
     "redo": "Redo",
+  },
+
+  ja: {
+    // ボタンとタイトル
+    "appTitle": "Petoiウェブコーディングブロック",
+    "showCode": "コードを表示",
+    "runCode": "コードを実行",
+    "saveProgram": "プログラムを保存",
+    "loadProgram": "プログラムを読み込む",
+    "clearAll": "すべてクリア",
+    "clearConsole": "ログをクリア",
+    "consoleLog": "コンソールログ",
+    "serialConnect": "シリアルポートに接続",
+    "quickConnect": "クイック接続",
+    "closeSerial": "接続を閉じる",
+    "clearDisplay": "表示をクリア",
+    "send": "送信",
+    "serialOutput": "シリアルモニター",
+    "serialInputPlaceholder": "送信する内容を入力",
+    "wifiConfig": "WiFi設定",
+    "resetPrompt": "WiFiを設定する前にRESETボタンを押してください",
+    "ssidPlaceholder": "WiFi名を入力",
+    "passwordPlaceholder": "WiFiパスワードを入力",
+    "cancel": "キャンセル",
+    "confirm": "確認",
+    "scanWifi": "WiFiをスキャン",
+    "scanning": "スキャン中...",
+    "serialConfiguredIP": "IPアドレス: ",
+    "serialReadError": "シリアルデータ読み取りエラー:",
+    "serialSendError": "データ送信エラー:",
+    "serialConnectionError": "シリアル接続エラー:",
+    "enterWifiName": "WiFi名を入力してください",
+    "wifiCommandError": "WiFiコマンドエラー:",
+    "wifiCommandFailed": "WiFiコマンド送信に失敗しました",
+    "connectedToDevice": "デバイスに接続しました: ",
+    "textCopied": "テキストがクリップボードにコピーされました",
+    "serialPortBusy": "シリアルポートが使用中です。このシリアルポートを使用している他のプログラムを閉じてください",
+    "taskEnded": "タスク終了",
+    "showSentCommands": "送信コマンドを表示",
+    "commandCompleted": "コマンドが完了しました",
+    "commandNoReturnWarning": "警告：期待される戻り値が受信されませんでした：",
+    "fileLoaded": "読み込み完了：{filename}",
+    "loadFileFailed": "ファイルの読み込みに失敗しました",
+    "currentFileLabel": "現在のファイル：",
+
+    // コマンドメッセージ
+    "sendingCommand": "コマンド送信中: ",
+    "commandFailed": "コマンド実行失敗:",
+    "httpError": "HTTPエラー: ",
+
+    // コード表示ウィンドウ
+    "generatedCode": "生成されたJavaScriptコード",
+    "copyCode": "コードをコピー",
+    "codeCopied": "コピー成功！",
+
+    // ブロックカテゴリ
+    "categoryLogic": "論理",
+    "categoryLoops": "ループ",
+    "categoryMath": "数学",
+    "categoryText": "テキスト",
+    "categoryVariables": "変数",
+    "categoryFunctions": "関数",
+    "categoryCommunication": "通信",
+    "categoryMotion": "動作",
+    "categoryControl": "制御",
+    "categoryConsole": "コンソール",
+    "categoryMusic": "音楽",
+
+    // ブロックテキスト - 通信
+    "connectWithIP": "IPアドレスに接続 %1",
+    "getDigitalInput": "デジタル入力を取得 %1",
+    "getAnalogInput": "アナログ入力を取得 %1",
+    "getSensorInput": "センサーを取得 %1",
+    "setDigitalOutput": "デジタル出力ピン %1 状態 %2 を設定",
+    "setAnalogOutput": "アナログ出力ピン %1 値 %2 を設定",
+    "sendCustomCommand": "カスタムコマンドを送信 %1",
+
+    // ブロックテキスト - モーション
+    "setMotorAngle": "関節 %1 の角度を %2 に設定",
+    "getJointAngle": "関節 %1 の角度を取得",
+    "getAllJointAngles": "すべての関節角度を取得",
+    "gait": "歩行パターン %1",
+    "posture": "姿勢 %1",
+    "acrobatic_moves": "アクロバティック動作（注意して使用） %1",
+    "localAction": "静的アクション %1",
+    "highDifficultyAction": "高難度アクション（注意して使用） %1",
+    "setMotorAngleWithDelay": "関節 %1 の角度を %2 に設定し %3 秒待機",
+    "gaitWithDelay": "歩行パターン %1 の後 %2 秒待機",
+    "postureWithDelay": "姿勢 %1 の後 %2 秒待機",
+    "acrobaticWithDelay": "アクロバティック動作（注意して使用）%1 の後 %2 秒待機",
+
+    // ブロックテキスト - 制御
+    "delayMs": "%1 秒待機",
+    "delayMessage": "{delay} 秒待機中...",
+
+    // ブロックテキスト - センサー
+    "gyroControl": "ジャイロスコープ %1",
+
+    // ブロックテキスト - コンソール
+    "consoleLogVariable": "変数をコンソールに出力 %1",
+
+    // ブロックテキスト - 音楽
+    "playNote": "音符 %1 を %2 拍子分再生",
+
+    // アクションオプション
+    "stand": "立つ",
+    "sit": "座る",
+    "rest": "休息",
+    "pee": "おしっこ",
+    "backflip": "バック宙返り",
+    "jump": "ジャンプ",
+    "handstand": "逆立ち",
+    "boxing": "ボクシング",
+    "frontflip": "前方宙返り",
+    "step": "足踏み",
+    "rotateLeft": "左回転",
+    "rotateRight": "右回転",
+    "walkForward": "前進",
+    "walkLeft": "左歩き",
+    "walkRight": "右歩き",
+    "walkBackward": "後退",
+    "backLeft": "左後方",
+    "backRight": "右後方",
+    "trotForward": "前方トロット",
+    "trotLeft": "左トロット",
+    "trotRight": "右トロット",
+    "crawlForward": "前方這い進み",
+    "crawlLeft": "左這い進み",
+    "crawlRight": "右這い進み",
+    "gapForward": "前方跨ぎ",
+    "gapLeft": "左跨ぎ",
+    "gapRight": "右跨ぎ",
+    "moonwalk": "ムーンウォーク",
+
+    // センサーオプション
+    "ultrasonic": "超音波",
+    "touch": "タッチ",
+    "distance": "距離",
+    "light": "光",
+    "temperature": "温度",
+    "humidity": "湿度",
+    "gyroEnable": "有効",
+    "gyroDisable": "無効",
+
+    // 接続およびエラー関連メッセージ
+    "connectingDevice": "デバイスに接続中: ",
+    "deviceResponseInfo": "デバイス応答情報: ",
+    "deviceModelInfo": "デバイスモデル: ",
+    "errorMockData": "エラー：実際のリクエストではなくモックデータが使用されています！",
+    "connectionFailedMock": "接続失敗：システムは実際のネットワークリクエストではなくモックデータを使用しました。ネットワーク設定を確認してください。",
+    "connectionFailedCheck": "ロボットへの接続に失敗しました！IPアドレスが正しいことと、デバイスの電源が入っていることを確認してください。",
+    "connectionError": "接続エラー: ",
+    "connectionTimeout": "接続タイムアウト：{ip}に接続できません。デバイスの電源が入っていて同じネットワーク上にあることを確認してください。",
+    "networkError": "ネットワークエラー：{ip}に接続できません。ネットワーク接続を確認してください。",
+    "connectionErrorDetails": "ロボット接続エラー: {error}",
+    "programExecutionStopped": "プログラムの実行が停止しました。後続の指示は実行されません。",
+    "errorInvalidIP": "エラー：無効なIPアドレス",
+    "receivedResponse": "受信したレスポンス: ",
+    "requestFailedStatusCode": "リクエストに失敗しました。ステータスコード: {status}",
+    "requestError": "リクエストエラー: ",
+    "invalidIPAddress": "無効なIPアドレス",
+    "requestTimeout": "リクエストタイムアウト",
+    "asyncSendingCommand": "非同期コマンド送信中: ",
+    "asyncReceivedResponse": "非同期レスポンス受信: ",
+    "networkRequestError": "ネットワークリクエストエラー",
+    "programEndingRestCommand": "プログラム終了、休息コマンドを送信中...",
+    "restCommandFailed": "休息コマンドの送信に失敗しました: ",
+
+    // コードジェネレーターコメント
+    "connectingIPAddress": "IPアドレスに接続中",
+    "connectionFailedComment": "接続失敗時に後続プログラムの実行を停止します。makeConnection関数がすでにエラーを表示しているため、例外はスローしません",
+    "executionStoppedComment": "後続のコード実行を停止するために直接戻ります",
+    "mockRequest": "モックリクエスト: ",
+    "usingMockHttpRequest": "注：モックHTTPリクエストを使用しています。偽のデバイスモデルを返します",
+
+    // 関節名
+    "jointHeadPanning": "頭部パン",
+    "jointHeadTiltingNybble": "頭部チルト（Nybble）",
+    "jointTailNybble": "しっぽ（Nybble）",
+    "jointLFArm": "左前腕",
+    "jointRFArm": "右前腕",
+    "jointRBArm": "右後腕",
+    "jointLBArm": "左後腕",
+    "jointLFKnee": "左前膝",
+    "jointRFKnee": "右前膝",
+    "jointRBKnee": "右後膝",
+    "jointLBKnee": "左後膝",
+    "jointReserved": "予約済み",
+
+    // ジョイントブロックUIテキスト
+    "setJointLabel": "関節を設定",
+    "angleTo": "角度を",
+    "thenDelay": "その後遅延",
+    "secUnit": "秒",
+
+    // 音符ブロックUIテキスト
+    "playNote": "音符を再生",
+    "forDuration": "時間",
+    "beatUnit": "拍",
+
+    // モーションブロックUIテキスト
+    "gaitLabel": "歩行パターン",
+    "postureLabel": "姿勢",
+    "acrobaticMovesLabel": "アクロバティック動作（注意して使用）",
+
+    // 音符名
+    "noteRest": "休符",
+    "noteLowC": "低いC",
+    "noteLowCSharp": "低いC#",
+    "noteLowD": "低いD",
+    "noteLowDSharp": "低いD#",
+    "noteLowE": "低いE",
+    "noteLowF": "低いF",
+    "noteLowFSharp": "低いF#",
+    "noteLowG": "低いG",
+    "noteLowGSharp": "低いG#",
+    "noteLowA": "低いA",
+    "noteLowASharp": "低いA#",
+    "noteLowB": "低いB",
+    "noteMiddleC": "中央C",
+    "noteMiddleCSharp": "中央C#",
+    "noteMiddleD": "中央D",
+    "noteMiddleDSharp": "中央D#",
+    "noteMiddleE": "中央E",
+    "noteMiddleF": "中央F",
+    "noteMiddleFSharp": "中央F#",
+    "noteMiddleG": "中央G",
+    "noteMiddleGSharp": "中央G#",
+    "noteMiddleA": "中央A",
+    "noteMiddleASharp": "中央A#",
+    "noteMiddleB": "中央B",
+    "noteHighC": "高いC",
+
+    // 歩行オプション
+    "gaitStep": "足踏み",
+    "gaitRotateLeft": "左回転",
+    "gaitRotateRight": "右回転",
+    "gaitWalkForward": "前進",
+    "gaitWalkLeft": "左歩き",
+    "gaitWalkRight": "右歩き",
+    "gaitWalkBackward": "後退",
+    "gaitBackLeft": "左後方",
+    "gaitBackRight": "右後方",
+    "gaitTrotForward": "前方トロット",
+    "gaitTrotLeft": "左トロット",
+    "gaitTrotRight": "右トロット",
+    "gaitCrawlForward": "前方這い進み",
+    "gaitCrawlLeft": "左這い進み",
+    "gaitCrawlRight": "右這い進み",
+    "gaitGapForward": "前方跨ぎ",
+    "gaitGapLeft": "左跨ぎ",
+    "gaitGapRight": "右跨ぎ",
+    "gaitMoonwalk": "ムーンウォーク",
+
+    // 姿勢オプション
+    "postureStand": "立つ",
+    "postureSit": "座る",
+    "postureRest": "休息",
+    "posturePee": "おしっこ",
+
+    // アクロバティックオプション
+    "acrobaticHandstand": "逆立ち",
+    "acrobaticBoxing": "ボクシング",
+    "acrobaticBackflip": "バック宙返り",
+    "acrobaticFrontflip": "前方宙返り",
+    "acrobaticJump": "ジャンプ",
+
+    // コードダイアログUIテキスト
+    "generatedJSCode": "生成されたJavaScriptコード",
+    "copyCode": "コードをコピー",
+    "copySuccess": "コピー完了！",
+
+    // 保存ダイアログUIテキスト
+    "currentFile": "現在のファイル: \"{filename}\"",
+    "noFileSaved": "ファイルが保存されていません",
+    "save": "保存",
+    "saveAs": "名前を付けて保存",
+    "saveWarning": "注：ダウンロードフォルダに同名のファイルがすでに存在する場合、ブラウザは自動的に数字の接尾辞を追加します。",
+    "saveProgram": "プログラムを保存",
+
+    // 保存成功ダイアログUIテキスト
+    "saveSuccess": "保存成功",
+    "savedToDownloads": "ファイルが「ダウンロード」フォルダに保存されました。",
+    "filenameNote": "ファイル名: \"{filename}\"（ダウンロードフォルダに同名のファイルがすでに存在する場合、ブラウザは自動的に数字の接尾辞を追加することがあります）",
+    "close": "閉じる",
+
+    // デバッグメッセージ
+    "incompleteIPDetected": "不完全なIPアドレスが検出されました: {ip}、後に続く数字がある可能性があります",
+    "newIPDetected": "新しいIPアドレスが検出されました: {ip}、現在のIP: {oldIP} から更新",
+    "invalidIPFormat": "無効なIPアドレス形式: {ip}",
+
+    // Undo/Redo buttons
+    "undo": "元に戻す",
+    "redo": "やり直し",
+
+    // ファイル操作
+    "enterFileName": "ファイル名を入力してください:",
+
+    // コードダイアログUIテキスト
+    "generatedJSCode": "生成されたJavaScriptコード"
   }
 };
 
