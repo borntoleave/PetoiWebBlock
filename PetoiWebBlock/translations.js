@@ -42,6 +42,18 @@ const TRANSLATIONS = {
         "loadFileFailed": "无法载入文件",
         "currentFile": "当前文件：{filename}",
         "currentFileLabel": "当前文件",
+        // 保存对话框
+        "save": "保存",
+        "saveAs": "另存为",
+        "close": "关闭",
+        "enterFileName": "请输入文件名:",
+        "saveSuccessful": "保存成功",
+        "savedToDevice": "已保存到设备存储。",
+        "savedToComputer": "文件已保存到电脑。",
+        "fileNameNote": "文件名: {filename}",
+        "warningUnsavedChanges": "您有未保存的更改，请确认操作:",
+        "undo": "撤销",
+        "redo": "重做",
 
         // 命令消息
         "sendingCommand": "发送命令: ",
@@ -148,6 +160,26 @@ const TRANSLATIONS = {
         "executionStoppedComment": "直接返回，中断后续代码执行",
         "mockRequest": "模拟请求: ",
         "usingMockHttpRequest": "注意：使用了模拟HTTP请求，返回的是假设备型号",
+
+        // 关节名称
+        "jointHeadPanning": "头偏转角",
+        "jointHeadTiltingNybble": "头俯仰角(狸宝)",
+        "jointTailNybble": "尾巴(狸宝)",
+        "jointLFArm": "左前臂",
+        "jointRFArm": "右前臂",
+        "jointRBArm": "右后臂",
+        "jointLBArm": "左后臂",
+        "jointLFKnee": "左前膝",
+        "jointRFKnee": "右前膝",
+        "jointRBKnee": "右后膝",
+        "jointLBKnee": "左后膝",
+        "jointReserved": "预留",
+
+        // 积木UI文本
+        "setJointLabel": "设置关节",
+        "angleTo": "角度为",
+        "thenDelay": "后延时",
+        "secUnit": "秒"
     },
 
     en: {
@@ -193,6 +225,18 @@ const TRANSLATIONS = {
         "loadFileFailed": "Failed to load file",
         "currentFile": "Current file: {filename}",
         "currentFileLabel": "Current file",
+        // Save dialog
+        "save": "Save",
+        "saveAs": "Save As",
+        "close": "Close",
+        "enterFileName": "Enter file name:",
+        "saveSuccessful": "Save Successful",
+        "savedToDevice": "Saved to device storage.",
+        "savedToComputer": "File saved to your computer.",
+        "fileNameNote": "File name: {filename}",
+        "warningUnsavedChanges": "You have unsaved changes, please confirm:",
+        "undo": "Undo",
+        "redo": "Redo",
 
         // Command messages
         "sendingCommand": "Sending command: ",
@@ -299,6 +343,26 @@ const TRANSLATIONS = {
         "executionStoppedComment": "Return directly to stop subsequent code execution",
         "mockRequest": "Mock request: ",
         "usingMockHttpRequest": "Note: Using mock HTTP request, returning fake device model",
+
+        // Joint names
+        "jointHeadPanning": "Head Panning",
+        "jointHeadTiltingNybble": "Head Tilting (Nybble)",
+        "jointTailNybble": "Tail (Nybble)",
+        "jointLFArm": "Left Front Arm",
+        "jointRFArm": "Right Front Arm",
+        "jointRBArm": "Right Back Arm",
+        "jointLBArm": "Left Back Arm",
+        "jointLFKnee": "Left Front Knee",
+        "jointRFKnee": "Right Front Knee",
+        "jointRBKnee": "Right Back Knee",
+        "jointLBKnee": "Left Back Knee",
+        "jointReserved": "Reserved",
+
+        // Block UI text
+        "setJointLabel": "Set Joint",
+        "angleTo": "Angle to",
+        "thenDelay": "then delay",
+        "secUnit": "sec"
     }
 };
 

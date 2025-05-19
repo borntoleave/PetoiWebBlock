@@ -1402,26 +1402,26 @@
       Blockly.Blocks['set_motor_angle'] = {
         init: function ()
         {
-          var jointLabel = currentLang === 'zh' ? "设置关节" : "Set Joint";
-          var angleLabel = currentLang === 'zh' ? "角度为" : "Angle to";
-          var delayLabel = currentLang === 'zh' ? "后延时" : "then delay";
-          var unitLabel = currentLang === 'zh' ? "秒" : "sec";
+          var jointLabel = getText("setJointLabel");
+          var angleLabel = getText("angleTo");
+          var delayLabel = getText("thenDelay");
+          var unitLabel = getText("secUnit");
 
           this.appendDummyInput()
             .appendField(jointLabel)
             .appendField(new Blockly.FieldDropdown([
-              [currentLang === 'zh' ? "头偏转角" : "Head Panning", "0"],
-              [currentLang === 'zh' ? "头俯仰角(狸宝)" : "Head Tilting (Nybble)", "1"],
-              [currentLang === 'zh' ? "尾巴(狸宝)" : "Tail (Nybble)", "2"],
-              [currentLang === 'zh' ? "左前臂" : "Left Front Arm", "3"],
-              [currentLang === 'zh' ? "右前臂" : "Right Front Arm", "4"],
-              [currentLang === 'zh' ? "右后臂" : "Right Back Arm", "5"],
-              [currentLang === 'zh' ? "左后臂" : "Left Back Arm", "6"],
-              [currentLang === 'zh' ? "左前膝" : "Left Front Knee", "7"],
-              [currentLang === 'zh' ? "右前膝" : "Right Front Knee", "8"],
-              [currentLang === 'zh' ? "右后膝" : "Right Back Knee", "9"],
-              [currentLang === 'zh' ? "左后膝" : "Left Back Knee", "10"],
-              ["11", "11"]
+              [getText("jointHeadPanning"), "0"],
+              [getText("jointHeadTiltingNybble"), "1"],
+              [getText("jointTailNybble"), "2"],
+              [getText("jointLFArm"), "3"],
+              [getText("jointRFArm"), "4"],
+              [getText("jointRBArm"), "5"],
+              [getText("jointLBArm"), "6"],
+              [getText("jointLFKnee"), "7"],
+              [getText("jointRFKnee"), "8"],
+              [getText("jointRBKnee"), "9"],
+              [getText("jointLBKnee"), "10"],
+              [getText("jointReserved"), "11"]
             ]), "MOTOR")
             .appendField(angleLabel)
             .appendField(new Blockly.FieldNumber(0, -125, 125), "ANGLE");
@@ -1449,18 +1449,18 @@
                 "type": "field_dropdown",
                 "name": "JOINT",
                 "options": [
-                  [currentLang === 'zh' ? "头偏转角" : "Head Panning", "0"],
-                  [currentLang === 'zh' ? "头俯仰角(狸宝)" : "Head Tilting (Nybble)", "1"],
-                  [currentLang === 'zh' ? "尾巴(狸宝)" : "Tail (Nybble)", "2"],
-                  [currentLang === 'zh' ? "左前臂" : "Left Front Arm", "3"],
-                  [currentLang === 'zh' ? "右前臂" : "Right Front Arm", "4"],
-                  [currentLang === 'zh' ? "右后臂" : "Right Back Arm", "5"],
-                  [currentLang === 'zh' ? "左后臂" : "Left Back Arm", "6"],
-                  [currentLang === 'zh' ? "左前膝" : "Left Front Knee", "7"],
-                  [currentLang === 'zh' ? "右前膝" : "Right Front Knee", "8"],
-                  [currentLang === 'zh' ? "右后膝" : "Right Back Knee", "9"],
-                  [currentLang === 'zh' ? "左后膝" : "Left Back Knee", "10"],
-                  ["11", "11"]
+                  [getText("jointHeadPanning"), "0"],
+                  [getText("jointHeadTiltingNybble"), "1"],
+                  [getText("jointTailNybble"), "2"],
+                  [getText("jointLFArm"), "3"],
+                  [getText("jointRFArm"), "4"],
+                  [getText("jointRBArm"), "5"],
+                  [getText("jointLBArm"), "6"],
+                  [getText("jointLFKnee"), "7"],
+                  [getText("jointRFKnee"), "8"],
+                  [getText("jointRBKnee"), "9"],
+                  [getText("jointLBKnee"), "10"],
+                  [getText("jointReserved"), "11"]
                 ]
               }
             ],
@@ -1569,72 +1569,38 @@
       Blockly.Blocks['play_note'] = {
         init: function ()
         {
-          var noteLabel = currentLang === 'zh' ? "播放音符" : "Play note";
-          var durationLabel = currentLang === 'zh' ? "时长" : "for";
-          var beatLabel = currentLang === 'zh' ? "拍" : "beat";
+          var noteLabel = getText("playNote");
+          var durationLabel = getText("forDuration");
+          var beatLabel = getText("beatUnit");
 
-          var noteOptions = [];
-          if (currentLang === 'zh')
-          {
-            noteOptions = [
-              ["休止符", "0"],
-              ["低音C", "8"],
-              ["低音C#", "9"],
-              ["低音D", "10"],
-              ["低音D#", "11"],
-              ["低音E", "12"],
-              ["低音F", "13"],
-              ["低音F#", "14"],
-              ["低音G", "15"],
-              ["低音G#", "16"],
-              ["低音A", "17"],
-              ["低音A#", "18"],
-              ["低音B", "19"],
-              ["中音C", "20"],
-              ["中音C#", "21"],
-              ["中音D", "22"],
-              ["中音D#", "23"],
-              ["中音E", "24"],
-              ["中音F", "25"],
-              ["中音F#", "26"],
-              ["中音G", "27"],
-              ["中音G#", "28"],
-              ["中音A", "29"],
-              ["中音A#", "30"],
-              ["中音B", "31"],
-              ["高音C", "32"]
-            ];
-          } else
-          {
-            noteOptions = [
-              ["Rest", "0"],
-              ["Low C", "8"],
-              ["Low C#", "9"],
-              ["Low D", "10"],
-              ["Low D#", "11"],
-              ["Low E", "12"],
-              ["Low F", "13"],
-              ["Low F#", "14"],
-              ["Low G", "15"],
-              ["Low G#", "16"],
-              ["Low A", "17"],
-              ["Low A#", "18"],
-              ["Low B", "19"],
-              ["Middle C", "20"],
-              ["Middle C#", "21"],
-              ["Middle D", "22"],
-              ["Middle D#", "23"],
-              ["Middle E", "24"],
-              ["Middle F", "25"],
-              ["Middle F#", "26"],
-              ["Middle G", "27"],
-              ["Middle G#", "28"],
-              ["Middle A", "29"],
-              ["Middle A#", "30"],
-              ["Middle B", "31"],
-              ["High C", "32"]
-            ];
-          }
+          var noteOptions = [
+            [getText("noteRest"), "0"],
+            [getText("noteLowC"), "8"],
+            [getText("noteLowCSharp"), "9"],
+            [getText("noteLowD"), "10"],
+            [getText("noteLowDSharp"), "11"],
+            [getText("noteLowE"), "12"],
+            [getText("noteLowF"), "13"],
+            [getText("noteLowFSharp"), "14"],
+            [getText("noteLowG"), "15"],
+            [getText("noteLowGSharp"), "16"],
+            [getText("noteLowA"), "17"],
+            [getText("noteLowASharp"), "18"],
+            [getText("noteLowB"), "19"],
+            [getText("noteMiddleC"), "20"],
+            [getText("noteMiddleCSharp"), "21"],
+            [getText("noteMiddleD"), "22"],
+            [getText("noteMiddleDSharp"), "23"],
+            [getText("noteMiddleE"), "24"],
+            [getText("noteMiddleF"), "25"],
+            [getText("noteMiddleFSharp"), "26"],
+            [getText("noteMiddleG"), "27"],
+            [getText("noteMiddleGSharp"), "28"],
+            [getText("noteMiddleA"), "29"],
+            [getText("noteMiddleASharp"), "30"],
+            [getText("noteMiddleB"), "31"],
+            [getText("noteHighC"), "32"]
+          ];
 
           var durationOptions = [
             ["1", "1"],
@@ -1666,58 +1632,30 @@
       Blockly.Blocks['gait'] = {
         init: function ()
         {
-          var gaitLabel = currentLang === 'zh' ? "步态" : "Gait";
-          var delayLabel = currentLang === 'zh' ? "后延时" : "then delay";
-          var unitLabel = currentLang === 'zh' ? "秒" : "sec";
-          var options = [];
-
-          if (currentLang === 'zh')
-          {
-            options = [
-              ["原地踏步", "kvtF"],
-              ["左旋", "kvtL"],
-              ["右旋", "kvtR"],
-              ["向前走", "kwkF"],
-              ["向左走", "kwkL"],
-              ["向右走", "kwkR"],
-              ["向后走", "kbkF"],
-              ["向左后走", "kbkL"],
-              ["向右后走", "kbkR"],
-              ["向前跑", "ktrF"],
-              ["向左跑", "ktrL"],
-              ["向右跑", "ktrR"],
-              ["向前爬", "kcrF"],
-              ["向左爬", "kcrL"],
-              ["向右爬", "kcrR"],
-              ["向前跨", "kgpF"],
-              ["向左跨", "kgpL"],
-              ["向右跨", "kgpR"],
-              ["太空步", "kmw"]
-            ];
-          } else
-          {
-            options = [
-              ["Step", "kvtF"],
-              ["Rotate Left", "kvtL"],
-              ["Rotate Right", "kvtR"],
-              ["Walk Forward", "kwkF"],
-              ["Walk Left", "kwkL"],
-              ["Walk Right", "kwkR"],
-              ["Walk Backward", "kbkF"],
-              ["Back Left", "kbkL"],
-              ["Back Right", "kbkR"],
-              ["Trot Forward", "ktrF"],
-              ["Trot Left", "ktrL"],
-              ["Trot Right", "ktrR"],
-              ["Crawl Forward", "kcrF"],
-              ["Crawl Left", "kcrL"],
-              ["Crawl Right", "kcrR"],
-              ["Gap Forward", "kgpF"],
-              ["Gap Left", "kgpL"],
-              ["Gap Right", "kgpR"],
-              ["Moonwalk", "kmw"]
-            ];
-          }
+          var gaitLabel = getText("gaitLabel");
+          var delayLabel = getText("thenDelay");
+          var unitLabel = getText("secUnit");
+          var options = [
+            [getText("gaitStep"), "kvtF"],
+            [getText("gaitRotateLeft"), "kvtL"],
+            [getText("gaitRotateRight"), "kvtR"],
+            [getText("gaitWalkForward"), "kwkF"],
+            [getText("gaitWalkLeft"), "kwkL"],
+            [getText("gaitWalkRight"), "kwkR"],
+            [getText("gaitWalkBackward"), "kbkF"],
+            [getText("gaitBackLeft"), "kbkL"],
+            [getText("gaitBackRight"), "kbkR"],
+            [getText("gaitTrotForward"), "ktrF"],
+            [getText("gaitTrotLeft"), "ktrL"],
+            [getText("gaitTrotRight"), "ktrR"],
+            [getText("gaitCrawlForward"), "kcrF"],
+            [getText("gaitCrawlLeft"), "kcrL"],
+            [getText("gaitCrawlRight"), "kcrR"],
+            [getText("gaitGapForward"), "kgpF"],
+            [getText("gaitGapLeft"), "kgpL"],
+            [getText("gaitGapRight"), "kgpR"],
+            [getText("gaitMoonwalk"), "kmw"]
+          ];
 
           this.appendDummyInput()
             .appendField(gaitLabel)
@@ -1742,28 +1680,15 @@
       Blockly.Blocks['posture'] = {
         init: function ()
         {
-          var postureLabel = currentLang === 'zh' ? "姿势" : "Posture";
-          var delayLabel = currentLang === 'zh' ? "后延时" : "then delay";
-          var unitLabel = currentLang === 'zh' ? "秒" : "sec";
-          var options = [];
-
-          if (currentLang === 'zh')
-          {
-            options = [
-              ["站立", "kup"],
-              ["坐下", "ksit"],
-              ["休息", "d"],
-              ["尿尿", "kpee"]
-            ];
-          } else
-          {
-            options = [
-              ["Stand", "kup"],
-              ["Sit", "ksit"],
-              ["Rest", "d"],
-              ["Pee", "kpee"]
-            ];
-          }
+          var postureLabel = getText("postureLabel");
+          var delayLabel = getText("thenDelay");
+          var unitLabel = getText("secUnit");
+          var options = [
+            [getText("postureStand"), "kup"],
+            [getText("postureSit"), "ksit"],
+            [getText("postureRest"), "d"],
+            [getText("posturePee"), "kpee"]
+          ];
 
           this.appendDummyInput()
             .appendField(postureLabel)
@@ -1788,30 +1713,16 @@
       Blockly.Blocks['acrobatic_moves'] = {
         init: function ()
         {
-          var moveLabel = currentLang === 'zh' ? "杂技动作(小心使用)" : "Acrobatic Moves (Use with Caution)";
-          var delayLabel = currentLang === 'zh' ? "后延时" : "then delay";
-          var unitLabel = currentLang === 'zh' ? "秒" : "sec";
-          var options = [];
-
-          if (currentLang === 'zh')
-          {
-            options = [
-              ["倒立", "khds"],
-              ["打拳", "kbx"],
-              ["后空翻", "kflipB"],
-              ["前空翻", "kflipF"],
-              ["跳跃", "kjmp"]
-            ];
-          } else
-          {
-            options = [
-              ["Handstand", "khds"],
-              ["Boxing", "kbx"],
-              ["Backflip", "kflipB"],
-              ["Frontflip", "kflipF"],
-              ["Jump", "kjmp"]
-            ];
-          }
+          var moveLabel = getText("acrobaticMovesLabel");
+          var delayLabel = getText("thenDelay");
+          var unitLabel = getText("secUnit");
+          var options = [
+            [getText("acrobaticHandstand"), "khds"],
+            [getText("acrobaticBoxing"), "kbx"],
+            [getText("acrobaticBackflip"), "kflipB"],
+            [getText("acrobaticFrontflip"), "kflipF"],
+            [getText("acrobaticJump"), "kjmp"]
+          ];
 
           this.appendDummyInput()
             .appendField(moveLabel)
@@ -2092,13 +2003,13 @@
         }
       };
 
-      if (lang === 'zh')
-      {
-        script.src = './node_modules/blockly/msg/zh-hans.js';
-      } else
-      {
-        script.src = './node_modules/blockly/msg/en.js';
-      }
+      // 根据语言选择对应的Blockly语言文件
+      const langMap = {
+        'zh': './node_modules/blockly/msg/zh-hans.js',
+        'en': './node_modules/blockly/msg/en.js'
+        // 可以在这里添加更多语言
+      };
+      script.src = langMap[lang] || langMap['en']; // 默认使用英文
 
       // 标记并添加新脚本
       script.setAttribute('data-language-script', 'true');
@@ -2260,14 +2171,8 @@
       titleBar.style.marginBottom = '15px';
 
       var title = document.createElement('h3');
-      // 直接使用字符串而不是文本节点，避免字符编码问题
-      if (currentLang === 'zh')
-      {
-        title.innerHTML = '生成的JavaScript代码';
-      } else
-      {
-        title.innerHTML = 'Generated JavaScript Code';
-      }
+      // 使用getText函数获取翻译文本
+      title.innerHTML = getText("generatedJSCode");
       title.style.margin = '0';
       title.style.color = '#e6e6e6';
       title.style.fontFamily = '"Microsoft YaHei", "PingFang SC", "SimHei", "Arial", sans-serif';
@@ -2315,13 +2220,7 @@
 
       // 添加复制按钮
       var copyButton = document.createElement('button');
-      if (currentLang === 'zh')
-      {
-        copyButton.innerHTML = '复制代码';
-      } else
-      {
-        copyButton.innerHTML = 'Copy Code';
-      }
+      copyButton.innerHTML = getText("copyCode");
       copyButton.style.marginTop = '15px';
       copyButton.style.padding = '6px 12px';
       copyButton.style.backgroundColor = '#4d78cc';
@@ -2334,22 +2233,10 @@
       {
         navigator.clipboard.writeText(code).then(function ()
         {
-          if (currentLang === 'zh')
-          {
-            copyButton.innerHTML = '复制成功！';
-          } else
-          {
-            copyButton.innerHTML = 'Copied!';
-          }
+          copyButton.innerHTML = getText("copySuccess");
           setTimeout(function ()
           {
-            if (currentLang === 'zh')
-            {
-              copyButton.innerHTML = '复制代码';
-            } else
-            {
-              copyButton.innerHTML = 'Copy Code';
-            }
+            copyButton.innerHTML = getText("copyCode");
           }, 2000);
         });
       };
@@ -2411,7 +2298,7 @@
               if (returnResult) {
                 // 特别检查是否是连接测试命令并返回了模拟数据
                 if (command === '?' && result === 'PetoiModel-v1.0') {
-                  console.error("警告：返回了模拟数据而非真实设备信息");
+                  console.error(getText("errorMockData"));
                 }
                 
                 // 检查命令是否为读取模拟、数字输入或传感器的命令
@@ -2424,7 +2311,7 @@
                 if (isReadCommand) {
                   // 对于连接测试命令，直接返回响应
                   if (command === '?') {
-                    console.log("设备型号信息: " + result);
+                    console.log(getText("deviceModelInfo") + result);
                     return result;
                   }
                   
@@ -2438,10 +2325,10 @@
               }
               return true;
             } else {
-              throw new Error("HTTP错误: " + xhr.status);
+              throw new Error(getText("httpError") + xhr.status);
             }
           } catch (error) {
-            console.error("命令执行失败:", error.message);
+            console.error(getText("commandFailed"), error.message);
             if (returnResult) {
               return "";
             }
@@ -2465,15 +2352,15 @@
         "  console.error(getText('restCommandFailed') + e.message);\n" +
         "}\n" +
         "console.log(getText('taskEnded'));" + // 添加任务结束消息
-        "\n})().catch(e => { console.error('程序执行出错:', e.message); alert('程序执行出错: ' + e.message); });";
+        "\n})().catch(e => { console.error(getText('networkRequestError') + ': ' + e.message); alert(getText('networkRequestError') + ': ' + e.message); });";
 
       try
       {
         eval(code);
       } catch (e)
       {
-        console.error("代码执行出错:", e.message);
-        alert('程序执行出错: ' + e.message);
+        console.error(getText("networkRequestError") + ": " + e.message);
+        alert(getText("networkRequestError") + ": " + e.message);
       }
     }
 
@@ -2494,47 +2381,33 @@
       dialog.className = 'wifi-dialog';
       dialog.style.maxWidth = '400px';
 
-      // 根据当前语言选择文本
-      const title = currentLang === 'zh' ? '保存程序' : 'Save Program';
-      let message = '';
-
-      if (currentFile)
-      {
-        message = currentLang === 'zh' ?
-          `当前文件: "${currentFile.name}"` :
-          `Current file: "${currentFile.name}"`;
-      } else
-      {
-        message = currentLang === 'zh' ?
-          '尚未保存文件' :
-          'No file saved yet';
-      }
-
-      const saveText = currentLang === 'zh' ? '保存' : 'Save';
-      const saveAsText = currentLang === 'zh' ? '另存为' : 'Save As';
-      const cancelText = currentLang === 'zh' ? '取消' : 'Cancel';
-
-      const warningText = currentLang === 'zh' ?
-        '注意：如果下载文件夹中已有同名文件，浏览器会自动添加数字后缀。' :
-        'Note: If a file with the same name exists, the browser will add a number suffix.';
+      // 使用getText获取本地化文本
+      const title = getText('saveProgram');
+      const message = currentFile ?
+        getText('currentFile').replace('{filename}', currentFile.name) :
+        getText('noFileSaved');
+      const saveText = getText('save');
+      const saveAsText = getText('saveAs');
+      const cancelText = getText('cancel');
+      const warningText = getText('saveWarning');
 
       dialog.innerHTML = `
         <h3>${title}</h3>
         <p>${message}</p>
         <p style="color: #999; font-size: 12px;">${warningText}</p>
-        <div style="text-align: center; margin: 20px 0;">
-          ${currentFile ?
+      <div style="text-align: center; margin: 20px 0;">
+        ${currentFile ?
           `<button onclick="saveFile('${currentFile.name}'); closeSaveOptionsDialog();" class="confirm" style="margin-right: 10px;">
               ${saveText}
             </button>` : ''}
-          <button onclick="saveFileWithPrompt(); closeSaveOptionsDialog();" class="confirm" style="margin-right: 10px;">
-            ${saveAsText}
-          </button>
-          <button onclick="closeSaveOptionsDialog()" class="cancel">
-            ${cancelText}
-          </button>
-        </div>
-      `;
+        <button onclick="saveFileWithPrompt(); closeSaveOptionsDialog();" class="confirm" style="margin-right: 10px;">
+          ${saveAsText}
+        </button>
+        <button onclick="closeSaveOptionsDialog()" class="cancel">
+          ${cancelText}
+        </button>
+      </div>
+    `;
 
       document.body.appendChild(overlay);
       document.body.appendChild(dialog);
@@ -2573,7 +2446,7 @@
 
       // 提示用户输入文件名
       const fileName = prompt(
-        currentLang === 'zh' ? '请输入文件名:' : 'Enter file name:',
+        getText("enterFileName"),
         defaultName
       );
 
@@ -2611,28 +2484,22 @@
       dialog.className = 'wifi-dialog';
       dialog.style.maxWidth = '450px';
 
-      // 根据当前语言选择文本
-      const title = currentLang === 'zh' ? '保存成功' : 'Save Successful';
-      const message = currentLang === 'zh' ?
-        `文件已保存到您的"下载"文件夹。` :
-        `File has been saved to your Downloads folder.`;
-
-      const fileNameNote = currentLang === 'zh' ?
-        `文件名: "${fileName}" (如下载文件夹中已有同名文件，浏览器可能自动添加数字后缀)` :
-        `Filename: "${fileName}" (If a file with the same name exists, the browser may add a number suffix)`;
-
-      const closeText = currentLang === 'zh' ? '关闭' : 'Close';
+      // 使用getText函数获取本地化文本
+      const title = getText("saveSuccess");
+      const message = getText("savedToDownloads");
+      const fileNameNote = getText("filenameNote").replace("{filename}", fileName);
+      const closeText = getText("close");
 
       dialog.innerHTML = `
-        <h3 style="color: #4CAF50;">${title}</h3>
-        <p>${message}</p>
-        <p style="margin-top: 10px; font-size: 14px;">${fileNameNote}</p>
-        <div style="text-align: center; margin: 20px 0;">
-          <button onclick="closeSuccessDialog()" class="confirm">
-            ${closeText}
-          </button>
-        </div>
-      `;
+      <h3 style="color: #4CAF50;">${title}</h3>
+      <p>${message}</p>
+      <p style="margin-top: 10px; font-size: 14px;">${fileNameNote}</p>
+      <div style="text-align: center; margin: 20px 0;">
+        <button onclick="closeSuccessDialog()" class="confirm">
+          ${closeText}
+        </button>
+      </div>
+    `;
 
       document.body.appendChild(overlay);
       document.body.appendChild(dialog);
@@ -2736,7 +2603,7 @@
       });
 
       const messageText = messages.join(' ');
-      messageDiv.textContent = `[${time}] ${messageText}`;
+      messageDiv.textContent = `[${time}] ${messageText} `;
 
       // 检测是否为"任务结束"消息，如果是则使用绿色字体
       if (messageText === getText('taskEnded'))
@@ -2878,8 +2745,8 @@
 
             // 确保窗口容器宽度正确
             const blocklyPercent = parseFloat(blocklyWidth);
-            windowsContainer.style.flexBasis = `${99 - blocklyPercent}%`;
-            windowsContainer.style.width = `${99 - blocklyPercent}%`;
+            windowsContainer.style.flexBasis = `${99 - blocklyPercent}% `;
+            windowsContainer.style.width = `${99 - blocklyPercent}% `;
           }
 
           resizeBlocklyWorkspace();
@@ -2968,14 +2835,14 @@
       const dialog = document.createElement('div');
       dialog.className = 'wifi-dialog';
       dialog.innerHTML = `
-          <h3>${getText("wifiConfig")}</h3>
-          <input type="text" id="ssidInput" placeholder="${getText("ssidPlaceholder")}">
-          <input type="password" id="passwordInput" placeholder="${getText("passwordPlaceholder")}">
-          <div class="button-container">
-            <button class="cancel" onclick="closeWifiDialog()">${getText("cancel")}</button>
-            <button class="confirm" onclick="confirmWifiSettings()">${getText("confirm")}</button>
-          </div>
-        `;
+      <h3>${getText("wifiConfig")}</h3>
+      <input type="text" id="ssidInput" placeholder="${getText("ssidPlaceholder")}">
+      <input type="password" id="passwordInput" placeholder="${getText("passwordPlaceholder")}">
+      <div class="button-container">
+        <button class="cancel" onclick="closeWifiDialog()">${getText("cancel")}</button>
+        <button class="confirm" onclick="confirmWifiSettings()">${getText("confirm")}</button>
+      </div>
+    `;
       document.body.appendChild(dialog);
     }
 
@@ -3010,7 +2877,7 @@
         return;
       }
 
-      const command = `w%${ssid}%${password}\n`;
+      const command = `w % ${ssid}% ${password} \n`;
 
       try
       {
@@ -3077,7 +2944,7 @@
               if (hasMoreDigits)
               {
                 // 后面还有数字，可能是不完整的IP，暂时不处理，等待更多数据
-                console.log(`检测到可能不完整的IP地址: ${possibleIP}，后面还有数字`);
+                console.log(getText("incompleteIPDetected").replace("{ip}", possibleIP));
                 lastPartialIP = possibleIP;
               } else
               {
@@ -3151,7 +3018,7 @@
         // 检查是否为新的IP地址
         if (currentDeviceIP !== ip)
         {
-          console.log(`检测到新的IP地址: ${ip}，更新自当前IP: ${currentDeviceIP}`);
+          console.log(getText("newIPDetected").replace("{ip}", ip).replace("{oldIP}", currentDeviceIP));
 
           // 保存设备IP到全局变量
           currentDeviceIP = ip;
@@ -3183,7 +3050,7 @@
         }
       } else
       {
-        console.log(`IP地址格式不正确: ${ip}`);
+        console.log(getText("invalidIPFormat").replace("{ip}", ip));
       }
 
       // 如果缓冲区过大，防止内存泄漏
@@ -3306,9 +3173,9 @@
       const undoButton = document.createElement('button');
       undoButton.className = 'undoRedoButton';
       undoButton.id = 'undoButton';
-      undoButton.title = currentLang === 'zh' ? '撤销' : 'Undo';
+      undoButton.title = getText('undo');
       undoButton.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9 14L4 9l5-5"/>
           <path d="M4 9h13c2.5 0 4 2 4 4s-1.5 4-4 4H8"/>
         </svg>
@@ -3326,9 +3193,9 @@
       const redoButton = document.createElement('button');
       redoButton.className = 'undoRedoButton';
       redoButton.id = 'redoButton';
-      redoButton.title = currentLang === 'zh' ? '重做' : 'Redo';
+      redoButton.title = getText('redo');
       redoButton.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M15 14l5-5-5-5"/>
           <path d="M20 9H7c-2.5 0-4 2-4 4s1.5 4 4 4h9"/>
         </svg>
@@ -3379,8 +3246,8 @@
         redoButton.disabled = !canRedo;
 
         // 更新按钮标题语言
-        undoButton.title = currentLang === 'zh' ? '撤销' : 'Undo';
-        redoButton.title = currentLang === 'zh' ? '重做' : 'Redo';
+        undoButton.title = getText('undo');
+        redoButton.title = getText('redo');
       }
     }
 
@@ -3442,10 +3309,10 @@
         newWidthPercent = Math.max(20, Math.min(80, newWidthPercent));
 
         // 应用新宽度 - 同时设置flexBasis和width属性
-        blocklyDiv.style.flexBasis = `${newWidthPercent}%`;
-        blocklyDiv.style.width = `${newWidthPercent}%`;
-        windowsContainer.style.flexBasis = `${99 - newWidthPercent}%`;
-        windowsContainer.style.width = `${99 - newWidthPercent}%`;
+        blocklyDiv.style.flexBasis = `${newWidthPercent}% `;
+        blocklyDiv.style.width = `${newWidthPercent}% `;
+        windowsContainer.style.flexBasis = `${99 - newWidthPercent}% `;
+        windowsContainer.style.width = `${99 - newWidthPercent}% `;
 
         // 调整Blockly工作区大小以适应新尺寸
         if (workspace)
@@ -3533,7 +3400,7 @@
           newConsoleHeightPercent = Math.max(20, Math.min(80, newConsoleHeightPercent));
 
           // 应用新高度比例
-          consoleWindow.style.flex = `${newConsoleHeightPercent}`;
+          consoleWindow.style.flex = `${newConsoleHeightPercent} `;
           serialContainer.style.flex = `${100 - newConsoleHeightPercent - 1}`;  // 减去分隔线高度
 
           // 更新undo/redo按钮位置

@@ -172,6 +172,126 @@ const TRANSLATIONS = {
     "executionStoppedComment": "直接返回，中断后续代码执行",
     "mockRequest": "模拟请求: ",
     "usingMockHttpRequest": "注意：使用了模拟HTTP请求，返回的是假设备型号",
+
+    // Joint names - 关节名称
+    "jointHeadPanning": "头偏转角",
+    "jointHeadTiltingNybble": "头俯仰角(狸宝)",
+    "jointTailNybble": "尾巴(狸宝)",
+    "jointLFArm": "左前臂",
+    "jointRFArm": "右前臂",
+    "jointRBArm": "右后臂",
+    "jointLBArm": "左后臂",
+    "jointLFKnee": "左前膝",
+    "jointRFKnee": "右前膝",
+    "jointRBKnee": "右后膝",
+    "jointLBKnee": "左后膝",
+    "jointReserved": "预留",
+
+    // Joint block UI text
+    "setJointLabel": "设置关节",
+    "angleTo": "角度为",
+    "thenDelay": "后延时",
+    "secUnit": "秒",
+
+    // Note block UI text
+    "playNote": "播放音符",
+    "forDuration": "时长",
+    "beatUnit": "拍",
+
+    // Motion blocks UI text
+    "gaitLabel": "步态",
+    "postureLabel": "姿势",
+    "acrobaticMovesLabel": "杂技动作(小心使用)",
+
+    // Note names
+    "noteRest": "休止符",
+    "noteLowC": "低音C",
+    "noteLowCSharp": "低音C#",
+    "noteLowD": "低音D",
+    "noteLowDSharp": "低音D#",
+    "noteLowE": "低音E",
+    "noteLowF": "低音F",
+    "noteLowFSharp": "低音F#",
+    "noteLowG": "低音G",
+    "noteLowGSharp": "低音G#",
+    "noteLowA": "低音A",
+    "noteLowASharp": "低音A#",
+    "noteLowB": "低音B",
+    "noteMiddleC": "中音C",
+    "noteMiddleCSharp": "中音C#",
+    "noteMiddleD": "中音D",
+    "noteMiddleDSharp": "中音D#",
+    "noteMiddleE": "中音E",
+    "noteMiddleF": "中音F",
+    "noteMiddleFSharp": "中音F#",
+    "noteMiddleG": "中音G",
+    "noteMiddleGSharp": "中音G#",
+    "noteMiddleA": "中音A",
+    "noteMiddleASharp": "中音A#",
+    "noteMiddleB": "中音B",
+    "noteHighC": "高音C",
+
+    // Gait options
+    "gaitStep": "原地踏步",
+    "gaitRotateLeft": "左旋",
+    "gaitRotateRight": "右旋",
+    "gaitWalkForward": "向前走",
+    "gaitWalkLeft": "向左走",
+    "gaitWalkRight": "向右走",
+    "gaitWalkBackward": "向后走",
+    "gaitBackLeft": "向左后走",
+    "gaitBackRight": "向右后走",
+    "gaitTrotForward": "向前跑",
+    "gaitTrotLeft": "向左跑",
+    "gaitTrotRight": "向右跑",
+    "gaitCrawlForward": "向前爬",
+    "gaitCrawlLeft": "向左爬",
+    "gaitCrawlRight": "向右爬",
+    "gaitGapForward": "向前跨",
+    "gaitGapLeft": "向左跨",
+    "gaitGapRight": "向右跨",
+    "gaitMoonwalk": "太空步",
+
+    // Posture options
+    "postureStand": "站立",
+    "postureSit": "坐下",
+    "postureRest": "休息",
+    "posturePee": "尿尿",
+
+    // Acrobatic options
+    "acrobaticHandstand": "倒立",
+    "acrobaticBoxing": "打拳",
+    "acrobaticBackflip": "后空翻",
+    "acrobaticFrontflip": "前空翻",
+    "acrobaticJump": "跳跃",
+
+    // Code dialog UI text
+    "generatedJSCode": "生成的JavaScript代码",
+    "copyCode": "复制代码",
+    "copySuccess": "复制成功！",
+
+    // Save dialog UI text
+    "currentFile": "当前文件: \"{filename}\"",
+    "noFileSaved": "尚未保存文件",
+    "save": "保存",
+    "saveAs": "另存为",
+    "saveWarning": "注意：如果下载文件夹中已有同名文件，浏览器会自动添加数字后缀。",
+    "saveProgram": "保存程序",
+
+    // Save success dialog UI text
+    "saveSuccess": "保存成功",
+    "savedToDownloads": "文件已保存到您的\"下载\"文件夹。",
+    "filenameNote": "文件名: \"{filename}\"(如下载文件夹中已有同名文件，浏览器可能自动添加数字后缀)",
+    "close": "关闭",
+
+    // Debug messages
+    "incompleteIPDetected": "检测到可能不完整的IP地址: {ip}，后面还有数字",
+    "newIPDetected": "检测到新的IP地址: {ip}，更新自当前IP: {oldIP}",
+    "invalidIPFormat": "IP地址格式不正确: {ip}",
+
+    // Undo/Redo buttons
+    "undo": "撤销",
+    "redo": "重做",
   },
 
   en: {
@@ -347,6 +467,126 @@ const TRANSLATIONS = {
     "executionStoppedComment": "Return directly to stop subsequent code execution",
     "mockRequest": "Mock request: ",
     "usingMockHttpRequest": "Note: Using mock HTTP request, returning fake device model",
+
+    // Joint names - 关节名称
+    "jointHeadPanning": "Head Panning",
+    "jointHeadTiltingNybble": "Head Tilting (Nybble)",
+    "jointTailNybble": "Tail (Nybble)",
+    "jointLFArm": "Left Front Arm",
+    "jointRFArm": "Right Front Arm",
+    "jointRBArm": "Right Back Arm",
+    "jointLBArm": "Left Back Arm",
+    "jointLFKnee": "Left Front Knee",
+    "jointRFKnee": "Right Front Knee",
+    "jointRBKnee": "Right Back Knee",
+    "jointLBKnee": "Left Back Knee",
+    "jointReserved": "Reserved",
+
+    // Joint block UI text
+    "setJointLabel": "Set Joint",
+    "angleTo": "Angle to",
+    "thenDelay": "then delay",
+    "secUnit": "sec",
+
+    // Note block UI text
+    "playNote": "Play note",
+    "forDuration": "for",
+    "beatUnit": "beat",
+
+    // Motion blocks UI text
+    "gaitLabel": "Gait",
+    "postureLabel": "Posture",
+    "acrobaticMovesLabel": "Acrobatic Moves (Use with Caution)",
+
+    // Note names
+    "noteRest": "Rest",
+    "noteLowC": "Low C",
+    "noteLowCSharp": "Low C#",
+    "noteLowD": "Low D",
+    "noteLowDSharp": "Low D#",
+    "noteLowE": "Low E",
+    "noteLowF": "Low F",
+    "noteLowFSharp": "Low F#",
+    "noteLowG": "Low G",
+    "noteLowGSharp": "Low G#",
+    "noteLowA": "Low A",
+    "noteLowASharp": "Low A#",
+    "noteLowB": "Low B",
+    "noteMiddleC": "Middle C",
+    "noteMiddleCSharp": "Middle C#",
+    "noteMiddleD": "Middle D",
+    "noteMiddleDSharp": "Middle D#",
+    "noteMiddleE": "Middle E",
+    "noteMiddleF": "Middle F",
+    "noteMiddleFSharp": "Middle F#",
+    "noteMiddleG": "Middle G",
+    "noteMiddleGSharp": "Middle G#",
+    "noteMiddleA": "Middle A",
+    "noteMiddleASharp": "Middle A#",
+    "noteMiddleB": "Middle B",
+    "noteHighC": "High C",
+
+    // Gait options
+    "gaitStep": "Step",
+    "gaitRotateLeft": "Rotate Left",
+    "gaitRotateRight": "Rotate Right",
+    "gaitWalkForward": "Walk Forward",
+    "gaitWalkLeft": "Walk Left",
+    "gaitWalkRight": "Walk Right",
+    "gaitWalkBackward": "Walk Backward",
+    "gaitBackLeft": "Back Left",
+    "gaitBackRight": "Back Right",
+    "gaitTrotForward": "Trot Forward",
+    "gaitTrotLeft": "Trot Left",
+    "gaitTrotRight": "Trot Right",
+    "gaitCrawlForward": "Crawl Forward",
+    "gaitCrawlLeft": "Crawl Left",
+    "gaitCrawlRight": "Crawl Right",
+    "gaitGapForward": "Gap Forward",
+    "gaitGapLeft": "Gap Left",
+    "gaitGapRight": "Gap Right",
+    "gaitMoonwalk": "Moonwalk",
+
+    // Posture options
+    "postureStand": "Stand",
+    "postureSit": "Sit",
+    "postureRest": "Rest",
+    "posturePee": "Pee",
+
+    // Acrobatic options
+    "acrobaticHandstand": "Handstand",
+    "acrobaticBoxing": "Boxing",
+    "acrobaticBackflip": "Backflip",
+    "acrobaticFrontflip": "Frontflip",
+    "acrobaticJump": "Jump",
+
+    // Code dialog UI text
+    "generatedJSCode": "Generated JavaScript Code",
+    "copyCode": "Copy Code",
+    "copySuccess": "Copied!",
+
+    // Save dialog UI text
+    "currentFile": "Current file: \"{filename}\"",
+    "noFileSaved": "No file saved",
+    "save": "Save",
+    "saveAs": "Save As",
+    "saveWarning": "Note: If a file with the same name already exists in the download folder, the browser will automatically add a number suffix.",
+    "saveProgram": "Save Program",
+
+    // Save success dialog UI text
+    "saveSuccess": "Save successful",
+    "savedToDownloads": "File saved to your \"Downloads\" folder.",
+    "filenameNote": "Filename: \"{filename}\" (If a file with the same name already exists in the download folder, the browser may automatically add a number suffix)",
+    "close": "Close",
+
+    // Debug messages
+    "incompleteIPDetected": "Incomplete IP address detected: {ip}, more digits may follow",
+    "newIPDetected": "New IP address detected: {ip}, updated from current IP: {oldIP}",
+    "invalidIPFormat": "Invalid IP address format: {ip}",
+
+    // Undo/Redo buttons
+    "undo": "Undo",
+    "redo": "Redo",
   }
 };
 
