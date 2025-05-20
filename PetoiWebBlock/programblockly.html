@@ -2050,7 +2050,34 @@
     function showCode()
     {
       Blockly.JavaScript.INFINITE_LOOP_TRAP = null;
-      var code = Blockly.JavaScript.workspaceToCode(workspace);
+
+      // 修改：查找工作区中的'make_connection'积木块（Connect with IP）
+      const makeConnectionBlocks = workspace.getBlocksByType('make_connection');
+
+      // 如果没有找到make_connection积木块，显示错误信息
+      if (makeConnectionBlocks.length === 0)
+      {
+        console.error(getText("noConnectionBlockError") || "错误：请添加一个'Connect with IP'积木块并将代码连接在其下方！");
+        alert(getText("noConnectionBlockError") || "错误：请添加一个'Connect with IP'积木块并将代码连接在其下方！");
+        return;
+      }
+
+      // 如果找到多个make_connection积木块，使用第一个
+      const mainBlock = makeConnectionBlocks[0];
+
+      // 准备一个临时的工作区，只包含我们要运行的代码
+      const tempWorkspace = new Blockly.Workspace();
+
+      // 复制主块及其所有连接的块到临时工作区
+      // 先克隆主块
+      const clonedMainBlock = Blockly.serialization.blocks.save(mainBlock);
+      Blockly.serialization.blocks.append(clonedMainBlock, tempWorkspace);
+
+      // 生成临时工作区的代码
+      var code = Blockly.JavaScript.workspaceToCode(tempWorkspace);
+
+      // 清理临时工作区
+      tempWorkspace.dispose();
 
       // 创建蒙版背景
       var overlay = document.createElement('div');
@@ -2188,7 +2215,35 @@
       window.LoopTrap = 1000;
       Blockly.JavaScript.INFINITE_LOOP_TRAP =
         'if (--window.LoopTrap < 0) throw "无限循环";\n';
-      var code = Blockly.JavaScript.workspaceToCode(workspace);
+
+      // 修改：查找工作区中的'make_connection'积木块（Connect with IP）
+      const makeConnectionBlocks = workspace.getBlocksByType('make_connection');
+
+      // 如果没有找到make_connection积木块，显示错误信息
+      if (makeConnectionBlocks.length === 0)
+      {
+        console.error(getText("noConnectionBlockError") || "错误：请添加一个'Connect with IP'积木块并将代码连接在其下方！");
+        alert(getText("noConnectionBlockError") || "错误：请添加一个'Connect with IP'积木块并将代码连接在其下方！");
+        return;
+      }
+
+      // 如果找到多个make_connection积木块，使用第一个
+      const mainBlock = makeConnectionBlocks[0];
+
+      // 准备一个临时的工作区，只包含我们要运行的代码
+      const tempWorkspace = new Blockly.Workspace();
+
+      // 复制主块及其所有连接的块到临时工作区
+      // 先克隆主块
+      const clonedMainBlock = Blockly.serialization.blocks.save(mainBlock);
+      Blockly.serialization.blocks.append(clonedMainBlock, tempWorkspace);
+
+      // 生成临时工作区的代码
+      var code = Blockly.JavaScript.workspaceToCode(tempWorkspace);
+
+      // 清理临时工作区
+      tempWorkspace.dispose();
+
       Blockly.JavaScript.INFINITE_LOOP_TRAP = null;
 
       // 添加辅助函数确保异步操作按顺序执行

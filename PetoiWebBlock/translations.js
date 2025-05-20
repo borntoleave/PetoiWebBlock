@@ -153,6 +153,7 @@ const TRANSLATIONS = {
         "asyncSendingCommand": "异步发送命令: ",
         "asyncReceivedResponse": "异步收到响应: ",
         "networkRequestError": "网络请求错误",
+        "noConnectionBlockError": "错误：请添加一个'Connect with IP'积木块并将代码连接在其下方！",
 
         // 代码生成器注释
         "connectingIPAddress": "连接IP地址",
@@ -336,6 +337,7 @@ const TRANSLATIONS = {
         "asyncSendingCommand": "Async sending command: ",
         "asyncReceivedResponse": "Async received response: ",
         "networkRequestError": "Network request error",
+        "noConnectionBlockError": "Error: Please add a 'Connect with IP' block and connect your code underneath it!",
 
         // Code generator comments
         "connectingIPAddress": "Connecting to IP address",
